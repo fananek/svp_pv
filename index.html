@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="cs" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ŠVP PV - Asistent pro tvorbu Školního vzdělávacího programu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Left Navigation Sidebar -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="#" class="brand-logo">
+          <div class="brand-icon" id="sidebar-brand-icon">🌟</div>
+          <div class="brand-info">
+            <h1>ŠVP PV</h1>
+            <span>Asistent pedagoga MŠ</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group-title">PŘEHLED A SPRÁVA</div>
+        <a class="nav-item active" data-view-target="dashboard">
+          <span>📊</span>
+          <span>Hlavní nástěnka</span>
+        </a>
+        <a class="nav-item" data-view-target="coverage-matrix">
+          <span>🔍</span>
+          <span>Matice souladu s RVP</span>
+        </a>
+        <a class="nav-item" data-view-target="rvp-catalog">
+          <span>📖</span>
+          <span>Katalog RVP PV</span>
+        </a>
+
+        <div class="nav-group-title">KAPITOLY ŠVP PV</div>
+        <a class="nav-item" data-view-target="identification">
+          <span>🏛</span>
+          <span>1. Identifikační údaje</span>
+        </a>
+        <a class="nav-item" data-view-target="school-char">
+          <span>🏫</span>
+          <span>2. Charakteristika školy</span>
+        </a>
+        <a class="nav-item" data-view-target="team-staff">
+          <span>👩‍🏫</span>
+          <span>3. Pedagogický tým</span>
+        </a>
+        <a class="nav-item" data-view-target="conditions">
+          <span>🏡</span>
+          <span>4. Podmínky vzdělávání</span>
+        </a>
+        <a class="nav-item" data-view-target="curriculum-char">
+          <span>🌟</span>
+          <span>5. Vzdělávací program</span>
+        </a>
+        <a class="nav-item" data-view-target="blocks-builder">
+          <span>🧩</span>
+          <span>6. Integrované bloky</span>
+          <span class="nav-badge" style="background: rgba(59, 130, 246, 0.3); color: #93c5fd;">D&D</span>
+        </a>
+        <a class="nav-item" data-view-target="autoevaluation">
+          <span>📈</span>
+          <span>7. Autoevaluace školy</span>
+        </a>
+
+        <div class="nav-group-title">VÝSTUPY A EXPORT</div>
+        <a class="nav-item" data-view-target="preview-export">
+          <span>🖨</span>
+          <span>Oficiální tisk & Word</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="save-status-badge">
+          <div class="status-dot" id="status-indicator-dot"></div>
+          <span id="status-indicator-text">Uloženo lokálně</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+      <!-- Top Sticky Header -->
+      <header class="top-header">
+        <div class="header-title-area">
+          <h2 class="header-title" id="app-active-title">Školní vzdělávací program PV</h2>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary btn-sm" id="btn-load-template">📂 Vzorové šablony</button>
+          <button class="btn btn-secondary btn-sm" id="btn-new-doc">📄 Nový ŠVP</button>
+          <button class="btn btn-secondary btn-sm" id="btn-export-json" title="Stáhnout záložní soubor projektu">💾 Uložit projekt (.svppv)</button>
+          <label class="btn btn-secondary btn-sm" style="cursor: pointer;" title="Otevřít uložený projekt">
+            📂 Otevřít projekt
+            <input type="file" id="input-import-json" accept=".json,.svppv" style="display: none;">
+          </label>
+          <button class="btn btn-primary btn-sm" id="btn-print-doc">🖨 Tisk / PDF</button>
+          <button class="btn-icon-only" id="theme-toggle-btn" title="Přepnout tmavý/světlý režim">🌙</button>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <!-- VIEW 1: DASHBOARD -->
+        <section class="tab-view active" id="view-dashboard">
+          <div id="dashboard-metrics"></div>
+        </section>
+
+        <!-- VIEW 2: 1. IDENTIFIKAČNÍ ÚDAJE -->
+        <section class="tab-view" id="view-identification">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🏛 1. Identifikační údaje mateřské školy</div>
+            </div>
+
+            <!-- Logo Upload Section -->
+            <div class="logo-upload-box">
+              <div class="logo-preview-wrapper" id="school-logo-preview">
+                <span id="school-logo-placeholder" style="font-size: 2rem;">🏫</span>
+                <img id="school-logo-img" class="logo-preview-img" style="display: none;" alt="Logo školy">
+              </div>
+              <div style="flex: 1;">
+                <h4 style="font-size: 0.95rem; margin-bottom: 4px;">Logo mateřské školy</h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+                  Nahrajte vlastní logo (PNG, JPG, SVG, WebP). Logo se zobrazí v záhlaví aplikace a na titulní straně oficiálního dokumentu ŠVP.
+                </p>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <label class="btn btn-sm btn-primary" style="cursor: pointer;">
+                    📁 Nahrát logo
+                    <input type="file" id="input-school-logo" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display: none;">
+                  </label>
+                  <button class="btn btn-sm btn-secondary" id="btn-remove-logo" style="display: none;">Odstranit logo</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Název dokumentu</label>
+                <input type="text" class="form-input" data-model="schoolData.docTitle" placeholder="Školní vzdělávací program pro předškolní vzdělávání">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Motivační název ŠVP</label>
+                <input type="text" class="form-input" data-model="schoolData.mottoName" placeholder="např. Objevujeme svět s úsměvem">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Úplný název mateřské školy</label>
+                <input type="text" class="form-input" data-model="schoolData.schoolName" placeholder="Mateřská škola ...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sídlo a adresa školy</label>
+                <input type="text" class="form-input" data-model="schoolData.schoolAddress" placeholder="Ulice č.p., PSČ Město">
+              </div>
+              <div class="form-group">
+                <label class="form-label">IČO</label>
+                <input type="text" class="form-input" data-model="schoolData.ico" placeholder="např. 70891234">
+              </div>
+              <div class="form-group">
+                <label class="form-label">REDIZO (Resortní identifikátor)</label>
+                <input type="text" class="form-input" data-model="schoolData.redizo" placeholder="např. 600012345">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ředitel(ka) mateřské školy</label>
+                <input type="text" class="form-input" data-model="schoolData.headmaster" placeholder="Jméno a příjmení včetně titulů">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Zpracovatel ŠVP (Zodpovědná osoba / Tým)</label>
+                <input type="text" class="form-input" data-model="schoolData.author" placeholder="Kolektiv pedagogů MŠ...">
+              </div>
+              <div class="form-group full-width">
+                <label class="form-label">Údaje o zřizovateli</label>
+                <input type="text" class="form-input" data-model="schoolData.founder" placeholder="např. Městská část Praha 4, Antala Staška 2059/80b">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Číslo jednací (Č.j.)</label>
+                <input type="text" class="form-input" data-model="schoolData.refNumber" placeholder="MS/2026/01">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Platnost od (datum účinnosti)</label>
+                <input type="date" class="form-input" data-model="schoolData.validFrom">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Platnost do (datum vyhodnocení)</label>
+                <input type="date" class="form-input" data-model="schoolData.validTo">
+              </div>
+            </div>
+            <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+              <button class="btn btn-primary" onclick="window.svpApp.switchView('school-char')">Pokračovat na Charakteristiku školy →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 3: 2. CHARAKTERISTIKA ŠKOLY A TŘÍD -->
+        <section class="tab-view" id="view-school-char">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🏫 2. Charakteristika školy a uspořádání tříd</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Lokalita a okolní prostředí školy</label>
+              <textarea class="form-textarea" data-model="schoolData.location" placeholder="Popište umístění školy, dopravní dostupnost, přírodní a kulturní okolí..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Budova, zahrada a prostorové zázemí</label>
+              <textarea class="form-textarea" data-model="schoolData.buildingSpec" placeholder="Charakteristika budovy, bezbariérovost, vybavení zahrady, herních koutků..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nejvyšší povolená kapacita mateřské školy</label>
+              <input type="text" class="form-input" data-model="schoolData.maxCapacity" placeholder="např. 75 dětí">
+            </div>
+
+            <div id="classes-list-container" style="margin-top: 24px;"></div>
+
+            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+              <button class="btn btn-secondary" onclick="window.svpApp.switchView('identification')">← Zpět na Identifikaci</button>
+              <button class="btn btn-primary" onclick="window.svpApp.switchView('team-staff')">Pokračovat na Pedagogický tým →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 4: 3. PEDAGOGICKÝ TÝM -->
+        <section class="tab-view" id="view-team-staff">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">👩‍🏫 3. Pedagogický tým a personální podmínky</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Složení pedagogického sboru a týmu školy</label>
+              <textarea class="form-textarea" data-model="schoolData.teamDesc" placeholder="Popis kvalifikovanosti učitelek, asistentů pedagoga, školních asistentů a spolupráce týmu..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Plán profesního rozvoje pedagogických pracovníků (DVPP)</label>
+              <textarea class="form-textarea" data-model="schoolData.pdPlan" placeholder="Priority dalšího vzdělávání pedagogů (čtenářská a matematická pregramotnost, inkluze, digitální technologie, wellbeing)..."></textarea>
+            </div>
+            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+              <button class="btn btn-secondary" onclick="window.svpApp.switchView('school-char')">← Zpět na Charakteristiku</button>
+              <button class="btn btn-primary" onclick="window.svpApp.switchView('conditions')">Pokračovat na Podmínky vzdělávání →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 5: 4. PODMÍNKY VZDĚLÁVÁNÍ -->
+        <section class="tab-view" id="view-conditions">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🏡 4. Podmínky pro realizaci předškolního vzdělávání</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">4.1 Psychosociální podmínky</label>
+              <textarea class="form-textarea" data-model="schoolData.psychosocial" placeholder="Klima školy, pocit bezpečí a jistoty, vztahy mezi dětmi i pedagogy, podpora samostatnosti..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">4.2 Životospráva a stravování</label>
+              <textarea class="form-textarea" data-model="schoolData.dietNutrition" placeholder="Denní režim, vyvážená a pestrá strava, pitný režim, odpočinek a spánek podle potřeb dětí..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">4.3 Organizace chodu mateřské školy</label>
+              <textarea class="form-textarea" data-model="schoolData.organization" placeholder="Flexibilita denního řádu, poměr řízených a spontánních činností, pobyt venku..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">4.4 Věcné a materiální podmínky</label>
+              <textarea class="form-textarea" data-model="schoolData.materialConditions" placeholder="Hračky, pomůcky, didaktický materiál, nábytek, hygiena a bezpečnost..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">4.5 Spolupráce se zákonnými zástupci (rodinou)</label>
+              <textarea class="form-textarea" data-model="schoolData.familyCooperation" placeholder="Formy komunikace, konzultace, společné akce, zapojení rodičů do života školy..."></textarea>
+            </div>
+            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+              <button class="btn btn-secondary" onclick="window.svpApp.switchView('team-staff')">← Zpět na Pedagogický tým</button>
+              <button class="btn btn-primary" onclick="window.svpApp.switchView('curriculum-char')">Pokračovat na Vzdělávací program →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 6: 5. VZDĚLÁVACÍ PROGRAM A STRATEGIE -->
+        <section class="tab-view" id="view-curriculum-char">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🌟 5. Charakteristika vzdělávacího programu a strategie</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Vize a hlavní cíle vzdělávacího programu</label>
+              <textarea class="form-textarea" data-model="schoolData.vision" placeholder="Celková pedagogická koncepce a filozofie školy..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Vzdělávací strategie k rozvoji klíčových kompetencí a gramotností</label>
+              <textarea class="form-textarea" data-model="schoolData.strategies" placeholder="Uplatňované metody: prožitkové učení, situační učení, badatelství, hra, kooperace..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nastavení procesu pedagogického diagnostikování</label>
+              <textarea class="form-textarea" data-model="schoolData.diagnostics" placeholder="Metody sledování rozvoje dítěte, portfolia, záznamové archy, konzultace s PPP..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Způsob zajištění individualizace vzdělávání</label>
+              <textarea class="form-textarea" data-model="schoolData.individualization" placeholder="Diferenciace úkolů, podpora dětí se SVP, mimořádně nadaných dětí i dětí s OMJ..."></textarea>
+            </div>
+            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+              <button class="btn btn-secondary" onclick="window.svpApp.switchView('conditions')">← Zpět na Podmínky</button>
+              <button class="btn btn-primary" onclick="window.svpApp.switchView('blocks-builder')">Pokračovat na Integrované bloky (Tvůrce) →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 7: 6. INTEGROVANÉ BLOKY (DRAG & DROP BUILDER) -->
+        <section class="tab-view" id="view-blocks-builder">
+          <div class="builder-layout">
+            <!-- Left draggable catalog -->
+            <aside class="catalog-sidebar">
+              <div class="catalog-sidebar-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <div style="font-family: var(--font-heading); font-size: 1rem; font-weight: 700;">
+                    🎯 Katalog RVP PV
+                  </div>
+                  <div style="display: flex; gap: 4px;">
+                    <button class="btn-icon-only" style="font-size: 0.65rem; padding: 2px 5px;" onclick="window.svpApp.toggleAllCatalogCategories(true)" title="Rozbalit všechny kategorie">📂</button>
+                    <button class="btn-icon-only" style="font-size: 0.65rem; padding: 2px 5px;" onclick="window.svpApp.toggleAllCatalogCategories(false)" title="Sbalit všechny kategorie">📁</button>
+                  </div>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">
+                  Přetahujte položky myší nebo klikněte na + Blok.
+                </div>
+              </div>
+              <div id="builder-catalog-content"></div>
+            </aside>
+
+            <!-- Right blocks list -->
+            <div class="builder-main">
+              <div class="builder-main-header">
+                <div>
+                  <h2 style="font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; margin-bottom: 2px;">Integrované vzdělávací bloky</h2>
+                  <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Tvořte a upravujte témata, propojujte je s klíčovými kompetencemi a plánujte činnosti.</p>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <button class="btn btn-sm btn-secondary" onclick="window.svpApp.toggleAllBlocks(true)" title="Rozbalit všechny bloky">📂 Rozbalit vše</button>
+                  <button class="btn btn-sm btn-secondary" onclick="window.svpApp.toggleAllBlocks(false)" title="Sbalit všechny bloky">📁 Sbalit vše</button>
+                  <button class="btn btn-sm btn-primary" id="btn-add-block">+ Přidat blok</button>
+                </div>
+              </div>
+
+              <div class="builder-blocks-scroll" id="builder-blocks-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 8: 7. AUTOEVALUACE -->
+        <section class="tab-view" id="view-autoevaluation">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📈 7. Plán autoevaluace a hodnocení mateřské školy</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cíle autoevaluace</label>
+              <textarea class="form-textarea" data-model="autoevaluation.goals" placeholder="Čeho chceme autoevaluací dosáhnout..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kritéria hodnocení</label>
+              <textarea class="form-textarea" data-model="autoevaluation.criteria" placeholder="Kritéria kvality vzdělávání a spokojenosti dětí/rodičů..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Časový harmonogram a frekvence evaluace</label>
+              <textarea class="form-textarea" data-model="autoevaluation.schedule" placeholder="Jak často probíhá hodnocení (po blocích, čtvrtletně, roční zpráva)..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Odpovědnost pedagogů a dalších pracovníků</label>
+              <textarea class="form-textarea" data-model="autoevaluation.responsibilities" placeholder="Kdo za které oblasti autoevaluace odpovídá..."></textarea>
+            </div>
+            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+              <button class="btn btn-secondary" onclick="window.svpApp.switchView('blocks-builder')">← Zpět na Bloky</button>
+              <button class="btn btn-primary" onclick="window.svpApp.switchView('preview-export')">Přejít k Oficiálnímu exportu →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 9: MATICE POKRYTÍ RVP PV -->
+        <section class="tab-view" id="view-coverage-matrix">
+          <div id="coverage-matrix-content"></div>
+        </section>
+
+        <!-- VIEW 10: RVP KATALOG -->
+        <section class="tab-view" id="view-rvp-catalog">
+          <div id="rvp-catalog-container"></div>
+        </section>
+
+        <!-- VIEW 11: PREVIEW & EXPORT -->
+        <section class="tab-view" id="view-preview-export">
+          <div class="card" style="margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 style="font-family: var(--font-heading); font-size: 1.25rem;">📄 Oficiální náhled dokumentu ŠVP PV</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Dokument je připraven pro tisk i export do formátu Word pro další editaci.</p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" id="btn-export-word">📝 Exportovat do Wordu (.doc)</button>
+                <button class="btn btn-primary" onclick="window.svpApp.openPrintPreview(window.svpApp.store ? window.svpApp.store.getDoc() : null)">🖨 Vytisknout / Uložit PDF</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; border: 1px solid var(--border-color);">
+            <iframe id="document-preview-frame" style="width: 100%; height: 800px; border: none; background: white;"></iframe>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: ADD ACTIVITY -->
+  <div class="modal-overlay" id="activity-modal">
+    <div class="modal-content">
+      <div class="card-header">
+        <div class="card-title">➕ Přidat novou pedagogickou činnost</div>
+        <button class="btn-icon-only" onclick="window.svpApp.closeModal('activity-modal')">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Název činnosti / hry</label>
+        <input type="text" class="form-input" id="activity-form-title" placeholder="např. Pokusy s vodou a ledem">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Typ činnosti</label>
+        <select class="form-select" id="activity-form-type">
+          <option value="Řízená činnost">Řízená didaktická činnost</option>
+          <option value="Spontánní hra">Spontánní hra a koutky</option>
+          <option value="Pohybová aktivita">Pohybová a zdatnostní aktivita</option>
+          <option value="Badatelská činnost">Badatelská a experimentální činnost</option>
+          <option value="Tvořivá a estetická">Tvořivá a estetická činnost</option>
+          <option value="Praktický život">Praktický život a sebeobsluha</option>
+          <option value="Komunitní kruh">Komunitní kruh a rozhovory</option>
+          <option value="Projektová činnost">Projektová a venkovní aktivita</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Popis a průběh činnosti</label>
+        <textarea class="form-textarea" id="activity-form-desc" placeholder="Stručný metodický popis činnosti, pomůcky a organizace..."></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px;">
+        <button class="btn btn-secondary" onclick="window.svpApp.closeModal('activity-modal')">Zrušit</button>
+        <button class="btn btn-primary" onclick="window.svpApp.saveActivityFromModal()">Uložit činnost</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LOAD TEMPLATES -->
+  <div class="modal-overlay" id="template-modal">
+    <div class="modal-content">
+      <div class="card-header">
+        <div class="card-title">📂 Výběr vzorové šablony ŠVP PV</div>
+        <button class="btn-icon-only" onclick="window.svpApp.closeModal('template-modal')">✕</button>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+        Vyberte si předpřipravený Školní vzdělávací program vytvořený experty podle RVP PV, který si můžete následně plně přizpůsobit vaší mateřské škole:
+      </p>
+      <div id="template-modal-list"></div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+        <button class="btn btn-secondary" onclick="window.svpApp.closeModal('template-modal')">Zavřít</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: OUTCOME DETAIL -->
+  <div class="modal-overlay" id="outcome-modal">
+    <div class="modal-content">
+      <div class="card-header">
+        <div class="card-title" id="outcome-modal-title">Detail výstupu RVP PV</div>
+        <button class="btn-icon-only" onclick="window.svpApp.closeModal('outcome-modal')">✕</button>
+      </div>
+      <div id="outcome-modal-body"></div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
+        <button class="btn btn-secondary" onclick="window.svpApp.closeModal('outcome-modal')">Zavřít</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Application Logic -->
+  <script type="module" src="src/js/app.js"></script>
+</body>
+</html>

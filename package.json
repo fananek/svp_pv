@@ -1,0 +1,13 @@
+{
+  "name": "svp-pv-generator",
+  "version": "1.0.0",
+  "description": "Interaktivní generátor a editor Školního vzdělávacího programu pro předškolní vzdělávání (ŠVP PV)",
+  "private": true,
+  "scripts": {
+    "start": "serve .",
+    "dev": "python3 -m http.server 8080"
+  },
+  "keywords": ["svp", "rvp", "predskolni-vzdelavani", "materska-skola"],
+  "author": "Antigravity",
+  "license": "MIT"
+}
