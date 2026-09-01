@@ -5,6 +5,18 @@ import { SVPExporter } from './exporter.js';
 import { RVP_COMPETENCIES, RVP_LITERACIES, RVP_AREAS, RVP_OUTCOMES } from '../data/rvp_data.js';
 import { SAMPLE_TEMPLATES } from '../data/sample_templates.js';
 
+// Helper for Czech pluralization (1 blok, 2-4 bloky, 5+ bloků)
+function formatPlural(count, one, few, many) {
+  const n = Math.abs(count);
+  if (n === 1) return `${count} ${one}`;
+  if (n >= 2 && n <= 4) return `${count} ${few}`;
+  return `${count} ${many}`;
+}
+
+function formatBlocks(count) {
+  return formatPlural(count, 'blok', 'bloky', 'bloků');
+}
+
 class SVPApp {
   constructor() {
     this.currentView = 'dashboard';
@@ -492,7 +504,7 @@ class SVPApp {
     const classes = doc.schoolData.classes || [];
     listContainer.innerHTML = `
       <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-        <span style="font-size: 0.9rem; font-weight: 600;">Seznam tříd mateřské školy (${classes.length})</span>
+        <span style="font-size: 0.9rem; font-weight: 600;">Seznam tříd mateřské školy (${formatPlural(classes.length, 'třída', 'třídy', 'tříd')})</span>
         <button class="btn btn-sm btn-primary" id="btn-add-class">+ Přidat třídu</button>
       </div>
       <div class="table-responsive">
@@ -511,7 +523,7 @@ class SVPApp {
               <tr>
                 <td style="padding: 8px 12px; border: 1px solid var(--border-color); font-weight: 600;">${cls.name}</td>
                 <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${cls.ageRange}</td>
-                <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${cls.count} dětí</td>
+                <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${formatPlural(cls.count, 'dítě', 'děti', 'dětí')}</td>
                 <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${cls.type}</td>
                 <td style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: center;">
                   <button class="btn-icon-only" style="color: var(--danger-500); padding: 4px;" onclick="window.svpApp.removeClass(${idx})" title="Smazat třídu">🗑</button>
@@ -642,11 +654,11 @@ class SVPApp {
               <input type="text" class="block-title-input" value="${b.title}" placeholder="Název bloku..." onclick="event.stopPropagation()" onchange="window.svpApp.updateBlockTitle('${b.id}', this.value)">
             </div>
             <div class="block-summary-badges">
-              ${compCount > 0 ? `<span class="block-summary-tag">🧠 ${compCount} kompetencí</span>` : ''}
-              ${litCount > 0 ? `<span class="block-summary-tag">📖 ${litCount} gramotností</span>` : ''}
-              ${areaCount > 0 ? `<span class="block-summary-tag">🎨 ${areaCount} oblastí</span>` : ''}
-              ${outCount > 0 ? `<span class="block-summary-tag">🎯 ${outCount} výstupů</span>` : ''}
-              ${actCount > 0 ? `<span class="block-summary-tag">⚡ ${actCount} činností</span>` : ''}
+              ${compCount > 0 ? `<span class="block-summary-tag">🧠 ${formatPlural(compCount, 'kompetence', 'kompetence', 'kompetencí')}</span>` : ''}
+              ${litCount > 0 ? `<span class="block-summary-tag">📖 ${formatPlural(litCount, 'gramotnost', 'gramotnosti', 'gramotností')}</span>` : ''}
+              ${areaCount > 0 ? `<span class="block-summary-tag">🎨 ${formatPlural(areaCount, 'oblast', 'oblasti', 'oblastí')}</span>` : ''}
+              ${outCount > 0 ? `<span class="block-summary-tag">🎯 ${formatPlural(outCount, 'výstup', 'výstupy', 'výstupů')}</span>` : ''}
+              ${actCount > 0 ? `<span class="block-summary-tag">⚡ ${formatPlural(actCount, 'činnost', 'činnosti', 'činností')}</span>` : ''}
               ${b.timeFrame ? `<span class="block-summary-tag" style="background: var(--bg-subtle);">🗓 ${b.timeFrame}</span>` : ''}
             </div>
           </div>
@@ -1286,7 +1298,7 @@ class SVPApp {
             <h4 style="font-size: 1.05rem; margin-top: 6px;">${tmpl.name}</h4>
             <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">${tmpl.subtitle}</p>
             <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 8px;">
-              📦 Obsahuje ${tmpl.blocks.length} integrovaných bloků s vazbami na RVP PV
+              📦 Obsahuje ${formatPlural(tmpl.blocks.length, 'integrovaný blok', 'integrované bloky', 'integrovaných bloků')} s vazbami na RVP PV
             </div>
           </div>
           <button class="btn btn-sm btn-primary">Načíst šablonu</button>
@@ -1342,7 +1354,7 @@ class SVPApp {
               <span class="code-badge">${code}</span>
             </div>
             <span class="header-tag ${isGood ? 'header-tag-success' : 'header-tag-warning'}">
-              ${blockCount} bloků
+              ${formatBlocks(blockCount)}
             </span>
           </div>
           <div class="progress-bar-bg">
@@ -1376,7 +1388,7 @@ class SVPApp {
               <span class="code-badge">${code}</span>
             </div>
             <span class="header-tag ${isGood ? 'header-tag-success' : 'header-tag-warning'}">
-              ${blockCount} bloků
+              ${formatBlocks(blockCount)}
             </span>
           </div>
           <div class="progress-bar-bg">
