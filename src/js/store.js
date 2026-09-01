@@ -18,6 +18,9 @@ export class SVPStore {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.schoolData && Array.isArray(parsed.blocks)) {
+          if (parsed.schoolData.mottoName === 'Každý den s úsměvem a objevováním světa') {
+            parsed.schoolData.mottoName = 'Každý den s úsměvem objevujeme svět';
+          }
           return parsed;
         }
       }
@@ -54,7 +57,6 @@ export class SVPStore {
   resetToTemplate(templateId) {
     const tmpl = SAMPLE_TEMPLATES.find(t => t.id === templateId) || SAMPLE_TEMPLATES[0];
     this.currentDoc = JSON.parse(JSON.stringify(tmpl));
-    this.currentDoc.createdAt = new Date().toISOString();
     this.currentDoc.updatedAt = new Date().toISOString();
     this.notify('template_loaded');
   }
@@ -70,7 +72,7 @@ export class SVPStore {
       updatedAt: new Date().toISOString(),
       schoolData: {
         docTitle: 'Školní vzdělávací program pro předškolní vzdělávání',
-        mottoName: 'Náš svět poznání a her',
+        mottoName: 'Každý den s úsměvem objevujeme svět',
         schoolName: 'Mateřská škola ',
         schoolAddress: '',
         ico: '',

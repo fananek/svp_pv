@@ -3,13 +3,13 @@
 export const SAMPLE_TEMPLATES = [
   {
     "id": "ms-branisovice",
-    "name": "ŠVP: Každý den s úsměvem a moderním objevováním",
+    "name": "ŠVP: Každý den s úsměvem objevujeme svět",
     "subtitle": "MŠ Branišovice – Rodinná školka s moderním vzděláváním a digitálními technologiemi",
     "tag": "MŠ Branišovice (Digitální & Rodinná)",
     "color": "#6366f1",
     "schoolData": {
       "docTitle": "Školní vzdělávací program pro předškolní vzdělávání",
-      "mottoName": "Každý den s úsměvem a objevováním světa",
+      "mottoName": "Každý den s úsměvem objevujeme svět",
       "schoolName": "Mateřská škola Branišovice, okres Brno-venkov, příspěvková organizace",
       "schoolAddress": "Branišovice 57, 671 77 Branišovice",
       "ico": "75009382",
