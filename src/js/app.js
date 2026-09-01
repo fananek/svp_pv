@@ -26,6 +26,7 @@ class SVPApp {
     this.catalogSearchQuery = '';
     this.collapsedBlocks = new Set();
     this.collapsedCatalogCategories = new Set();
+    this.blockOfferTabs = new Map();
     this.init();
   }
 
@@ -641,6 +642,12 @@ class SVPApp {
       const areaCount = (b.areas || []).length;
       const outCount = (b.outcomes || []).length;
       const actCount = (b.activities || []).length;
+      const centersCount = (b.centersOfActivity || []).length;
+
+      let currentOfferTab = this.blockOfferTabs.get(b.id);
+      if (!currentOfferTab) {
+        currentOfferTab = (centersCount > 0 && actCount === 0) ? 'centers' : 'activities';
+      }
 
       return `
       <div class="block-editor-card ${isCollapsed ? 'is-collapsed' : ''}" id="block-card-${b.id}" data-block-id="${b.id}" data-dropzone="true" data-dropzone-accepts="competency,literacy,area,outcome,activity" data-dropzone-type="block-all">
@@ -659,6 +666,7 @@ class SVPApp {
               ${areaCount > 0 ? `<span class="block-summary-tag">🎨 ${formatPlural(areaCount, 'oblast', 'oblasti', 'oblastí')}</span>` : ''}
               ${outCount > 0 ? `<span class="block-summary-tag">🎯 ${formatPlural(outCount, 'výstup', 'výstupy', 'výstupů')}</span>` : ''}
               ${actCount > 0 ? `<span class="block-summary-tag">⚡ ${formatPlural(actCount, 'činnost', 'činnosti', 'činností')}</span>` : ''}
+              ${centersCount > 0 ? `<span class="block-summary-tag">🏢 ${formatPlural(centersCount, 'centrum', 'centra', 'center')}</span>` : ''}
               ${b.timeFrame ? `<span class="block-summary-tag" style="background: var(--bg-subtle);">🗓 ${b.timeFrame}</span>` : ''}
             </div>
           </div>
@@ -672,91 +680,26 @@ class SVPApp {
         </div>
 
         <div class="block-editor-body">
-          <!-- 1. Motivační záměr / Situační impuls -->
-          <div class="block-form-section">
-            <div class="block-form-section-title">
-              <span>🌟 Motivační záměr / Situační impuls:</span>
-            </div>
-            <textarea class="form-textarea" style="min-height: 60px; font-size: 0.85rem;" placeholder="Proč téma otevíráme, podnět z dětských otázek či reálných situací..." onchange="window.svpApp.updateBlockImpulse('${b.id}', this.value)">${b.situationalImpulse || ''}</textarea>
-          </div>
-
-          <!-- 2. Smysl, účel a hlavní záměr bloku -->
+          <!-- 1. Smysl, účel a hlavní záměr bloku -->
           <div class="block-form-section">
             <div class="block-form-section-title">
               <span>🎯 Smysl, účel a hlavní záměr bloku:</span>
             </div>
-            <textarea class="form-textarea" style="min-height: 60px; font-size: 0.85rem;" placeholder="Zde popište hlavní cíl, motivaci a očekávaný přínos pro děti..." onchange="window.svpApp.updateBlockPurpose('${b.id}', this.value)">${b.purpose || ''}</textarea>
+            <textarea class="form-textarea" style="min-height: 55px; font-size: 0.85rem;" placeholder="Zde popište hlavní cíl, motivaci a očekávaný přínos pro děti..." onchange="window.svpApp.updateBlockPurpose('${b.id}', this.value)">${b.purpose || ''}</textarea>
           </div>
 
-          <!-- 3. Vzdělávací nabídka v centrech aktivit (věková gradace 2–7 let) -->
+          <!-- 2. Motivační záměr / Situační impuls -->
           <div class="block-form-section">
             <div class="block-form-section-title">
-              <span>🏢 Vzdělávací nabídka v centrech aktivit (věková gradace 2–7 let):</span>
-              <button class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 3px 10px;" onclick="window.svpApp.addBlockCenter('${b.id}')">+ Přidat centrum</button>
+              <span>🌟 Motivační záměr / Situační impuls:</span>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-              ${(b.centersOfActivity || []).map((c, cIdx) => `
-                <div class="center-card-editor">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <input type="text" class="form-input" style="font-weight: 700; font-size: 0.85rem; color: var(--primary-600); flex: 1; margin-right: 8px; padding: 6px 10px;" value="${c.center}" placeholder="Název centra (např. Centrum Věda a badatelna)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'center', this.value)">
-                    <button class="btn-icon-only" style="color: var(--danger-500); font-size: 0.8rem; padding: 4px 8px;" onclick="window.svpApp.deleteBlockCenter('${b.id}', ${cIdx})" title="Odstranit centrum">✕</button>
-                  </div>
-                  <div class="center-card-age-list">
-                    <div class="center-card-age-row">
-                      <span class="center-card-age-label">👶 2–3 roky:</span>
-                      <textarea class="form-textarea" placeholder="Činnosti pro mladší děti (smysly, adaptace)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'younger', this.value)">${c.younger || ''}</textarea>
-                    </div>
-                    <div class="center-card-age-row">
-                      <span class="center-card-age-label">👦 4–5 let:</span>
-                      <textarea class="form-textarea" placeholder="Činnosti pro střední věk (struktura, hry)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'middle', this.value)">${c.middle || ''}</textarea>
-                    </div>
-                    <div class="center-card-age-row">
-                      <span class="center-card-age-label">🎓 6–7 let:</span>
-                      <textarea class="form-textarea" placeholder="Činnosti pro předškoláky (bádání, algoritmizace, projekty)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'older', this.value)">${c.older || ''}</textarea>
-                    </div>
-                  </div>
-                </div>
-              `).join('') || '<div style="font-size: 0.8rem; color: var(--text-light); font-style: italic; padding: 6px 0;">Zatím nejsou přidána žádná centra aktivit. Klikněte na „+ Přidat centrum“.</div>'}
-            </div>
+            <textarea class="form-textarea" style="min-height: 50px; font-size: 0.85rem;" placeholder="Proč téma otevíráme, podnět z dětských otázek či reálných situací..." onchange="window.svpApp.updateBlockImpulse('${b.id}', this.value)">${b.situationalImpulse || ''}</textarea>
           </div>
 
-          <!-- 4. Digitální bezpečnost a zdravé návyky -->
-          <div class="block-form-section">
-            <div class="block-form-section-title">
-              <span>🛡 Digitální bezpečnost a zdravé návyky:</span>
-            </div>
-            <textarea class="form-textarea" style="min-height: 48px; font-size: 0.85rem;" placeholder="Pravidla práce s technologiemi, oční hygiena, střídání s pohybem venku..." onchange="window.svpApp.updateBlockSafety('${b.id}', this.value)">${b.digitalSafety || ''}</textarea>
-          </div>
-
-          <!-- 5. Pedagogická diagnostika a dokládání pokroku (Portfolio) -->
-          <div class="block-form-section">
-            <div class="block-form-section-title">
-              <span>📋 Pedagogická diagnostika a dokládání pokroku (Portfolio):</span>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-              <div>
-                <label style="font-size: 0.76rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Pozorované projevy (záznamový arch):</label>
-                <textarea class="form-textarea" style="min-height: 60px; font-size: 0.82rem;" placeholder="Co přesně učitel sleduje (1 položka na řádek)..." onchange="window.svpApp.updateBlockDiagnosticsObs('${b.id}', this.value)">${(b.diagnostics && b.diagnostics.observations ? b.diagnostics.observations.join('\n') : '')}</textarea>
-              </div>
-              <div>
-                <label style="font-size: 0.76rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Konkrétní výstupy do portfolia dítěte:</label>
-                <textarea class="form-textarea" style="min-height: 60px; font-size: 0.82rem;" placeholder="Co zakládáme do portfolia (1 položka na řádek)..." onchange="window.svpApp.updateBlockDiagnosticsPort('${b.id}', this.value)">${(b.diagnostics && b.diagnostics.portfolioItems ? b.diagnostics.portfolioItems.join('\n') : '')}</textarea>
-              </div>
-            </div>
-          </div>
-
-          <!-- 6. Autoevaluace bloku (pro pedagogický tým) -->
-          <div class="block-form-section">
-            <div class="block-form-section-title">
-              <span>🔍 Autoevaluační otázky bloku (pro pedagogický tým):</span>
-            </div>
-            <textarea class="form-textarea" style="min-height: 48px; font-size: 0.85rem;" placeholder="Otázky pro sebereflexi pedagogů a vyhodnocení úspěšnosti bloku (1 otázka na řádek)..." onchange="window.svpApp.updateBlockAutoeval('${b.id}', this.value)">${(b.autoevaluationQuestions ? b.autoevaluationQuestions.join('\n') : '')}</textarea>
-          </div>
-
-          <!-- Dropzone for Competencies & Areas -->
-          <div style="margin-bottom: 10px;">
+          <!-- 3. Vazby na RVP PV: Klíčové kompetence & Oblasti -->
+          <div style="margin-bottom: 12px;">
             <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">PŘIŘAZENÉ KLÍČOVÉ KOMPETENCE A VZDĚLÁVACÍ OBLASTI:</div>
-            <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="competency,literacy,area" data-block-id="${b.id}" data-dropzone-type="competencies" style="min-height: 48px; display: flex; flex-wrap: wrap; align-items: center;">
+            <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="competency,literacy,area" data-block-id="${b.id}" data-dropzone-type="competencies" style="min-height: 44px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;">
               ${(b.competencies || []).map(c => `
                 <span class="pill-tag" data-type="competency">
                   ${RVP_COMPETENCIES[c] ? `${RVP_COMPETENCIES[c].icon} ${RVP_COMPETENCIES[c].name}` : c}
@@ -778,7 +721,7 @@ class SVPApp {
                 </span>
               `).join('')}
 
-              ${(!b.competencies || b.competencies.length === 0) && (!b.areas || b.areas.length === 0) ? `
+              ${(!b.competencies || b.competencies.length === 0) && (!b.areas || b.areas.length === 0) && (!b.literacies || b.literacies.length === 0) ? `
                 <span style="font-size: 0.78rem; color: var(--text-light); font-style: italic;">
                   Přetáhněte sem kompetenci nebo oblast z levého katalogu...
                 </span>
@@ -786,8 +729,8 @@ class SVPApp {
             </div>
           </div>
 
-          <!-- Dropzone for Outcomes -->
-          <div style="margin-bottom: 10px;">
+          <!-- 4. Očekávané výsledky učení (RVP PV) -->
+          <div style="margin-bottom: 14px;">
             <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">OČEKÁVANÉ VÝSLEDKY UČENÍ (RVP PV):</div>
             <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="outcome" data-block-id="${b.id}" data-dropzone-type="outcomes">
               ${(b.outcomes || []).map(code => {
@@ -808,26 +751,108 @@ class SVPApp {
             </div>
           </div>
 
-          <!-- Activities List in block -->
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">NABÍDKA ČINNOSTÍ A AKTIVIT (${actCount}):</div>
-              <button class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 2px 8px;" onclick="window.svpApp.openAddActivityModal('${b.id}')">+ Přidat činnost</button>
+          <!-- 5. VZDĚLÁVACÍ NABÍDKA (Sjednocené činnosti a Centra aktivit) -->
+          <div class="block-form-section" style="border-left: 3px solid var(--primary-500);">
+            <div class="block-form-section-title" style="flex-wrap: wrap; gap: 8px;">
+              <span>🎲 Vzdělávací nabídka:</span>
+              <div class="offer-toggle-group">
+                <button type="button" class="offer-toggle-btn ${currentOfferTab !== 'centers' ? 'is-active' : ''}" onclick="window.svpApp.setBlockOfferTab('${b.id}', 'activities')">
+                  📋 Činnosti a hry (${actCount})
+                </button>
+                <button type="button" class="offer-toggle-btn ${currentOfferTab === 'centers' ? 'is-active' : ''}" onclick="window.svpApp.setBlockOfferTab('${b.id}', 'centers')">
+                  🏢 Centra aktivit (${centersCount})
+                </button>
+              </div>
             </div>
-            <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="activity" data-block-id="${b.id}" data-dropzone-type="activities" style="background: transparent; border-style: solid; padding: 8px;">
-              ${(b.activities || []).map(act => `
-                <div class="activity-card" draggable="true" data-draggable="true" data-item-type="activity" data-item-id="${act.id}" data-source-block-id="${b.id}">
-                  <div class="activity-header">
-                    <span class="activity-title">${act.title}</span>
-                    <div style="display: flex; gap: 6px; align-items: center;">
-                      <span class="activity-type-badge">${act.type}</span>
-                      <button class="btn-icon-only" style="padding: 2px 5px; font-size: 0.7rem; color: var(--danger-500);" onclick="window.svpApp.deleteActivity('${b.id}', '${act.id}')">✕</button>
-                    </div>
-                  </div>
-                  ${act.desc ? `<div style="font-size: 0.8rem; color: var(--text-muted);">${act.desc}</div>` : ''}
+
+            ${currentOfferTab !== 'centers' ? `
+              <!-- A. JEDNOTLIVÉ ČINNOSTI -->
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-size: 0.76rem; color: var(--text-muted);">Plánované pedagogické činnosti, hry a situace v tomto bloku:</span>
+                  <button class="btn btn-sm btn-primary" style="font-size: 0.72rem; padding: 3px 8px;" onclick="window.svpApp.openAddActivityModal('${b.id}')">+ Přidat činnost</button>
                 </div>
-              `).join('') || '<span style="font-size: 0.78rem; color: var(--text-light); font-style: italic;">Zatím žádné činnosti. Klikněte na „+ Přidat činnost“.</span>'}
+                <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="activity" data-block-id="${b.id}" data-dropzone-type="activities" style="background: transparent; border-style: solid; padding: 8px;">
+                  ${(b.activities || []).map(act => `
+                    <div class="activity-card" draggable="true" data-draggable="true" data-item-type="activity" data-item-id="${act.id}" data-source-block-id="${b.id}">
+                      <div class="activity-header">
+                        <span class="activity-title">${act.title}</span>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                          <span class="activity-type-badge">${act.type}</span>
+                          <button class="btn-icon-only" style="padding: 2px 5px; font-size: 0.7rem; color: var(--danger-500);" onclick="window.svpApp.deleteActivity('${b.id}', '${act.id}')">✕</button>
+                        </div>
+                      </div>
+                      ${act.desc ? `<div style="font-size: 0.8rem; color: var(--text-muted);">${act.desc}</div>` : ''}
+                    </div>
+                  `).join('') || '<span style="font-size: 0.78rem; color: var(--text-light); font-style: italic;">Zatím žádné činnosti. Klikněte na „+ Přidat činnost“.</span>'}
+                </div>
+              </div>
+            ` : `
+              <!-- B. CENTRA AKTIVIT -->
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-size: 0.76rem; color: var(--text-muted);">Vzdělávací koutky a centra aktivit s diferenciací pro věk 2–7 let:</span>
+                  <button class="btn btn-sm btn-primary" style="font-size: 0.72rem; padding: 3px 10px;" onclick="window.svpApp.addBlockCenter('${b.id}')">+ Přidat centrum</button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  ${(b.centersOfActivity || []).map((c, cIdx) => `
+                    <div class="center-card-editor">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <input type="text" class="form-input" style="font-weight: 700; font-size: 0.85rem; color: var(--primary-600); flex: 1; margin-right: 8px; padding: 6px 10px;" value="${c.center}" placeholder="Název centra (např. Centrum Věda a badatelna)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'center', this.value)">
+                        <button class="btn-icon-only" style="color: var(--danger-500); font-size: 0.8rem; padding: 4px 8px;" onclick="window.svpApp.deleteBlockCenter('${b.id}', ${cIdx})" title="Odstranit centrum">✕</button>
+                      </div>
+                      <div class="center-card-age-list">
+                        <div class="center-card-age-row">
+                          <span class="center-card-age-label">👶 2–3 roky:</span>
+                          <textarea class="form-textarea" placeholder="Činnosti pro mladší děti (smysly, adaptace)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'younger', this.value)">${c.younger || ''}</textarea>
+                        </div>
+                        <div class="center-card-age-row">
+                          <span class="center-card-age-label">👦 4–5 let:</span>
+                          <textarea class="form-textarea" placeholder="Činnosti pro střední věk (struktura, hry)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'middle', this.value)">${c.middle || ''}</textarea>
+                        </div>
+                        <div class="center-card-age-row">
+                          <span class="center-card-age-label">🎓 6–7 let:</span>
+                          <textarea class="form-textarea" placeholder="Činnosti pro předškoláky (bádání, algoritmizace, projekty)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'older', this.value)">${c.older || ''}</textarea>
+                        </div>
+                      </div>
+                    </div>
+                  `).join('') || '<div style="font-size: 0.8rem; color: var(--text-light); font-style: italic; padding: 6px 0;">Zatím nejsou přidána žádná centra aktivit. Klikněte na „+ Přidat centrum“.</div>'}
+                </div>
+              </div>
+            `}
+          </div>
+
+          <!-- 6. Pedagogická diagnostika a dokládání pokroku (Portfolio) -->
+          <div class="block-form-section">
+            <div class="block-form-section-title">
+              <span>📋 Pedagogická diagnostika a dokládání pokroku (Portfolio):</span>
             </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+              <div>
+                <label style="font-size: 0.76rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Pozorované projevy (záznamový arch):</label>
+                <textarea class="form-textarea" style="min-height: 50px; font-size: 0.82rem;" placeholder="Co přesně učitel sleduje (1 položka na řádek)..." onchange="window.svpApp.updateBlockDiagnosticsObs('${b.id}', this.value)">${(b.diagnostics && b.diagnostics.observations ? b.diagnostics.observations.join('\n') : '')}</textarea>
+              </div>
+              <div>
+                <label style="font-size: 0.76rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Konkrétní výstupy do portfolia dítěte:</label>
+                <textarea class="form-textarea" style="min-height: 50px; font-size: 0.82rem;" placeholder="Co zakládáme do portfolia (1 položka na řádek)..." onchange="window.svpApp.updateBlockDiagnosticsPort('${b.id}', this.value)">${(b.diagnostics && b.diagnostics.portfolioItems ? b.diagnostics.portfolioItems.join('\n') : '')}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7. Digitální bezpečnost a zdravé návyky -->
+          <div class="block-form-section">
+            <div class="block-form-section-title">
+              <span>🛡 Digitální bezpečnost a zdravé návyky:</span>
+            </div>
+            <textarea class="form-textarea" style="min-height: 45px; font-size: 0.85rem;" placeholder="Pravidla práce s technologiemi, oční hygiena, střídání s pohybem venku..." onchange="window.svpApp.updateBlockSafety('${b.id}', this.value)">${b.digitalSafety || ''}</textarea>
+          </div>
+
+          <!-- 8. Autoevaluace bloku (pro pedagogický tým) -->
+          <div class="block-form-section">
+            <div class="block-form-section-title">
+              <span>🔍 Autoevaluační otázky bloku (pro pedagogický tým):</span>
+            </div>
+            <textarea class="form-textarea" style="min-height: 45px; font-size: 0.85rem;" placeholder="Otázky pro sebereflexi pedagogů a vyhodnocení úspěšnosti bloku (1 otázka na řádek)..." onchange="window.svpApp.updateBlockAutoeval('${b.id}', this.value)">${(b.autoevaluationQuestions ? b.autoevaluationQuestions.join('\n') : '')}</textarea>
           </div>
         </div>
       </div>
@@ -892,8 +917,14 @@ class SVPApp {
       }
     };
 
+    // Helper to render neutral usage count without color indicator or recommendations (for literacies and areas)
+    const renderNeutralUsageCount = (usage) => {
+      return `<span class="usage-badge usage-neutral" title="Přiřazeno v ${usage} ${usage === 1 ? 'bloku' : 'blocích'}">${formatBlocks(usage)}</span>`;
+    };
+
     // Filter by usage
-    const matchesUsageFilter = (usage) => {
+    const matchesUsageFilter = (usage, itemType) => {
+      if (['literacy', 'area'].includes(itemType)) return true;
       if (this.catalogUsageFilter === 'UNUSED') return usage === 0;
       if (this.catalogUsageFilter === 'BALANCED') return usage >= 1 && usage <= 3;
       if (this.catalogUsageFilter === 'FREQUENT') return usage >= 4;
@@ -904,7 +935,7 @@ class SVPApp {
     const renderCategory = (catKey, icon, title, items, itemType, renderItemFn) => {
       const matchingItems = items.filter(item => {
         const usage = getUsage(itemType, item.code);
-        if (!matchesUsageFilter(usage)) return false;
+        if (!matchesUsageFilter(usage, itemType)) return false;
         if (!q) return true;
         return (item.name || item.title || '').toLowerCase().includes(q) || (item.code || '').toLowerCase().includes(q);
       });
@@ -961,10 +992,10 @@ class SVPApp {
           <span class="draggable-handle">⋮⋮</span>
           <span>${lit.icon}</span>
           <div style="flex: 1; min-width: 0;">
-            <div style="font-weight: 600; font-size: 0.8rem;">${lit.name}</div>
+            <div style="font-weight: 600; font-size: 0.8rem; line-height: 1.35;">${lit.name}</div>
             <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px;">
               <span class="code-badge">${lit.code}</span>
-              ${renderUsageBadge(usage)}
+              ${renderNeutralUsageCount(usage)}
             </div>
           </div>
           <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm);" title="Přiřadit do bloku" onclick="event.stopPropagation(); window.svpApp.promptAssignItem('literacy', '${lit.code}')">+ Blok</button>
@@ -982,10 +1013,10 @@ class SVPApp {
           <span class="draggable-handle">⋮⋮</span>
           <span>${area.icon}</span>
           <div style="flex: 1; min-width: 0;">
-            <div style="font-weight: 600; font-size: 0.8rem;">${area.name}</div>
+            <div style="font-weight: 600; font-size: 0.8rem; line-height: 1.35;">${area.name}</div>
             <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px;">
               <span class="code-badge">${area.code}</span>
-              ${renderUsageBadge(usage)}
+              ${renderNeutralUsageCount(usage)}
             </div>
           </div>
           <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm);" title="Přiřadit do bloku" onclick="event.stopPropagation(); window.svpApp.promptAssignItem('area', '${area.code}')">+ Blok</button>
@@ -1096,6 +1127,13 @@ class SVPApp {
     }
   }
 
+  setBlockOfferTab(blockId, tab) {
+    this.blockOfferTabs.set(blockId, tab);
+    const doc = store.getDoc();
+    this.renderBlocksBuilder(doc);
+    dnd.init();
+  }
+
   addBlockCenter(blockId) {
     const block = store.getDoc().blocks.find(b => b.id === blockId);
     if (!block) return;
@@ -1107,7 +1145,9 @@ class SVPApp {
       older: ''
     });
     store.updateBlock(blockId, { centersOfActivity: centers });
+    this.blockOfferTabs.set(blockId, 'centers');
     this.renderBlocksBuilder(store.getDoc());
+    dnd.init();
   }
 
   deleteBlockCenter(blockId, centerIdx) {
@@ -1154,6 +1194,7 @@ class SVPApp {
 
   openAddActivityModal(blockId) {
     this.selectedBlockId = blockId;
+    this.blockOfferTabs.set(blockId, 'activities');
     const modal = document.getElementById('activity-modal');
     if (!modal) return;
     document.getElementById('activity-form-title').value = '';
@@ -1173,6 +1214,7 @@ class SVPApp {
     }
 
     if (this.selectedBlockId) {
+      this.blockOfferTabs.set(this.selectedBlockId, 'activities');
       store.addActivityToBlock(this.selectedBlockId, { title, type, desc });
       this.showToast('Činnost byla přidána do bloku');
       this.closeModal('activity-modal');

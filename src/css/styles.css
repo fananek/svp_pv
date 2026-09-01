@@ -800,6 +800,13 @@ body {
   border: 1px solid rgba(245, 158, 11, 0.4);
 }
 
+.usage-badge.usage-neutral {
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+}
+
 [data-theme="dark"] .usage-badge.usage-none {
   background: rgba(239, 68, 68, 0.25);
   color: #fca5a5;
@@ -836,6 +843,46 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.offer-toggle-group {
+  display: inline-flex;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+
+.offer-toggle-btn {
+  padding: 4px 10px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border-radius: calc(var(--radius-md) - 2px);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.offer-toggle-btn:hover {
+  color: var(--text-main);
+}
+
+.offer-toggle-btn.is-active {
+  background: var(--bg-card);
+  color: var(--primary-600);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .offer-toggle-btn.is-active {
+  background: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.35);
 }
 
 .block-form-section textarea.form-textarea {

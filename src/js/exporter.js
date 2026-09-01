@@ -290,20 +290,34 @@ export class SVPExporter {
         ${(b.outcomes || []).map(code => `<li>${getOutcomeTitle(code)}</li>`).join('') || '<li>Žádné konkrétní výstupy nejsou přiřazeny.</li>'}
       </ul>
 
-      ${b.centersOfActivity && b.centersOfActivity.length > 0 ? `
-        <h4 style="color: #1e3a8a; margin: 16px 0 8px 0; font-size: 11pt; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">🎯 Vzdělávací nabídka v centrech aktivit s věkovou gradací (2–7 let):</h4>
-        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
-          ${b.centersOfActivity.map(c => `
-            <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 12px;">
-              <strong style="color: #2563eb; font-size: 10.5pt;">${c.center}</strong>
-              <ul style="margin: 6px 0 0 16px; padding: 0; font-size: 9.5pt; line-height: 1.5;">
-                <li><strong>Mladší děti (2–3 roky):</strong> ${c.younger}</li>
-                <li><strong>Střední věk (4–5 let):</strong> ${c.middle}</li>
-                <li><strong>Předškoláci (6–7 let):</strong> ${c.older}</li>
-              </ul>
+      ${(b.centersOfActivity && b.centersOfActivity.length > 0) || (b.activities && b.activities.length > 0) ? `
+        <h4 style="color: #1e3a8a; margin: 16px 0 8px 0; font-size: 11pt; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">🎲 Vzdělávací nabídka:</h4>
+        
+        ${b.activities && b.activities.length > 0 ? `
+          <p style="margin: 8px 0 4px 0;"><strong>Pedagogické činnosti a hry:</strong></p>
+          ${b.activities.map(act => `
+            <div class="activity-box">
+              <strong>${act.title}</strong> <em>(${act.type})</em>
+              <div>${act.desc}</div>
             </div>
           `).join('')}
-        </div>
+        ` : ''}
+
+        ${b.centersOfActivity && b.centersOfActivity.length > 0 ? `
+          <p style="margin: 8px 0 4px 0;"><strong>Centra aktivit s věkovou diferenciací (2–7 let):</strong></p>
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+            ${b.centersOfActivity.map(c => `
+              <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 12px;">
+                <strong style="color: #2563eb; font-size: 10.5pt;">${c.center}</strong>
+                <ul style="margin: 6px 0 0 16px; padding: 0; font-size: 9.5pt; line-height: 1.5;">
+                  <li><strong>Mladší děti (2–3 roky):</strong> ${c.younger}</li>
+                  <li><strong>Střední věk (4–5 let):</strong> ${c.middle}</li>
+                  <li><strong>Předškoláci (6–7 let):</strong> ${c.older}</li>
+                </ul>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
       ` : ''}
 
       ${b.digitalSafety ? `
@@ -337,16 +351,6 @@ export class SVPExporter {
             ${b.autoevaluationQuestions.map(q => `<li>${q}</li>`).join('')}
           </ul>
         </div>
-      ` : ''}
-
-      ${b.activities && b.activities.length > 0 ? `
-        <p style="margin-bottom: 4px;"><strong>Příklady klíčových aktivit a her:</strong></p>
-        ${b.activities.map(act => `
-          <div class="activity-box">
-            <strong>${act.title}</strong> <em>(${act.type})</em>
-            <div>${act.desc}</div>
-          </div>
-        `).join('')}
       ` : ''}
     </div>
   `).join('')}
