@@ -1063,18 +1063,26 @@ body {
 
 .block-title-input {
   font-family: var(--font-heading);
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-main);
-  padding: 4px 8px;
+  padding: 4px 6px;
   border-radius: var(--radius-sm);
   width: 100%;
+  box-sizing: border-box;
+  resize: none;
+  overflow-y: hidden;
+  field-sizing: content;
+  line-height: 1.35;
+  min-height: 32px;
+  display: block;
 }
 
 .block-title-input:hover, .block-title-input:focus {
   background-color: var(--bg-subtle);
+  border-color: var(--border-color);
   outline: none;
 }
 

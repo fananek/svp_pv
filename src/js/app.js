@@ -685,9 +685,9 @@ class SVPApp {
             ▼
           </button>
           <div style="flex: 1; min-width: 0;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 1.1rem; font-weight: 800; color: var(--primary-600); flex-shrink: 0;">${idx + 1}.</span>
-              <input type="text" class="block-title-input" value="${b.title}" placeholder="Název bloku..." onclick="event.stopPropagation()" onchange="window.svpApp.updateBlockTitle('${b.id}', this.value)">
+            <div style="display: flex; align-items: flex-start; gap: 8px;">
+              <span style="font-size: 1.15rem; font-weight: 800; color: var(--primary-600); flex-shrink: 0; padding-top: 3px;">${idx + 1}.</span>
+              <textarea class="block-title-input" rows="1" placeholder="Název bloku..." onclick="event.stopPropagation()" onchange="window.svpApp.updateBlockTitle('${b.id}', this.value)" oninput="window.svpApp.autoResizeTextarea(this)">${b.title}</textarea>
             </div>
             <div class="block-summary-badges">
               ${compCount > 0 ? `<span class="block-summary-tag">🧠 ${formatPlural(compCount, 'kompetence', 'kompetence', 'kompetencí')}</span>` : ''}
