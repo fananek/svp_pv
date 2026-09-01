@@ -942,7 +942,7 @@ class SVPApp {
           <span class="draggable-handle">⋮⋮</span>
           <span>${comp.icon}</span>
           <div style="flex: 1; min-width: 0;">
-            <div style="font-weight: 600; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${comp.name}</div>
+            <div style="font-weight: 600; font-size: 0.8rem; line-height: 1.35;">${comp.name}</div>
             <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px;">
               <span class="code-badge">${comp.code}</span>
               ${renderUsageBadge(usage)}
