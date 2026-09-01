@@ -46,13 +46,54 @@ class SVPApp {
   }
 
   bindNavigation() {
+    const mobileToggle = document.getElementById('mobile-menu-toggle');
+    const closeBtn = document.getElementById('sidebar-close-btn');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const sidebar = document.getElementById('app-sidebar');
+
+    const toggleSidebar = (open) => {
+      const isOpen = open !== undefined ? open : !sidebar.classList.contains('open');
+      sidebar.classList.toggle('open', isOpen);
+      backdrop.classList.toggle('active', isOpen);
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    };
+
+    if (mobileToggle) {
+      mobileToggle.addEventListener('click', () => toggleSidebar(true));
+    }
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => toggleSidebar(false));
+    }
+    if (backdrop) {
+      backdrop.addEventListener('click', () => toggleSidebar(false));
+    }
+
     document.querySelectorAll('[data-view-target]').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const targetView = link.getAttribute('data-view-target');
+        toggleSidebar(false);
         this.switchView(targetView);
       });
     });
+
+    // Mobile catalog toggle in builder
+    const catalogToggleBtn = document.getElementById('btn-toggle-mobile-catalog');
+    if (catalogToggleBtn) {
+      catalogToggleBtn.addEventListener('click', () => {
+        const catalogSidebar = document.getElementById('builder-catalog-sidebar');
+        const badge = document.getElementById('mobile-catalog-state-badge');
+        if (catalogSidebar) {
+          catalogSidebar.classList.toggle('is-mobile-open');
+          const isOpen = catalogSidebar.classList.contains('is-mobile-open');
+          if (badge) {
+            badge.textContent = isOpen ? 'Skrýt katalog' : 'Zobrazit katalog';
+            badge.style.background = isOpen ? 'rgba(239, 68, 68, 0.15)' : 'var(--primary-50)';
+            badge.style.color = isOpen ? '#dc2626' : 'var(--primary-600)';
+          }
+        }
+      });
+    }
   }
 
   switchView(viewId) {
@@ -63,6 +104,12 @@ class SVPApp {
     document.querySelectorAll('[data-view-target]').forEach(link => {
       link.classList.toggle('active', link.getAttribute('data-view-target') === viewId);
     });
+
+    const sidebar = document.getElementById('app-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (sidebar) sidebar.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('active');
+    document.body.style.overflow = '';
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
     this.render();
@@ -342,20 +389,20 @@ class SVPApp {
 
     container.innerHTML = `
       <div class="card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);">
-        <div style="display: flex; justify-content: space-between; align-items: start;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
           <div>
             <span class="header-tag">${doc.tag || 'Aktivní program'}</span>
-            <h2 style="font-size: 1.5rem; margin-top: 10px; color: var(--text-main);">„${doc.schoolData.mottoName || 'Školní vzdělávací program'}“</h2>
-            <p style="color: var(--text-muted); font-size: 0.95rem;">${doc.schoolData.schoolName || 'Mateřská škola'} | Zpracovatel: ${doc.schoolData.author || 'Pedagogický tým'}</p>
+            <h2 style="font-size: 1.4rem; margin-top: 10px; color: var(--text-main); line-height: 1.3;">„${doc.schoolData.mottoName || 'Školní vzdělávací program'}“</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">${doc.schoolData.schoolName || 'Mateřská škola'} | Zpracovatel: ${doc.schoolData.author || 'Pedagogický tým'}</p>
           </div>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn btn-secondary" onclick="window.svpApp.switchView('preview-export')">📄 Náhled a Export</button>
-            <button class="btn btn-primary" onclick="window.svpApp.switchView('blocks-builder')">✏️ Upravit bloky</button>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="window.svpApp.switchView('preview-export')">📄 Náhled a Export</button>
+            <button class="btn btn-primary btn-sm" onclick="window.svpApp.switchView('blocks-builder')">✏️ Upravit bloky</button>
           </div>
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px;">
         <div class="card" style="padding: 16px; margin-bottom: 0;">
           <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">INTEGROVANÉ BLOKY</span>
           <div style="font-size: 2rem; font-weight: 800; color: var(--primary-600); margin-top: 4px;">${blocksCount}</div>
@@ -373,7 +420,7 @@ class SVPApp {
         </div>
         <div class="card" style="padding: 16px; margin-bottom: 0;">
           <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">PLATNOST DOKUMENTU</span>
-          <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-top: 8px;">${doc.schoolData.validFrom || '-'} až ${doc.schoolData.validTo || '-'}</div>
+          <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-top: 8px;">${doc.schoolData.validFrom || '-'} až ${doc.schoolData.validTo || '-'}</div>
           <span style="font-size: 0.75rem; color: var(--text-light);">Č.j.: ${doc.schoolData.refNumber || 'MS/2026/01'}</span>
         </div>
       </div>
@@ -383,51 +430,51 @@ class SVPApp {
         <div class="card-header">
           <div class="card-title">🗺 Průvodce kapitolami ŠVP PV (podle metodiky MŠMT)</div>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
           <div class="draggable-item" onclick="window.svpApp.switchView('identification')">
-            <span style="font-size: 1.4rem;">🏛</span>
+            <span style="font-size: 1.3rem;">🏛</span>
             <div>
               <strong>1. Identifikační údaje školy</strong>
               <div style="font-size: 0.75rem; color: var(--text-muted);">Název, adresa, IČO, ředitel, č.j., platnost</div>
             </div>
           </div>
           <div class="draggable-item" onclick="window.svpApp.switchView('school-char')">
-            <span style="font-size: 1.4rem;">🏫</span>
+            <span style="font-size: 1.3rem;">🏫</span>
             <div>
               <strong>2. Charakteristika školy a tříd</strong>
               <div style="font-size: 0.75rem; color: var(--text-muted);">Lokalita, prostory, zahrada, uspořádání tříd</div>
             </div>
           </div>
           <div class="draggable-item" onclick="window.svpApp.switchView('team-staff')">
-            <span style="font-size: 1.4rem;">👩‍🏫</span>
+            <span style="font-size: 1.3rem;">👩‍🏫</span>
             <div>
               <strong>3. Pedagogický tým</strong>
               <div style="font-size: 0.75rem; color: var(--text-muted);">Učitelé, asistenti pedagoga, DVPP rozvoj</div>
             </div>
           </div>
           <div class="draggable-item" onclick="window.svpApp.switchView('conditions')">
-            <span style="font-size: 1.4rem;">🏡</span>
+            <span style="font-size: 1.3rem;">🏡</span>
             <div>
               <strong>4. Podmínky vzdělávání</strong>
               <div style="font-size: 0.75rem; color: var(--text-muted);">Psychosociální, životospráva, věcné podmínky</div>
             </div>
           </div>
           <div class="draggable-item" onclick="window.svpApp.switchView('curriculum-char')">
-            <span style="font-size: 1.4rem;">🌟</span>
+            <span style="font-size: 1.3rem;">🌟</span>
             <div>
               <strong>5. Vzdělávací program a vize</strong>
               <div style="font-size: 0.75rem; color: var(--text-muted);">Vize, strategie rozvoje kompetencí, diagnostika</div>
             </div>
           </div>
           <div class="draggable-item" onclick="window.svpApp.switchView('blocks-builder')">
-            <span style="font-size: 1.4rem;">🧩</span>
+            <span style="font-size: 1.3rem;">🧩</span>
             <div>
               <strong>6. Integrované bloky & Činnosti</strong>
               <div style="font-size: 0.75rem; color: var(--text-muted);">Vizuální tvůrce s vazbami a Drag & Drop</div>
             </div>
           </div>
           <div class="draggable-item" onclick="window.svpApp.switchView('autoevaluation')">
-            <span style="font-size: 1.4rem;">📊</span>
+            <span style="font-size: 1.3rem;">📊</span>
             <div>
               <strong>7. Autoevaluace a hodnocení</strong>
               <div style="font-size: 0.75rem; color: var(--text-muted);">Oblasti, kritéria, nástroje a harmonogram</div>
@@ -444,34 +491,36 @@ class SVPApp {
 
     const classes = doc.schoolData.classes || [];
     listContainer.innerHTML = `
-      <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+      <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
         <span style="font-size: 0.9rem; font-weight: 600;">Seznam tříd mateřské školy (${classes.length})</span>
         <button class="btn btn-sm btn-primary" id="btn-add-class">+ Přidat třídu</button>
       </div>
-      <table class="meta-table" style="width:100%; border-collapse: collapse; margin-bottom: 16px;">
-        <thead>
-          <tr style="background-color: var(--bg-subtle);">
-            <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left;">Název třídy</th>
-            <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left;">Věková skupina</th>
-            <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left;">Kapacita</th>
-            <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left;">Typ uspořádání</th>
-            <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: center; width: 60px;">Akce</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${classes.map((cls, idx) => `
-            <tr>
-              <td style="padding: 8px 12px; border: 1px solid var(--border-color); font-weight: 600;">${cls.name}</td>
-              <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${cls.ageRange}</td>
-              <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${cls.count} dětí</td>
-              <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${cls.type}</td>
-              <td style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: center;">
-                <button class="btn-icon-only" style="color: var(--danger-500); padding: 4px;" onclick="window.svpApp.removeClass(${idx})" title="Smazat třídu">🗑</button>
-              </td>
+      <div class="table-responsive">
+        <table class="meta-table" style="width:100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background-color: var(--bg-subtle);">
+              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left;">Název třídy</th>
+              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left;">Věková skupina</th>
+              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left;">Kapacita</th>
+              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left;">Typ uspořádání</th>
+              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: center; width: 60px;">Akce</th>
             </tr>
-          `).join('') || '<tr><td colspan="5" style="text-align: center; padding: 14px; color: var(--text-muted);">Zatím nejsou přidány žádné třídy.</td></tr>'}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            ${classes.map((cls, idx) => `
+              <tr>
+                <td style="padding: 8px 12px; border: 1px solid var(--border-color); font-weight: 600;">${cls.name}</td>
+                <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${cls.ageRange}</td>
+                <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${cls.count} dětí</td>
+                <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${cls.type}</td>
+                <td style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: center;">
+                  <button class="btn-icon-only" style="color: var(--danger-500); padding: 4px;" onclick="window.svpApp.removeClass(${idx})" title="Smazat třídu">🗑</button>
+                </td>
+              </tr>
+            `).join('') || '<tr><td colspan="5" style="text-align: center; padding: 14px; color: var(--text-muted);">Zatím nejsou přidány žádné třídy.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
     `;
 
     const addBtn = document.getElementById('btn-add-class');
@@ -601,10 +650,12 @@ class SVPApp {
               ${b.timeFrame ? `<span class="block-summary-tag" style="background: var(--bg-subtle);">🗓 ${b.timeFrame}</span>` : ''}
             </div>
           </div>
-          <div style="display: flex; gap: 6px; align-items: center;" onclick="event.stopPropagation()">
-            <input type="text" class="form-input" style="font-size: 0.8rem; padding: 4px 8px; width: 140px;" value="${b.timeFrame}" placeholder="Časový rámec..." onchange="window.svpApp.updateBlockTime('${b.id}', this.value)">
+          <div style="display: flex; gap: 4px; align-items: center;" onclick="event.stopPropagation()">
+            <button class="btn-icon-only" style="padding: 4px 6px; font-size: 0.72rem; line-height: 1;" onclick="window.svpApp.moveBlock(${idx}, -1)" title="Posunout blok nahoru" ${idx === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}>▲</button>
+            <button class="btn-icon-only" style="padding: 4px 6px; font-size: 0.72rem; line-height: 1;" onclick="window.svpApp.moveBlock(${idx}, 1)" title="Posunout blok dolů" ${idx === blocks.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}>▼</button>
+            <input type="text" class="form-input" style="font-size: 0.8rem; padding: 4px 8px; width: 130px;" value="${b.timeFrame}" placeholder="Časový rámec..." onchange="window.svpApp.updateBlockTime('${b.id}', this.value)">
             <button class="btn btn-sm btn-secondary" onclick="window.svpApp.openAddActivityModal('${b.id}')">+ Činnost</button>
-            <button class="btn-icon-only" style="color: var(--danger-500);" onclick="window.svpApp.deleteBlock('${b.id}')" title="Smazat blok">🗑</button>
+            <button class="btn-icon-only" style="color: var(--danger-500); padding: 4px 8px;" onclick="window.svpApp.deleteBlock('${b.id}')" title="Smazat blok">🗑</button>
           </div>
         </div>
 
@@ -1157,37 +1208,69 @@ class SVPApp {
     modal.classList.add('active');
   }
 
+  moveBlock(idx, direction) {
+    const destIdx = idx + direction;
+    const doc = store.getDoc();
+    if (destIdx >= 0 && destIdx < doc.blocks.length) {
+      store.reorderBlocks(idx, destIdx);
+      this.showToast(`Blok byl posunut ${direction < 0 ? 'nahoru' : 'dolů'}`);
+      this.render();
+    }
+  }
+
   promptAssignItem(type, id) {
     const doc = store.getDoc();
     const blocks = doc.blocks || [];
     if (blocks.length === 0) {
-      alert('Nejprve vytvořte alespoň jeden integrovaný vzdělávací blok.');
+      this.showToast('Nejprve vytvořte alespoň jeden integrovaný blok.', '⚠️');
       return;
     }
 
-    const options = blocks.map((b, i) => `${i + 1}. ${b.title || 'Blok ' + (i + 1)}`).join('\n');
-    const answer = prompt(`Vyberte číslo bloku, ke kterému chcete přiřadit [${id}]:\n\n${options}`, '1');
-    if (!answer) return;
+    const modal = document.getElementById('assign-block-modal');
+    const select = document.getElementById('assign-modal-block-select');
+    const titleEl = document.getElementById('assign-modal-item-title');
+    const confirmBtn = document.getElementById('btn-confirm-assign-block');
 
-    const num = parseInt(answer.trim(), 10);
-    if (isNaN(num) || num < 1 || num > blocks.length) {
-      alert('Zadáno neplatné číslo bloku.');
-      return;
+    if (!modal || !select || !titleEl || !confirmBtn) return;
+
+    let itemDesc = id;
+    if (type === 'competency' && RVP_COMPETENCIES[id]) {
+      itemDesc = `${RVP_COMPETENCIES[id].icon} ${RVP_COMPETENCIES[id].name} (${id})`;
+    } else if (type === 'literacy' && RVP_LITERACIES[id]) {
+      itemDesc = `${RVP_LITERACIES[id].icon} ${RVP_LITERACIES[id].name} (${id})`;
+    } else if (type === 'area' && RVP_AREAS[id]) {
+      itemDesc = `${RVP_AREAS[id].icon} ${RVP_AREAS[id].name} (${id})`;
+    } else if (type === 'outcome') {
+      const out = RVP_OUTCOMES.find(o => o.code === id);
+      if (out) itemDesc = `🎯 ${out.title} (${out.code})`;
     }
 
-    const targetBlock = blocks[num - 1];
-    if (type === 'outcome') {
-      store.toggleBlockOutcome(targetBlock.id, id);
-    } else if (type === 'competency') {
-      store.toggleBlockCompetency(targetBlock.id, id);
-    } else if (type === 'literacy') {
-      store.toggleBlockLiteracy(targetBlock.id, id);
-    } else if (type === 'area') {
-      store.toggleBlockArea(targetBlock.id, id);
-    }
+    titleEl.textContent = itemDesc;
+    select.innerHTML = blocks.map((b, i) => `
+      <option value="${b.id}">${i + 1}. ${b.title || 'Blok ' + (i + 1)}</option>
+    `).join('');
 
-    this.showToast(`Položka ${id} byla přiřazena k bloku ${num}. ${targetBlock.title}`);
-    this.render();
+    confirmBtn.onclick = () => {
+      const targetBlockId = select.value;
+      const targetBlock = blocks.find(b => b.id === targetBlockId);
+      if (!targetBlock) return;
+
+      if (type === 'outcome') {
+        store.toggleBlockOutcome(targetBlock.id, id);
+      } else if (type === 'competency') {
+        store.toggleBlockCompetency(targetBlock.id, id);
+      } else if (type === 'literacy') {
+        store.toggleBlockLiteracy(targetBlock.id, id);
+      } else if (type === 'area') {
+        store.toggleBlockArea(targetBlock.id, id);
+      }
+
+      this.closeModal('assign-block-modal');
+      this.showToast(`Položka přiřazena k bloku: ${targetBlock.title}`);
+      this.render();
+    };
+
+    modal.classList.add('active');
   }
 
   openTemplateModal() {

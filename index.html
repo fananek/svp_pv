@@ -11,8 +11,11 @@
 </head>
 <body>
   <div class="app-container">
-    <!-- Left Navigation Sidebar -->
-    <aside class="app-sidebar">
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <!-- Navigation Sidebar (Desktop sticky & Mobile off-canvas drawer) -->
+    <aside class="app-sidebar" id="app-sidebar">
       <div class="sidebar-header">
         <a href="#" class="brand-logo">
           <div class="brand-icon" id="sidebar-brand-icon">🌟</div>
@@ -21,6 +24,7 @@
             <span>Asistent pedagoga MŠ</span>
           </div>
         </a>
+        <button class="btn-icon-only sidebar-close-btn" id="sidebar-close-btn" aria-label="Zavřít navigaci">✕</button>
       </div>
 
       <nav class="sidebar-nav">
@@ -89,17 +93,22 @@
       <!-- Top Sticky Header -->
       <header class="top-header">
         <div class="header-title-area">
+          <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Otevřít navigaci">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
           <h2 class="header-title" id="app-active-title">Školní vzdělávací program PV</h2>
         </div>
         <div class="header-actions">
-          <button class="btn btn-secondary btn-sm" id="btn-load-template">📂 Vzorové šablony</button>
-          <button class="btn btn-secondary btn-sm" id="btn-new-doc">📄 Nový ŠVP</button>
-          <button class="btn btn-secondary btn-sm" id="btn-export-json" title="Stáhnout záložní soubor projektu">💾 Uložit projekt (.svppv)</button>
-          <label class="btn btn-secondary btn-sm" style="cursor: pointer;" title="Otevřít uložený projekt">
-            📂 Otevřít projekt
+          <button class="btn btn-secondary btn-sm" id="btn-load-template" title="Vzorové šablony ŠVP">📂 <span class="btn-text">Šablony</span></button>
+          <button class="btn btn-secondary btn-sm" id="btn-new-doc" title="Vytvořit nový prázdný ŠVP">📄 <span class="btn-text">Nový</span></button>
+          <button class="btn btn-secondary btn-sm" id="btn-export-json" title="Stáhnout záložní soubor projektu (.svppv)">💾 <span class="btn-text">Uložit</span></button>
+          <label class="btn btn-secondary btn-sm" style="cursor: pointer;" title="Otevřít uložený projekt (.svppv)">
+            📂 <span class="btn-text">Otevřít</span>
             <input type="file" id="input-import-json" accept=".json,.svppv" style="display: none;">
           </label>
-          <button class="btn btn-primary btn-sm" id="btn-print-doc">🖨 Tisk / PDF</button>
+          <button class="btn btn-primary btn-sm" id="btn-print-doc" title="Tisk nebo export do PDF">🖨 <span class="btn-text">Tisk</span></button>
           <button class="btn-icon-only" id="theme-toggle-btn" title="Přepnout tmavý/světlý režim">🌙</button>
         </div>
       </header>
@@ -307,9 +316,15 @@
 
         <!-- VIEW 7: 6. INTEGROVANÉ BLOKY (DRAG & DROP BUILDER) -->
         <section class="tab-view" id="view-blocks-builder">
+          <div class="mobile-catalog-banner">
+            <button class="btn btn-secondary btn-block" id="btn-toggle-mobile-catalog">
+              <span>🎯 Katalog RVP PV</span>
+              <span id="mobile-catalog-state-badge" class="badge">Zobrazit katalog</span>
+            </button>
+          </div>
           <div class="builder-layout">
             <!-- Left draggable catalog -->
-            <aside class="catalog-sidebar">
+            <aside class="catalog-sidebar" id="builder-catalog-sidebar">
               <div class="catalog-sidebar-header">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
                   <div style="font-family: var(--font-heading); font-size: 1rem; font-weight: 700;">
@@ -470,6 +485,25 @@
       <div id="outcome-modal-body"></div>
       <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
         <button class="btn btn-secondary" onclick="window.svpApp.closeModal('outcome-modal')">Zavřít</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ASSIGN TO BLOCK (Mobile & Touch Friendly) -->
+  <div class="modal-overlay" id="assign-block-modal">
+    <div class="modal-content">
+      <div class="card-header">
+        <div class="card-title">🧩 Přiřadit do integrovaného bloku</div>
+        <button class="btn-icon-only" onclick="window.svpApp.closeModal('assign-block-modal')">✕</button>
+      </div>
+      <p id="assign-modal-item-title" style="font-size: 0.9rem; font-weight: 600; margin-bottom: 12px; color: var(--primary-600);"></p>
+      <div class="form-group">
+        <label class="form-label">Vyberte cílový integrovaný blok:</label>
+        <select class="form-select" id="assign-modal-block-select"></select>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px;">
+        <button class="btn btn-secondary" onclick="window.svpApp.closeModal('assign-block-modal')">Zrušit</button>
+        <button class="btn btn-primary" id="btn-confirm-assign-block">Přiřadit do bloku</button>
       </div>
     </div>
   </div>

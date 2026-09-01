@@ -6,7 +6,7 @@
   "color": "#6366f1",
   "schoolData": {
     "docTitle": "Školní vzdělávací program pro předškolní vzdělávání",
-    "mottoName": "Každý den s úsměvem - objevujeme svět",
+    "mottoName": "Každý den s úsměvem objevujeme svět",
     "schoolName": "Mateřská škola Branišovice, okres Brno-venkov, příspěvková organizace",
     "schoolAddress": "Branišovice 57, 671 77 Branišovice",
     "ico": "75009382",
@@ -44,36 +44,72 @@
   "blocks": [
     {
       "id": "bra-block-1",
-      "title": "V naší rodinné školičce – Kamarádi a první objevy",
-      "timeFrame": "Září – Říjen (8 týdnů)",
-      "purpose": "Usnadnit dětem adaptaci v mateřské škole, nastavit pravidla přátelského soužití, poznávat své tělo, emoce a seznámit se s digitálním fotoaparátem a zrcadlem.",
+      "title": "V naší rodinné školičce – Kamarádi, bezpečí a první objevy",
+      "timeFrame": "4–6 týdnů (září–říjen; flexibilní dle adaptačních potřeb dětí)",
+      "situationalImpulse": "Nástup dětí po prázdninách a příchod nových kamarádů do rodinné věkově smíšené třídy. Děti zkoumají prostor třídy, svou značku, fotografují se u své skříňky a v zrcadle zkoumají své emoce a nálady.",
+      "purpose": "Vytvořit bezpečné klima pro bezproblémovou adaptaci všech věkových skupin (včetně 2letých dětí), ukotvit pravidla přátelského soužití, posílit sebepoznání, emoční stabilitu a seznámit se s digitálním fotoaparátem a zvukovým panelem jako nástrojem pro zachycení společných chvil.",
       "subTopics": [
-        "Vítejte u nás v Branišovicích",
-        "Kdo jsem já a co cítím",
-        "Pravidla naší party",
-        "Můj digitální autoportrét"
+        "Vítejte u nás v Branišovicích – Kdo jsem já a moji kamarádi",
+        "Moje tělo, smysly a zrcadlo emocí",
+        "Pravidla naší party (Strom přátelství a bezpečí)",
+        "Můj první digitální autoportrét a rodinné album"
       ],
       "competencies": [
-        "KKU",
-        "KKK",
         "KOS",
-        "KDI"
+        "KKK",
+        "KKU",
+        "KDI",
+        "KOB"
       ],
       "literacies": [
-        "CGR"
+        "CGR",
+        "MGR"
       ],
       "areas": [
-        "DJT",
         "DJP",
-        "DDS"
+        "DDS",
+        "DJT"
       ],
       "outcomes": [
-        "DJT-TSB-000-PV1-001",
         "DJP-SAE-000-PV1-001",
         "DDS-ANS-000-PV1-001",
-        "KDI-000-000-PV1-001",
-        "KKK-000-000-PV1-001"
+        "DJT-TSB-000-PV1-001",
+        "KKK-000-000-PV1-001",
+        "KOS-000-000-PV1-001",
+        "KDI-000-000-PV1-001"
       ],
+      "centersOfActivity": [
+        {
+          "center": "Centrum Věda, pokusy a digitální svět",
+          "younger": "Zkoumání vlastního odrazu v zrcadle a mačkání zvukových kolíčků s nahranými zvuky smíchu a zvířátek.",
+          "middle": "Digitální autoportrét – fotografování kamaráda dětským fotoaparátem a tisk identifikační kartičky na skříňku.",
+          "older": "Digitální fotokomiks „Jak pomoci smutnému kamarádovi“ – řazení pořízených fotografií do logického příběhu."
+        },
+        {
+          "center": "Centrum Kostky, manipulace a prostorová orientace",
+          "younger": "Stavění měkkých pelíšků a domečků z molitanových a dřevěných kostek pro oblíbeného plyšáka.",
+          "middle": "Stavba branišovické školky a zahrady z dřevěných kostek s přiřazováním značek dětí ke skříňkám.",
+          "older": "Konstrukce bezpečného bludiště třídy s překážkami a kresba jednoduchého půdorysu třídy s piktogramy pravidel."
+        },
+        {
+          "center": "Centrum Ateliér, knihy, písmena a dramatizace",
+          "younger": "Otiskování dlaní prstovými barvami na společný „Kmen přátelství a bezpečí“.",
+          "middle": "Kresba své rodiny a vyprávění v komunitním kruhu za pomoci mluvícího kamínku.",
+          "older": "Tvorba osobní knihy „Kdo jsem já“ s grafomotorickými listy a vlastnoruční kresbou piktogramů třídních pravidel."
+        }
+      ],
+      "digitalSafety": "Uplatňování pravidla respektu k soukromí kamaráda: „Než tě vyfotím, zeptám se tě.“ Práce se zvukovým panelem s ohledem na klidové zóny třídy.",
+      "diagnostics": {
+        "observations": [
+          "Míra a rychlost adaptace na nové prostředí, navazování očního kontaktu a komunikace.",
+          "Schopnost pojmenovat základní emoce (radost, smutek, strach) u sebe i druhých.",
+          "Respektování domluvených pravidel třídy a zapojení do společného úklidu hraček."
+        ],
+        "portfolioItems": [
+          "Pracovní list: Autoportrét s kresbou oblíbené hračky a otiskem prstu.",
+          "Fotografie dítěte u jeho značky s vlastním komentářem o tom, co má ve školce nejraději."
+        ]
+      },
       "activities": [
         {
           "id": "bra-act-1",
@@ -87,28 +123,34 @@
           "type": "Komunitní kruh",
           "desc": "Společné vytvoření stromu pravidel třídy a nahrání krátkého hlasového vzkazu každého dítěte na digitální zvukový panel."
         }
+      ],
+      "autoevaluationQuestions": [
+        "Proběhla adaptace nejmenších dvouletých dětí plynule a bez zbytečného stresu?",
+        "Zapojili se starší předškoláci aktivně do pomoci mladším spolužákům při sebeobsluze?"
       ]
     },
     {
       "id": "bra-block-2",
       "title": "Kouzla podzimní přírody a badatelská laboratoř",
-      "timeFrame": "Listopad – Prosinec (8 týdnů)",
-      "purpose": "Poznávat proměny podzimní přírody na Jižní Moravě, zkoumat listy a plody digitálním mikroskopem a připravovat se na adventní čas.",
+      "timeFrame": "5–8 týdnů (říjen–prosinec; flexibilní dle vývoje počasí a úrody)",
+      "situationalImpulse": "Změna barev na stromech v okolí kostela sv. Vavřince a sběr plodů (ořechy, šípky, dýně, kukuřice) na zahradě školky. Dětská otázka: „Proč listy žloutnou a co je ukryto uvnitř semínka?“",
+      "purpose": "Probouzet v dětech badatelskou zvídavost, prozkoumávat proměny přírody všemi smysly i moderními nástroji (digitální mikroskop, světelný LED stůl), třídit a porovnávat přírodniny a prožívat podzimní tradice a adventní ztišení.",
       "subTopics": [
-        "Podzim na branišovických polích a zahradách",
-        "Svět pod mikroskopem",
-        "Přírodniny a barvy",
-        "Adventní tradice v obci"
+        "Podzim na branišovických polích, sadech a zahradách",
+        "Tajemství listů a semen pod digitálním mikroskopem",
+        "Barvy, tvary a hmotnost v přírodní matematice",
+        "Světlo v temnotě – Martinská světýlka a adventní tradice"
       ],
       "competencies": [
         "KKU",
         "KRP",
         "KDI",
-        "KKT"
+        "KKT",
+        "KOB"
       ],
       "literacies": [
-        "CGR",
-        "MGR"
+        "MGR",
+        "CGR"
       ],
       "areas": [
         "DAS",
@@ -117,10 +159,44 @@
       ],
       "outcomes": [
         "DAS-PSP-000-PV1-001",
+        "DAS-ZPO-000-PV1-001",
         "DJP-MOP-000-PV1-001",
-        "KDI-000-000-PV1-001",
-        "KRP-000-000-PV1-001"
+        "DJP-PME-000-PV1-001",
+        "KRP-000-000-PV1-001",
+        "KKT-000-000-PV1-001"
       ],
+      "centersOfActivity": [
+        {
+          "center": "Centrum Věda, pokusy a digitální svět",
+          "younger": "Smyslové objevování – hmatové krabice s kaštany, šiškami a mechem; třídění podle barvy.",
+          "middle": "Zkoumání žilnatiny listů a slupek plodů USB mikroskopem s projekcí na velkou obrazovku.",
+          "older": "Laboratoř pigmentů – extrakce barviva z listů a badatelský záznam do tabulky proměn barev."
+        },
+        {
+          "center": "Centrum Kostky, manipulace a matematika",
+          "younger": "Vkládání ořechů a kaštanů do misek podle velikosti (malý – velký).",
+          "middle": "Vážení přírodnin na rovnoramenných vahách a řazení listů od nejkratšího po nejdelší.",
+          "older": "Tvorba přírodních mandal (Land Art) s měřením obvodu provázkem a geometrickou symetrií."
+        },
+        {
+          "center": "Centrum Ateliér, knihy a tradice",
+          "younger": "Frotáž listů voskovkami a tiskání jablíčky na dlouhý papírový pás.",
+          "middle": "Výroba svatomartinských lucerniček s průsvitným papírem a míchání krmiva pro ptáčky.",
+          "older": "Stínové a světelné divadlo na LED panelu s vlastním příběhem o zvířátkách chystajících se na zimu."
+        }
+      ],
+      "digitalSafety": "Bezpečná práce s USB mikroskopem a světelným panelem s asistencí pedagoga; střídání práce u mikroskopu s pohybovým pobytem na zahradě a cvičením ostření zraku do dálky.",
+      "diagnostics": {
+        "observations": [
+          "Schopnost třídit přírodniny podle jednoho či více kritérií (barva, velikost, druh).",
+          "Jemná motorika a koordinace ruka-oko při práci s lupou, pinzetou a mikroskopem.",
+          "Zájem o badatelské pokusy a formulování vlastních jednoduchých předpokladů (hypotéz)."
+        ],
+        "portfolioItems": [
+          "Vylisovaný herbářový list s vlastnoruční kresbou detailu žilnatiny.",
+          "Fotodokumentace postavené geometrické mandaly s komentářem dítěte."
+        ]
+      },
       "activities": [
         {
           "id": "bra-act-3",
@@ -134,39 +210,81 @@
           "type": "Esteticko-tvořivá",
           "desc": "Využití světelného LED stolu k vytváření pískových a stínových obrazů s vánoční tematikou."
         }
+      ],
+      "autoevaluationQuestions": [
+        "Byla badatelská laboratoř přístupná a srozumitelná i pro nejmenší děti?",
+        "Podařilo se propojit venkovní sběr přírodnin s navazujícími matematickými a tvořivými činnostmi?"
       ]
     },
     {
       "id": "bra-block-3",
-      "title": "Cestujeme s robotickou včelkou Bee-Bot do světa logiky",
-      "timeFrame": "Leden – Únor (8 týdnů)",
-      "purpose": "Rozvíjet algoritmické a logické myšlení, orientaci v prostoru a bezpečné chování v digitálním světě pomocí robotických včelek.",
+      "title": "Cesty, mapy a zimní tajemství (Od stop ve sněhu po svět logiky)",
+      "timeFrame": "4–7 týdnů (leden–únor; flexibilní dle zimních podmínek a zájmu dětí)",
+      "situationalImpulse": "Pozorování zvířecích stop ve sněhu na školní zahradě a zkoumání cestiček k ptačímu krmítku. Otázka dětí: „Jak zvířátka vědí, kudy jít ke krmítku, když nemají mapu?“",
+      "purpose": "Rozvíjet prostorovou orientaci, logické a algoritmické uvažování, objevovat vlastnosti sněhu a ledu a využívat robotickou včelku Bee-Bot jako smysluplný nástroj pro řešení úkolů v kooperaci vrstevníků.",
       "subTopics": [
-        "Zimní radovánky a pokusy s ledem",
-        "Robotická včelka Bee-Bot na výletě",
-        "Bezpečný digitální svět",
-        "Masopustní veselí"
+        "Stopy ve sněhu a zvířata v zimě",
+        "Laboratoř ledu, sněhu a vody",
+        "Krokování, cesty a orientace v prostoru",
+        "Včelka Bee-Bot na zimní mapě a bezpečný digitální svět"
       ],
       "competencies": [
-        "KKU",
         "KRP",
         "KDI",
-        "KPP"
+        "KKU",
+        "KPP",
+        "KKK"
       ],
       "literacies": [
-        "MGR"
+        "MGR",
+        "CGR"
       ],
       "areas": [
         "DJP",
+        "DAS",
         "DJT",
-        "DAS"
+        "DDS"
       ],
       "outcomes": [
-        "KDI-000-000-PV1-001",
-        "KRP-000-000-PV1-001",
         "DJP-MOP-000-PV1-001",
-        "DAS-PSP-000-PV1-002"
+        "DAS-PSP-000-PV1-002",
+        "DJT-PHM-000-PV1-001",
+        "DDS-KOP-000-PV1-001",
+        "KDI-000-000-PV1-001",
+        "KRP-000-000-PV1-001"
       ],
+      "centersOfActivity": [
+        {
+          "center": "Centrum Věda, pokusy a digitální svět",
+          "younger": "Smyslové zkoumání tání ledu v dlaních, otiskování zvířátek do modelíny a mačkání tlačítka GO na Bee-Botu.",
+          "middle": "Jednoduché programování – sekvence 1–2 kroků k obrázku zvířátka; pokus s rychlostí tání ledu u okna vs. na topení.",
+          "older": "Kódování složité trasy s překážkami pro Blue-Bot/Bee-Bot, hledání a oprava chyby v programu (debugging)."
+        },
+        {
+          "center": "Centrum Kostky, manipulace a prostorová orientace",
+          "younger": "Hmatový chodníček s pěnovými stopami, prolézání tunelu a stavění dlouhých dřevěných kolejí.",
+          "middle": "Pohyb po nalepené čtvercové síti na koberci podle slovních pokynů kamaráda (1 krok vpřed, otočka).",
+          "older": "Tvorba vlastního plánu a mapy třídy se zakresleným pokladem a navigace spolužáka pouze slovy."
+        },
+        {
+          "center": "Centrum Ateliér, knihy a písmena",
+          "younger": "Malování stop zvířat prstovými barvami po dlouhém balicím papíru.",
+          "middle": "Čtení příběhu podle piktogramů (domeček -> les -> krmelec) a třídění zvířat na zimující a spící.",
+          "older": "Záznamový kódovací list se šipkami (vpřed, vpravo, vlevo) a grafomotorika se symetrií sněhových vloček."
+        }
+      ],
+      "digitalSafety": "Pravidlo 15 minut práce s robotickou pomůckou střídané s oční gymnastikou (hledání zvířátek za oknem). Bezpečné ukládání robotů do nabíjecí stanice.",
+      "diagnostics": {
+        "observations": [
+          "Prostorová orientace a lateralita (vpřed/vzad, vpravo/vlevo) na vlastním těle a na ploše.",
+          "Strategie řešení problému – plánování kroků předem vs. pokus/omyl; reakce na chybu.",
+          "Vrstevnická kooperace při předávání robotické pomůcky a domluvě na společném postupu."
+        ],
+        "portfolioItems": [
+          "Fotografie naprogramované trasy s autentickým komentářem dítěte o řešení cesty.",
+          "Samostatně vyplněný záznamový arch se čtvercovou sítí a směrovými šipkami."
+        ]
+      },
       "activities": [
         {
           "id": "bra-act-5",
@@ -180,24 +298,30 @@
           "type": "Řízená diskuse a hra",
           "desc": "Hra s obrázkovými kartami o tom, jak správně zacházet s technologiemi, proč si chránit oči a kdy je čas jít si hrát ven."
         }
+      ],
+      "autoevaluationQuestions": [
+        "Poskytla nabídka dostatečný prostor pro nejmenší děti bez tlaku na abstraktní programování?",
+        "Byla robotická pomůcka použita jako smysluplný nástroj k řešení problému, nikoli jako samoúčelná hračka?"
       ]
     },
     {
       "id": "bra-block-4",
-      "title": "Jarní probouzení života a chytré technologie",
-      "timeFrame": "Březen – Duben (8 týdnů)",
-      "purpose": "Zkoumat probouzení přírody, pěstovat bylinky, zaznamenávat růst rostlin časosběrnou fotografií a chránit životní prostředí.",
+      "title": "Jarní probouzení života, zahrada a časosběrné objevování",
+      "timeFrame": "5–8 týdnů (březen–duben; flexibilní dle vegetačního cyklu a sázení)",
+      "situationalImpulse": "První teplé jarní dny a objevování klíčících semínek na okenním parapetu. Děti si všímají probouzejícího se hmyzu v zahradě a ptají se: „Jak z malého suchého semínka vyroste velká kytka?“",
+      "purpose": "Vnímat cykličnost přírody a probouzení života, osvojovat si praktické pěstitelské dovednosti, zaznamenávat růst v čase pomocí časosběrné fotografie a rozvíjet ekologickou odpovědnost a úctu k živým organismům.",
       "subTopics": [
-        "První jarní poslové",
-        "Časosběrný deník semínka",
-        "Knihy, pohádky a i-divadlo",
-        "Den Země a chytré třídění"
+        "První poslové jara a probouzení hmyzí říše",
+        "Časosběrný deník semínka a botanická laboratoř",
+        "Knihy, pohádky a ozvučené divadélko",
+        "Den Země a chytré třídění odpadu v obci"
       ],
       "competencies": [
         "KOB",
         "KKK",
-        "KDI",
-        "KKU"
+        "KPP",
+        "KKU",
+        "KDI"
       ],
       "literacies": [
         "CGR",
@@ -206,14 +330,49 @@
       "areas": [
         "DAS",
         "DJP",
+        "DJT",
         "DDS"
       ],
       "outcomes": [
         "DAS-ZPO-000-PV1-001",
         "DJP-PDO-000-PV1-001",
-        "KDI-000-000-PV1-001",
-        "KOB-000-000-PV1-001"
+        "DJT-PZI-000-PV1-001",
+        "KOB-000-000-PV1-001",
+        "KPP-000-000-PV1-001",
+        "KKK-000-000-PV1-001"
       ],
+      "centersOfActivity": [
+        {
+          "center": "Centrum Věda, zahrada a digitální technologie",
+          "younger": "Sázení řeřichy do vaty, zalévání rozprašovačem a čichání k jarní hlíně.",
+          "middle": "Časosběrná fotodokumentace – každodenní vyfotografování klíčící fazole ze stejného úhlu.",
+          "older": "Tvorba stop-motion animovaného videa z fotek růstu a měření přírůstků pravítkem do grafu."
+        },
+        {
+          "center": "Centrum Kostky, ekologie a praktický život",
+          "younger": "Třídění barevných víček do zmenšených popelnic podle barev.",
+          "middle": "Stavba hmyzího hotelu ze šišek, stébel a dřeva na školní zahradě.",
+          "older": "Plánování vyvýšeného záhonu – měření rozměrů, výpočet sazenic a sestavení osevního kalendáře."
+        },
+        {
+          "center": "Centrum Ateliér, knihy a dramatizace",
+          "younger": "Pohybová dramatizace pohádky „O veliké řepě“ s zapojením celého těla.",
+          "middle": "Malování botanických kartiček bylinek a výroba zápichů do záhonů.",
+          "older": "Ozvučená dramatizace jarního probouzení lesa s vlastnoručně nahranými audio-efekty na tablet."
+        }
+      ],
+      "digitalSafety": "Práce s tabletem při časosběrném focení maximálně 10 minut denně; důraz na přímý kontakt se zeminou, vodou a rostlinami v reálném prostředí.",
+      "diagnostics": {
+        "observations": [
+          "Pravidelnost a pečlivost při péči o svěřenou rostlinku (zalévání, pozorování).",
+          "Chápání časové posloupnosti a cyklů (semínko -> klíček -> stonek -> květ -> plod).",
+          "Třídění odpadu a ekologické návyky při pobytu venku."
+        ],
+        "portfolioItems": [
+          "Vlastní růstový záznamový arch se zakreslenou výškou rostliny v jednotlivých týdnech.",
+          "Vytištěná časosběrná minifotokniha s komentářem dítěte."
+        ]
+      },
       "activities": [
         {
           "id": "bra-act-7",
@@ -227,26 +386,31 @@
           "type": "Literárně-dramatická",
           "desc": "Dramatizace pohádky dětmi s využitím vlastnoručně nahraných zvukových efektů (déšť, vítr, kroky vlka)."
         }
+      ],
+      "autoevaluationQuestions": [
+        "Mělo každé dítě možnost pečovat o vlastní rostlinku a zažít radost z pěstitelského úspěchu?",
+        "Byly digitální záznamy smysluplným doplňkem reálného kontaktu s přírodou?"
       ]
     },
     {
       "id": "bra-block-5",
-      "title": "Svět je plný možností – Malí badatelé míří do školy",
-      "timeFrame": "Květen – Červen (8 týdnů)",
-      "purpose": "Upevnit samostatnost a sociální zralost, poznávat vesmír, techniku a dopravu a slavnostně pasovat předškoláky na školáky.",
+      "title": "Svět je plný možností – Cestujeme, bádáme a míříme do školy",
+      "timeFrame": "5–8 týdnů (květen–červen; flexibilní dle termínů výletů a slavnostního loučení)",
+      "situationalImpulse": "Příprava předškoláků na zápis a přechod do základní školy, plánování celoškolního výletu a velká zvědavost dětí ohledně vzdálených zemí, vesmíru a dopravy. Dětské otázky: „Kam všude se dá dojet a co všechno se naučím ve velké škole?“",
+      "purpose": "Podpořit všestrannou školní a sociální zralost předškoláků, upevnit bezpečné návyky v dopravě, prozkoumávat planetu a techniku a slavnostně zhodnotit celoroční pokroky každého dítěte v rodinném kruhu školy.",
       "subTopics": [
-        "Doprava a bezpečnost v obci",
-        "Planety, hvězdy a vesmírné rakety",
-        "Sportovní olympiáda",
-        "Loučení s MŠ a škola volá"
+        "Doprava, bezpečnost a cestování po Jižní Moravě",
+        "Planeta Země, vesmír a technické vynálezy",
+        "Předškolácká akademie zralosti a sportovní den",
+        "Moje digitální portfolio a slavnostní pasování na školáka"
       ],
       "competencies": [
         "KKU",
-        "KKK",
         "KOS",
         "KPP",
         "KRP",
-        "KDI"
+        "KDI",
+        "KKK"
       ],
       "literacies": [
         "CGR",
@@ -263,8 +427,41 @@
         "DJT-PHM-000-PV1-001",
         "DDS-SLK-000-PV1-001",
         "KKU-000-000-PV1-004",
+        "KOS-000-000-PV1-001",
         "KDI-000-000-PV1-001"
       ],
+      "centersOfActivity": [
+        {
+          "center": "Centrum Věda, technika a vesmír",
+          "younger": "Jízda autíčky a vláčky po silničním koberci, reakce na barvy semaforu.",
+          "middle": "Konstrukce dopravních prostředků z magnetických stavebnic a zkoumání glóbu.",
+          "older": "Programování simulace silničního provozu pro Bee-Bot (křižovatky s předností v jízdě) a zkoumání fází Měsíce."
+        },
+        {
+          "center": "Centrum Předškolák a grafomotorická akademie",
+          "younger": "Kreslení velkých kroužků a rovných čar křídou na zahradním chodníku, vkládání tvarů.",
+          "middle": "Skládání tangramů, stříhání po linii a určování první hlásky ve slově.",
+          "older": "Uvolňovací grafomotorické cviky, sluchová analýza a syntéza slov, předmatematické relace a počítání do 10."
+        },
+        {
+          "center": "Centrum Ateliér, dramatizace a slavnostní loučení",
+          "younger": "Výroba dárků a záložek do knihy pro odcházející předškoláky.",
+          "middle": "Hra na školu s opravdovými aktovkami, penály a zvoněním.",
+          "older": "Příprava prezentace vlastního celoročního portfolia pro rodiče a slavnostní pasování na školáka."
+        }
+      ],
+      "digitalSafety": "Vyvážení mentální a grafomotorické práce intenzivním pobytem na čerstvém vzduchu (koloběžky, sportovní hry, překážková dráha); nácvik ergonomie správného sezení a úchopu tužky.",
+      "diagnostics": {
+        "observations": [
+          "Komplexní školní zralost: sluchová a zraková percepce, grafomotorický úchop, koncentrace pozornosti.",
+          "Sociální zralost: schopnost odložit své přání, spolupracovat ve skupině a přijmout novou roli školáka.",
+          "Sebereflexe a schopnost popsat, v čem se dítě za uplynulý rok nejvíce posunulo."
+        ],
+        "portfolioItems": [
+          "Kompletní diagnostický grafomotorický list předškoláka (postava, geometrické tvary, podpis).",
+          "Osobní celoroční digitální i tištěné portfolio s výběrem nejzdařilejších výtvorů a fotek."
+        ]
+      },
       "activities": [
         {
           "id": "bra-act-9",
@@ -278,6 +475,10 @@
           "type": "Slavnostní událost",
           "desc": "Promítání celoročních digitálních vzpomínek pro rodiče, předání šerp, certifikátů mladého badatele a knih."
         }
+      ],
+      "autoevaluationQuestions": [
+        "Odcházejí předškoláci do základní školy se zdravým sebevědomím, zvídavostí a radostí?",
+        "Podařilo se během celého roku naplnit vizi přátelské a moderní rodinné mateřské školy?"
       ]
     }
   ],
@@ -299,6 +500,5 @@
     "schedule": "Průběžná evaluace po ukončení každého integrovaného bloku; celková evaluační zpráva 1x ročně v červnu; revize ŠVP 1x za 3 roky.",
     "responsibilities": "Bc. Kateřina Mikšová (ředitelka školy a koordinátorka ŠVP), pedagogický tým MŠ Branišovice."
   },
-  "createdAt": "2026-09-01T17:23:17.940Z",
-  "updatedAt": "2026-09-01T19:18:18.026Z"
+  "updatedAt": "2026-09-01T20:40:46.629Z"
 }
