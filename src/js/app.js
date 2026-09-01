@@ -541,22 +541,38 @@ class SVPApp {
         <table class="meta-table" style="width:100%; border-collapse: collapse;">
           <thead>
             <tr style="background-color: var(--bg-subtle);">
-              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left;">Název třídy</th>
-              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left;">Věková skupina</th>
-              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left;">Kapacita</th>
-              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left;">Typ uspořádání</th>
+              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left; min-width: 170px;">Název třídy</th>
+              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left; width: 140px;">Věková skupina</th>
+              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left; width: 120px;">Kapacita</th>
+              <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: left; min-width: 190px;">Typ uspořádání</th>
               <th style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: center; width: 60px;">Akce</th>
             </tr>
           </thead>
           <tbody>
             ${classes.map((cls, idx) => `
               <tr>
-                <td style="padding: 8px 12px; border: 1px solid var(--border-color); font-weight: 600;">${cls.name}</td>
-                <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${cls.ageRange}</td>
-                <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${formatPlural(cls.count, 'dítě', 'děti', 'dětí')}</td>
-                <td style="padding: 8px 12px; border: 1px solid var(--border-color);">${cls.type}</td>
-                <td style="padding: 8px 12px; border: 1px solid var(--border-color); text-align: center;">
-                  <button class="btn-icon-only" style="color: var(--danger-500); padding: 4px;" onclick="window.svpApp.removeClass(${idx})" title="Smazat třídu">🗑</button>
+                <td style="padding: 6px 10px; border: 1px solid var(--border-color);">
+                  <input type="text" class="form-input" style="font-size: 0.88rem; font-weight: 600; padding: 5px 8px; width: 100%;" value="${cls.name}" placeholder="Název třídy..." onchange="window.svpApp.updateClass(${idx}, 'name', this.value)">
+                </td>
+                <td style="padding: 6px 10px; border: 1px solid var(--border-color);">
+                  <input type="text" class="form-input" style="font-size: 0.85rem; padding: 5px 8px; width: 100%;" value="${cls.ageRange || '2–7 let'}" placeholder="např. 2–7 let" onchange="window.svpApp.updateClass(${idx}, 'ageRange', this.value)">
+                </td>
+                <td style="padding: 6px 10px; border: 1px solid var(--border-color);">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <input type="number" min="1" max="50" class="form-input" style="font-size: 0.85rem; padding: 5px 6px; width: 65px;" value="${cls.count || 25}" onchange="window.svpApp.updateClass(${idx}, 'count', parseInt(this.value, 10) || 0)">
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">dětí</span>
+                  </div>
+                </td>
+                <td style="padding: 6px 10px; border: 1px solid var(--border-color);">
+                  <select class="form-select" style="font-size: 0.82rem; padding: 5px 8px; width: 100%;" onchange="window.svpApp.updateClass(${idx}, 'type', this.value)">
+                    <option value="Věkově smíšená (rodinná)" ${cls.type === 'Věkově smíšená (rodinná)' || cls.type === 'Věkově smíšená' ? 'selected' : ''}>Věkově smíšená (rodinná)</option>
+                    <option value="Věkově homogenní (stejnověká)" ${cls.type === 'Věkově homogenní (stejnověká)' || cls.type === 'Homogenní' ? 'selected' : ''}>Věkově homogenní (stejnověká)</option>
+                    <option value="Lesní / přírodní skupina" ${cls.type === 'Lesní / přírodní skupina' ? 'selected' : ''}>Lesní / přírodní skupina</option>
+                    <option value="Speciální / logopedická" ${cls.type === 'Speciální / logopedická' ? 'selected' : ''}>Speciální / logopedická</option>
+                  </select>
+                </td>
+                <td style="padding: 6px 10px; border: 1px solid var(--border-color); text-align: center;">
+                  <button class="btn-icon-only" style="color: var(--danger-500); padding: 4px 6px;" onclick="window.svpApp.removeClass(${idx})" title="Smazat třídu">🗑</button>
                 </td>
               </tr>
             `).join('') || '<tr><td colspan="5" style="text-align: center; padding: 14px; color: var(--text-muted);">Zatím nejsou přidány žádné třídy.</td></tr>'}
@@ -568,18 +584,45 @@ class SVPApp {
     const addBtn = document.getElementById('btn-add-class');
     if (addBtn) {
       addBtn.addEventListener('click', () => {
-        const name = prompt('Název nové třídy (např. Včeličky, Motýlci):', 'Třída ' + (classes.length + 1));
-        if (name) {
-          store.addClass({
-            name,
-            ageRange: '3–6 let',
-            count: 24,
-            type: 'Věkově smíšená'
-          });
-          this.render();
-        }
+        this.addNewClass();
       });
     }
+  }
+
+  updateClass(idx, field, value) {
+    store.updateClass(idx, field, value);
+  }
+
+  addNewClass() {
+    const defaultNames = [
+      'Motýlci', 'Včeličky', 'Broučci', 'Sluníčka', 'Koťata', 
+      'Žabičky', 'Sovičky', 'Berušky', 'Medvídci', 'Kapičky',
+      'Rybičky', 'Zajíčci', 'Ježečci', 'Ptáčci', 'Mravenečci'
+    ];
+    const ageOptions = ['2–7 let', '3–6 let', '2–4 roky', '4–6 let', '5–7 let', '3–5 let'];
+    const typeOptions = ['Věkově smíšená (rodinná)', 'Věkově homogenní (stejnověká)', 'Věkově smíšená', 'Lesní / přírodní skupina'];
+    const capacityOptions = [18, 20, 22, 24, 25, 26, 28];
+
+    const currentClasses = store.getDoc().schoolData.classes || [];
+    const usedNames = new Set(currentClasses.map(c => c.name.toLowerCase()));
+    const suggestedName = defaultNames.find(n => !usedNames.has(n.toLowerCase())) || `Třída ${currentClasses.length + 1}`;
+
+    const enteredName = prompt('Zadejte název nové třídy (např. Motýlci, Včeličky):', suggestedName);
+    if (!enteredName || !enteredName.trim()) return;
+
+    // Random values for the rest of data
+    const randomAge = ageOptions[Math.floor(Math.random() * ageOptions.length)];
+    const randomCount = capacityOptions[Math.floor(Math.random() * capacityOptions.length)];
+    const randomType = typeOptions[Math.floor(Math.random() * typeOptions.length)];
+
+    store.addClass({
+      name: enteredName.trim(),
+      ageRange: randomAge,
+      count: randomCount,
+      type: randomType
+    });
+    this.render();
+    this.showToast(`Třída „${enteredName.trim()}“ byla přidána`);
   }
 
   removeClass(idx) {

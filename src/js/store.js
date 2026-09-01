@@ -142,6 +142,13 @@ export class SVPStore {
     this.notify('classes_updated');
   }
 
+  updateClass(index, field, value) {
+    if (this.currentDoc.schoolData.classes && this.currentDoc.schoolData.classes[index]) {
+      this.currentDoc.schoolData.classes[index][field] = value;
+      this.notify('classes_updated');
+    }
+  }
+
   removeClass(index) {
     if (this.currentDoc.schoolData.classes) {
       this.currentDoc.schoolData.classes.splice(index, 1);
