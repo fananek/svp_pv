@@ -596,11 +596,12 @@ body {
 }
 
 .form-textarea {
-  min-height: 80px;
+  min-height: 48px;
   resize: vertical;
   width: 100%;
   box-sizing: border-box;
   display: block;
+  field-sizing: content;
 }
 
 /* Drag and Drop Visual Blocks Builder */

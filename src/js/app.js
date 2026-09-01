@@ -274,15 +274,42 @@ class SVPApp {
     // Dynamic binding for schoolData inputs with data-model attribute
     document.addEventListener('input', (e) => {
       const modelTarget = e.target.getAttribute('data-model');
-      if (!modelTarget) return;
-
-      if (modelTarget.startsWith('schoolData.')) {
-        const field = modelTarget.replace('schoolData.', '');
-        store.updateSchoolData(field, e.target.value);
-      } else if (modelTarget.startsWith('autoevaluation.')) {
-        const field = modelTarget.replace('autoevaluation.', '');
-        store.updateAutoevaluation(field, e.target.value);
+      if (modelTarget) {
+        if (modelTarget.startsWith('schoolData.')) {
+          const field = modelTarget.replace('schoolData.', '');
+          store.updateSchoolData(field, e.target.value);
+        } else if (modelTarget.startsWith('autoevaluation.')) {
+          const field = modelTarget.replace('autoevaluation.', '');
+          store.updateAutoevaluation(field, e.target.value);
+        }
       }
+
+      if (e.target && e.target.tagName === 'TEXTAREA') {
+        this.autoResizeTextarea(e.target);
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      this.autoResizeAllTextareas();
+    });
+  }
+
+  autoResizeTextarea(el) {
+    if (!el) return;
+    el.style.height = 'auto';
+    const scrollH = el.scrollHeight;
+    if (scrollH > 0) {
+      el.style.height = `${scrollH + 4}px`;
+    }
+  }
+
+  autoResizeAllTextareas() {
+    requestAnimationFrame(() => {
+      document.querySelectorAll('textarea').forEach(tx => {
+        if (tx.offsetParent !== null) {
+          this.autoResizeTextarea(tx);
+        }
+      });
     });
   }
 
@@ -371,6 +398,8 @@ class SVPApp {
     } else if (this.currentView === 'preview-export') {
       this.renderPreview(doc);
     }
+
+    this.autoResizeAllTextareas();
   }
 
   populateFormFields(doc) {
@@ -858,6 +887,8 @@ class SVPApp {
       </div>
     `;
     }).join('');
+
+    this.autoResizeAllTextareas();
   }
 
   toggleBlockCollapse(blockId) {
