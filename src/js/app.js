@@ -1347,10 +1347,10 @@ class SVPApp {
 
       html += `
         <div class="coverage-card">
-          <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+            <div style="flex: 1; min-width: 0;">
               <span style="font-size: 1.5rem;">${comp.icon}</span>
-              <h4 style="font-size: 0.95rem; margin-top: 4px;">${comp.name}</h4>
+              <h4 style="font-size: 0.95rem; margin-top: 4px; line-height: 1.3;">${comp.name}</h4>
               <span class="code-badge">${code}</span>
             </div>
             <span class="header-tag ${isGood ? 'header-tag-success' : 'header-tag-warning'}">
@@ -1381,10 +1381,10 @@ class SVPApp {
 
       html += `
         <div class="coverage-card">
-          <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+            <div style="flex: 1; min-width: 0;">
               <span style="font-size: 1.5rem;">${area.icon}</span>
-              <h4 style="font-size: 0.95rem; margin-top: 4px;">${area.name}</h4>
+              <h4 style="font-size: 0.95rem; margin-top: 4px; line-height: 1.3;">${area.name}</h4>
               <span class="code-badge">${code}</span>
             </div>
             <span class="header-tag ${isGood ? 'header-tag-success' : 'header-tag-warning'}">

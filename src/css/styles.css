@@ -363,12 +363,18 @@ body {
 }
 
 .header-tag {
-  font-size: 0.75rem;
-  padding: 3px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 4px 10px;
   border-radius: 9999px;
   background-color: var(--primary-50);
   color: var(--primary-700);
-  font-weight: 600;
   border: 1px solid var(--primary-200);
 }
 
