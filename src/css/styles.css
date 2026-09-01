@@ -493,6 +493,8 @@ body {
 }
 
 .form-input, .form-textarea, .form-select {
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
@@ -500,6 +502,7 @@ body {
   color: var(--text-main);
   font-family: var(--font-sans);
   font-size: 0.9rem;
+  line-height: 1.5;
   transition: all var(--transition-fast);
 }
 
@@ -510,8 +513,11 @@ body {
 }
 
 .form-textarea {
-  min-height: 100px;
+  min-height: 80px;
   resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
 }
 
 /* Drag and Drop Visual Blocks Builder */
@@ -734,12 +740,12 @@ body {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 12px 14px;
-  margin-bottom: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
 }
 
 .block-form-section-title {
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -749,12 +755,51 @@ body {
   justify-content: space-between;
 }
 
+.block-form-section textarea.form-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
 .center-card-editor {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  margin-bottom: 8px;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.center-card-age-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.center-card-age-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.center-card-age-label {
+  width: 100px;
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  padding-top: 8px;
+}
+
+.center-card-age-row textarea.form-textarea {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
+  font-size: 0.82rem;
+  padding: 8px 12px;
 }
 
 /* Integrated Block Main Container */

@@ -614,7 +614,7 @@ class SVPApp {
             <div class="block-form-section-title">
               <span>🌟 Motivační záměr / Situační impuls:</span>
             </div>
-            <textarea class="form-textarea" style="min-height: 48px; font-size: 0.82rem;" placeholder="Proč téma otevíráme, podnět z dětských otázek či reálných situací..." onchange="window.svpApp.updateBlockImpulse('${b.id}', this.value)">${b.situationalImpulse || ''}</textarea>
+            <textarea class="form-textarea" style="min-height: 60px; font-size: 0.85rem;" placeholder="Proč téma otevíráme, podnět z dětských otázek či reálných situací..." onchange="window.svpApp.updateBlockImpulse('${b.id}', this.value)">${b.situationalImpulse || ''}</textarea>
           </div>
 
           <!-- 2. Smysl, účel a hlavní záměr bloku -->
@@ -622,38 +622,38 @@ class SVPApp {
             <div class="block-form-section-title">
               <span>🎯 Smysl, účel a hlavní záměr bloku:</span>
             </div>
-            <textarea class="form-textarea" style="min-height: 48px; font-size: 0.82rem;" placeholder="Zde popište hlavní cíl, motivaci a očekávaný přínos pro děti..." onchange="window.svpApp.updateBlockPurpose('${b.id}', this.value)">${b.purpose || ''}</textarea>
+            <textarea class="form-textarea" style="min-height: 60px; font-size: 0.85rem;" placeholder="Zde popište hlavní cíl, motivaci a očekávaný přínos pro děti..." onchange="window.svpApp.updateBlockPurpose('${b.id}', this.value)">${b.purpose || ''}</textarea>
           </div>
 
           <!-- 3. Vzdělávací nabídka v centrech aktivit (věková gradace 2–7 let) -->
           <div class="block-form-section">
             <div class="block-form-section-title">
               <span>🏢 Vzdělávací nabídka v centrech aktivit (věková gradace 2–7 let):</span>
-              <button class="btn btn-sm btn-secondary" style="font-size: 0.7rem; padding: 2px 8px;" onclick="window.svpApp.addBlockCenter('${b.id}')">+ Přidat centrum</button>
+              <button class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 3px 10px;" onclick="window.svpApp.addBlockCenter('${b.id}')">+ Přidat centrum</button>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
               ${(b.centersOfActivity || []).map((c, cIdx) => `
                 <div class="center-card-editor">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <input type="text" class="form-input" style="font-weight: 700; font-size: 0.8rem; color: var(--primary-600); flex: 1; margin-right: 8px;" value="${c.center}" placeholder="Název centra (např. Centrum Věda a badatelna)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'center', this.value)">
-                    <button class="btn-icon-only" style="color: var(--danger-500); font-size: 0.75rem;" onclick="window.svpApp.deleteBlockCenter('${b.id}', ${cIdx})" title="Odstranit centrum">✕</button>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <input type="text" class="form-input" style="font-weight: 700; font-size: 0.85rem; color: var(--primary-600); flex: 1; margin-right: 8px; padding: 6px 10px;" value="${c.center}" placeholder="Název centra (např. Centrum Věda a badatelna)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'center', this.value)">
+                    <button class="btn-icon-only" style="color: var(--danger-500); font-size: 0.8rem; padding: 4px 8px;" onclick="window.svpApp.deleteBlockCenter('${b.id}', ${cIdx})" title="Odstranit centrum">✕</button>
                   </div>
-                  <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem;">
-                    <div style="display: flex; gap: 6px; align-items: start;">
-                      <span style="width: 95px; flex-shrink: 0; font-weight: 600; color: var(--text-muted); margin-top: 4px;">👶 2–3 roky:</span>
-                      <textarea class="form-textarea" style="min-height: 36px; font-size: 0.78rem; padding: 4px 6px;" placeholder="Činnosti pro mladší děti..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'younger', this.value)">${c.younger || ''}</textarea>
+                  <div class="center-card-age-list">
+                    <div class="center-card-age-row">
+                      <span class="center-card-age-label">👶 2–3 roky:</span>
+                      <textarea class="form-textarea" placeholder="Činnosti pro mladší děti (smysly, adaptace)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'younger', this.value)">${c.younger || ''}</textarea>
                     </div>
-                    <div style="display: flex; gap: 6px; align-items: start;">
-                      <span style="width: 95px; flex-shrink: 0; font-weight: 600; color: var(--text-muted); margin-top: 4px;">👦 4–5 let:</span>
-                      <textarea class="form-textarea" style="min-height: 36px; font-size: 0.78rem; padding: 4px 6px;" placeholder="Činnosti pro střední věk..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'middle', this.value)">${c.middle || ''}</textarea>
+                    <div class="center-card-age-row">
+                      <span class="center-card-age-label">👦 4–5 let:</span>
+                      <textarea class="form-textarea" placeholder="Činnosti pro střední věk (struktura, hry)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'middle', this.value)">${c.middle || ''}</textarea>
                     </div>
-                    <div style="display: flex; gap: 6px; align-items: start;">
-                      <span style="width: 95px; flex-shrink: 0; font-weight: 600; color: var(--text-muted); margin-top: 4px;">🎓 6–7 let:</span>
-                      <textarea class="form-textarea" style="min-height: 36px; font-size: 0.78rem; padding: 4px 6px;" placeholder="Činnosti pro předškoláky..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'older', this.value)">${c.older || ''}</textarea>
+                    <div class="center-card-age-row">
+                      <span class="center-card-age-label">🎓 6–7 let:</span>
+                      <textarea class="form-textarea" placeholder="Činnosti pro předškoláky (bádání, algoritmizace, projekty)..." onchange="window.svpApp.updateCenterField('${b.id}', ${cIdx}, 'older', this.value)">${c.older || ''}</textarea>
                     </div>
                   </div>
                 </div>
-              `).join('') || '<div style="font-size: 0.78rem; color: var(--text-light); font-style: italic;">Zatím nejsou přidána žádná centra aktivit. Klikněte na „+ Přidat centrum“.</div>'}
+              `).join('') || '<div style="font-size: 0.8rem; color: var(--text-light); font-style: italic; padding: 6px 0;">Zatím nejsou přidána žádná centra aktivit. Klikněte na „+ Přidat centrum“.</div>'}
             </div>
           </div>
 
@@ -662,7 +662,7 @@ class SVPApp {
             <div class="block-form-section-title">
               <span>🛡 Digitální bezpečnost a zdravé návyky:</span>
             </div>
-            <textarea class="form-textarea" style="min-height: 40px; font-size: 0.82rem;" placeholder="Pravidla práce s technologiemi, oční hygiena, střídání s pohybem venku..." onchange="window.svpApp.updateBlockSafety('${b.id}', this.value)">${b.digitalSafety || ''}</textarea>
+            <textarea class="form-textarea" style="min-height: 48px; font-size: 0.85rem;" placeholder="Pravidla práce s technologiemi, oční hygiena, střídání s pohybem venku..." onchange="window.svpApp.updateBlockSafety('${b.id}', this.value)">${b.digitalSafety || ''}</textarea>
           </div>
 
           <!-- 5. Pedagogická diagnostika a dokládání pokroku (Portfolio) -->
@@ -670,14 +670,14 @@ class SVPApp {
             <div class="block-form-section-title">
               <span>📋 Pedagogická diagnostika a dokládání pokroku (Portfolio):</span>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
               <div>
-                <label style="font-size: 0.74rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 2px;">Pozorované projevy (záznamový arch):</label>
-                <textarea class="form-textarea" style="min-height: 45px; font-size: 0.78rem;" placeholder="Co přesně učitel sleduje (1 položka na řádek)..." onchange="window.svpApp.updateBlockDiagnosticsObs('${b.id}', this.value)">${(b.diagnostics && b.diagnostics.observations ? b.diagnostics.observations.join('\n') : '')}</textarea>
+                <label style="font-size: 0.76rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Pozorované projevy (záznamový arch):</label>
+                <textarea class="form-textarea" style="min-height: 60px; font-size: 0.82rem;" placeholder="Co přesně učitel sleduje (1 položka na řádek)..." onchange="window.svpApp.updateBlockDiagnosticsObs('${b.id}', this.value)">${(b.diagnostics && b.diagnostics.observations ? b.diagnostics.observations.join('\n') : '')}</textarea>
               </div>
               <div>
-                <label style="font-size: 0.74rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 2px;">Konkrétní výstupy do portfolia dítěte:</label>
-                <textarea class="form-textarea" style="min-height: 45px; font-size: 0.78rem;" placeholder="Co zakládáme do portfolia (1 položka na řádek)..." onchange="window.svpApp.updateBlockDiagnosticsPort('${b.id}', this.value)">${(b.diagnostics && b.diagnostics.portfolioItems ? b.diagnostics.portfolioItems.join('\n') : '')}</textarea>
+                <label style="font-size: 0.76rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Konkrétní výstupy do portfolia dítěte:</label>
+                <textarea class="form-textarea" style="min-height: 60px; font-size: 0.82rem;" placeholder="Co zakládáme do portfolia (1 položka na řádek)..." onchange="window.svpApp.updateBlockDiagnosticsPort('${b.id}', this.value)">${(b.diagnostics && b.diagnostics.portfolioItems ? b.diagnostics.portfolioItems.join('\n') : '')}</textarea>
               </div>
             </div>
           </div>
@@ -687,7 +687,7 @@ class SVPApp {
             <div class="block-form-section-title">
               <span>🔍 Autoevaluační otázky bloku (pro pedagogický tým):</span>
             </div>
-            <textarea class="form-textarea" style="min-height: 40px; font-size: 0.82rem;" placeholder="Otázky pro sebereflexi pedagogů a vyhodnocení úspěšnosti bloku (1 otázka na řádek)..." onchange="window.svpApp.updateBlockAutoeval('${b.id}', this.value)">${(b.autoevaluationQuestions ? b.autoevaluationQuestions.join('\n') : '')}</textarea>
+            <textarea class="form-textarea" style="min-height: 48px; font-size: 0.85rem;" placeholder="Otázky pro sebereflexi pedagogů a vyhodnocení úspěšnosti bloku (1 otázka na řádek)..." onchange="window.svpApp.updateBlockAutoeval('${b.id}', this.value)">${(b.autoevaluationQuestions ? b.autoevaluationQuestions.join('\n') : '')}</textarea>
           </div>
 
           <!-- Dropzone for Competencies & Areas -->
