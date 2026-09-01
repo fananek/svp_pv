@@ -119,8 +119,8 @@ class SVPApp {
     const btn = document.getElementById('theme-toggle-btn');
     if (!btn) return;
     
-    // Check local storage or system preference
-    const savedTheme = localStorage.getItem('svp_theme') || 'light';
+    // Check local storage or system preference, default to dark
+    const savedTheme = localStorage.getItem('svp_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
     btn.addEventListener('click', () => {
