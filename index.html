@@ -330,9 +330,15 @@
                   <div style="font-family: var(--font-heading); font-size: 1rem; font-weight: 700;">
                     🎯 Katalog RVP PV
                   </div>
-                  <div style="display: flex; gap: 4px;">
-                    <button class="btn-icon-only" style="font-size: 0.65rem; padding: 2px 5px;" onclick="window.svpApp.toggleAllCatalogCategories(true)" title="Rozbalit všechny kategorie">📂</button>
-                    <button class="btn-icon-only" style="font-size: 0.65rem; padding: 2px 5px;" onclick="window.svpApp.toggleAllCatalogCategories(false)" title="Sbalit všechny kategorie">📁</button>
+                  <div style="display: flex; gap: 4px; align-items: center;">
+                    <button class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 2px 7px; display: inline-flex; align-items: center; gap: 3px;" onclick="window.svpApp.toggleAllCatalogCategories(true)" title="Rozbalit všechny kategorie">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 13 12 18 17 13"></polyline><polyline points="7 6 12 11 17 6"></polyline></svg>
+                      <span>Rozbalit</span>
+                    </button>
+                    <button class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 2px 7px; display: inline-flex; align-items: center; gap: 3px;" onclick="window.svpApp.toggleAllCatalogCategories(false)" title="Sbalit všechny kategorie">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 11 12 6 17 11"></polyline><polyline points="7 18 12 13 17 18"></polyline></svg>
+                      <span>Sbalit</span>
+                    </button>
                   </div>
                 </div>
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">

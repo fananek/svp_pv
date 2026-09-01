@@ -738,13 +738,19 @@ body {
 }
 
 .catalog-category-toggle {
-  font-size: 0.65rem;
   color: var(--text-muted);
-  transition: transform var(--transition-fast);
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
 }
 
-.catalog-category-section.is-collapsed .catalog-category-toggle {
+.catalog-category-toggle svg {
+  transition: transform var(--transition-fast);
+}
+
+.catalog-category-section.is-collapsed .catalog-category-toggle svg {
   transform: rotate(-90deg);
 }
 
@@ -1021,13 +1027,33 @@ body {
   flex-shrink: 0;
 }
 
+.block-collapse-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  padding: 0;
+}
+
 .block-collapse-btn:hover {
   background: var(--bg-surface-hover);
   border-color: var(--primary-500);
   color: var(--primary-600);
 }
 
-.block-editor-card.is-collapsed .block-collapse-btn {
+.block-collapse-btn svg {
+  transition: transform var(--transition-fast);
+}
+
+.block-editor-card.is-collapsed .block-collapse-btn svg {
   transform: rotate(-90deg);
 }
 

@@ -682,7 +682,7 @@ class SVPApp {
       <div class="block-editor-card ${isCollapsed ? 'is-collapsed' : ''}" id="block-card-${b.id}" data-block-id="${b.id}" data-dropzone="true" data-dropzone-accepts="competency,literacy,area,outcome,activity" data-dropzone-type="block-all">
         <div class="block-editor-header" onclick="window.svpApp.toggleBlockCollapse('${b.id}')">
           <button class="block-collapse-btn" onclick="event.stopPropagation(); window.svpApp.toggleBlockCollapse('${b.id}')" title="${isCollapsed ? 'Rozbalit blok' : 'Sbalit blok'}">
-            ▼
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </button>
           <div style="flex: 1; min-width: 0;">
             <div style="display: flex; align-items: flex-start; gap: 8px;">
@@ -987,7 +987,9 @@ class SVPApp {
               <span>${icon} ${title}</span>
               <span class="catalog-category-count">${matchingItems.length}</span>
             </div>
-            <span class="catalog-category-toggle">▼</span>
+            <span class="catalog-category-toggle">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </span>
           </div>
           <div class="catalog-category-body">
             ${itemsHtml}
