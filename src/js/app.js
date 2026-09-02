@@ -1193,17 +1193,14 @@ class SVPApp {
                 <span style="font-size: 1rem;">${comp.icon}</span>
                 <div style="flex: 1; min-width: 0;" onclick="event.stopPropagation(); window.svpApp.toggleCatalogCompetencyExpanded('${code}')">
                   <div style="font-weight: 600; font-size: 0.78rem; line-height: 1.3;">${comp.name}</div>
-                  <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px;">
+                  <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px; flex-wrap: wrap;">
                     <span class="code-badge" style="font-size: 0.65rem;">${code}</span>
                     ${renderUsageBadge(compUsage)}
-                    <span style="font-size: 0.67rem; color: var(--primary-600); font-weight: 600;">
-                      ${isExpanded ? '▲ Sbalit' : '▼ ' + allOutcomes.length + ' výstupů'}
-                    </span>
                   </div>
                 </div>
-                <div style="display: flex; gap: 3px; align-items: center;" onclick="event.stopPropagation()">
+                <div style="display: flex; gap: 3px; align-items: center; flex-shrink: 0;" onclick="event.stopPropagation()">
                   <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.66rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm);" title="Přiřadit kompetenci do bloku" onclick="window.svpApp.promptAssignItem('competency', '${code}')">+ Blok</button>
-                  <button class="btn-icon-only" style="padding: 2px 5px; font-size: 0.66rem;" onclick="window.svpApp.toggleCatalogCompetencyExpanded('${code}')" title="${isExpanded ? 'Sbalit výsledky' : 'Rozbalit výsledky'}">${isExpanded ? '▲' : '▼'}</button>
+                  <button class="btn-icon-only" style="padding: 2px 5px; font-size: 0.66rem;" onclick="window.svpApp.toggleCatalogCompetencyExpanded('${code}')" title="${isExpanded ? 'Sbalit výsledky učení' : `Rozbalit (${allOutcomes.length} výsledků učení)`}">${isExpanded ? '▲' : '▼'}</button>
                 </div>
               </div>
 
@@ -1293,17 +1290,14 @@ class SVPApp {
                 <span style="font-size: 1rem;">${area.icon}</span>
                 <div style="flex: 1; min-width: 0;" onclick="event.stopPropagation(); window.svpApp.toggleCatalogAreaExpanded('${code}')">
                   <div style="font-weight: 600; font-size: 0.78rem; line-height: 1.3;">${area.name}</div>
-                  <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px;">
+                  <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px; flex-wrap: wrap;">
                     <span class="code-badge" style="font-size: 0.65rem;">${code}</span>
                     ${renderNeutralUsageCount(areaUsage)}
-                    <span style="font-size: 0.67rem; color: #10b981; font-weight: 600;">
-                      ${isExpanded ? '▲ Sbalit' : '▼ ' + allOutcomes.length + ' výstupů'}
-                    </span>
                   </div>
                 </div>
-                <div style="display: flex; gap: 3px; align-items: center;" onclick="event.stopPropagation()">
+                <div style="display: flex; gap: 3px; align-items: center; flex-shrink: 0;" onclick="event.stopPropagation()">
                   <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.66rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm);" title="Přiřadit oblast do bloku" onclick="window.svpApp.promptAssignItem('area', '${code}')">+ Blok</button>
-                  <button class="btn-icon-only" style="padding: 2px 5px; font-size: 0.66rem;" onclick="window.svpApp.toggleCatalogAreaExpanded('${code}')" title="${isExpanded ? 'Sbalit výsledky' : 'Rozbalit výsledky'}">${isExpanded ? '▲' : '▼'}</button>
+                  <button class="btn-icon-only" style="padding: 2px 5px; font-size: 0.66rem;" onclick="window.svpApp.toggleCatalogAreaExpanded('${code}')" title="${isExpanded ? 'Sbalit výsledky učení' : `Rozbalit (${allOutcomes.length} výsledků učení)`}">${isExpanded ? '▲' : '▼'}</button>
                 </div>
               </div>
 
