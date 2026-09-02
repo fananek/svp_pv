@@ -756,7 +756,6 @@ class SVPApp {
             <button class="btn-icon-only" style="padding: 4px 6px; font-size: 0.72rem; line-height: 1;" onclick="window.svpApp.moveBlock(${idx}, -1)" title="Posunout blok nahoru" ${idx === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}>▲</button>
             <button class="btn-icon-only" style="padding: 4px 6px; font-size: 0.72rem; line-height: 1;" onclick="window.svpApp.moveBlock(${idx}, 1)" title="Posunout blok dolů" ${idx === blocks.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}>▼</button>
             <input type="text" class="form-input" style="font-size: 0.8rem; padding: 4px 8px; width: 130px;" value="${b.timeFrame}" placeholder="Časový rámec..." onchange="window.svpApp.updateBlockTime('${b.id}', this.value)">
-            <button class="btn btn-sm btn-secondary" onclick="window.svpApp.openAddActivityModal('${b.id}')">+ Činnost</button>
             <button class="btn-icon-only" style="color: var(--danger-500); padding: 4px 8px;" onclick="window.svpApp.deleteBlock('${b.id}')" title="Smazat blok">🗑</button>
           </div>
         </div>
@@ -778,7 +777,29 @@ class SVPApp {
             <textarea class="form-textarea" style="min-height: 50px; font-size: 0.85rem;" placeholder="Proč téma otevíráme, podnět z dětských otázek či reálných situací..." onchange="window.svpApp.updateBlockImpulse('${b.id}', this.value)">${b.situationalImpulse || ''}</textarea>
           </div>
 
-          <!-- 3. Rozvíjené klíčové kompetence a jejich očekávané výsledky učení -->
+          <!-- 3. Rozvíjené základní gramotnosti -->
+          <div class="block-form-section" style="margin-bottom: 14px; padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;" data-dropzone="true" data-dropzone-accepts="literacy" data-block-id="${b.id}" data-dropzone-type="literacies">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.4px;">📖 Základní gramotnosti:</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">(průřezový rozvoj)</span>
+            </div>
+            <div class="literacy-checkbox-group">
+              ${Object.entries(RVP_LITERACIES).map(([lCode, lit]) => {
+                const isAssigned = (b.literacies || []).includes(lCode);
+                return `
+                  <label class="literacy-checkbox-item ${isAssigned ? 'is-checked' : ''}" title="${lit.desc}">
+                    <input type="checkbox" 
+                      ${isAssigned ? 'checked' : ''} 
+                      onchange="window.svpApp.toggleBlockLit('${b.id}', '${lCode}')">
+                    <span class="literacy-item-icon">${lit.icon}</span>
+                    <span>${lit.name}</span>
+                  </label>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- 4. Rozvíjené klíčové kompetence a jejich očekávané výsledky učení -->
           <div class="block-hierarchy-section" style="border-left: 3px solid var(--primary-500);">
             <div class="block-hierarchy-header">
               <div class="block-hierarchy-title">
@@ -912,39 +933,7 @@ class SVPApp {
             </div>
           </div>
 
-          <!-- 5. Základní gramotnosti -->
-          <div style="margin-bottom: 14px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 16px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-main); text-transform: uppercase;">
-                📖 Základní gramotnosti:
-              </div>
-              <div style="display: flex; gap: 6px;">
-                ${Object.entries(RVP_LITERACIES).map(([lCode, lit]) => {
-                  const isAssigned = (b.literacies || []).includes(lCode);
-                  return `
-                    <button type="button" class="btn btn-sm ${isAssigned ? 'btn-primary' : 'btn-secondary'}" style="font-size: 0.72rem; padding: 3px 8px;" onclick="window.svpApp.toggleBlockLit('${b.id}', '${lCode}')">
-                      ${lit.icon} ${lit.name} ${isAssigned ? '✓' : '+'}
-                    </button>
-                  `;
-                }).join('')}
-              </div>
-            </div>
-            <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="literacy" data-block-id="${b.id}" data-dropzone-type="literacies" style="min-height: 36px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;">
-              ${(b.literacies || []).map(l => `
-                <span class="pill-tag" data-type="literacy">
-                  ${RVP_LITERACIES[l] ? `${RVP_LITERACIES[l].icon} ${RVP_LITERACIES[l].name}` : l}
-                  <span class="remove-btn" onclick="window.svpApp.toggleBlockLit('${b.id}', '${l}')">✕</span>
-                </span>
-              `).join('')}
-              ${(!b.literacies || b.literacies.length === 0) ? `
-                <span style="font-size: 0.76rem; color: var(--text-light); font-style: italic;">
-                  Aktivujte gramotnost tlačítkem výše nebo přetáhněte z levého katalogu...
-                </span>
-              ` : ''}
-            </div>
-          </div>
-
-          <!-- 5. VZDĚLÁVACÍ NABÍDKA (Sjednocené činnosti a Centra aktivit) -->
+          <!-- 6. VZDĚLÁVACÍ NABÍDKA (Sjednocené činnosti a Centra aktivit) -->
           <div class="block-form-section" style="border-left: 3px solid var(--primary-500);">
             <div class="block-form-section-title" style="flex-wrap: wrap; gap: 8px;">
               <span>🎲 Vzdělávací nabídka:</span>

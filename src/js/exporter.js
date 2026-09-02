@@ -276,6 +276,16 @@ export class SVPExporter {
         <p><strong>Podtémata / Náměty:</strong> ${b.subTopics.join(', ')}</p>
       ` : ''}
 
+      <!-- Základní gramotnosti -->
+      ${b.literacies && b.literacies.length > 0 ? `
+        <div style="margin-top: 12px; margin-bottom: 12px;">
+          <p style="margin-bottom: 4px; font-weight: 700; color: #1e3a8a;">📖 Rozvíjené základní gramotnosti:</p>
+          <div class="badge-list">
+            ${b.literacies.map(l => `<span class="badge">${getLitName(l)}</span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
+
       <!-- Hierarchické vazby RVP PV: Klíčové kompetence a jejich výsledky -->
       <div style="margin-top: 14px; margin-bottom: 12px;">
         <p style="margin-bottom: 6px; font-weight: 700; color: #1e3a8a;">🧠 Rozvíjené klíčové kompetence a očekávané výsledky učení:</p>
@@ -317,16 +327,6 @@ export class SVPExporter {
           `;
         }).join('') : '<div style="color: #9ca3af; font-size: 9pt; font-style: italic; margin-bottom: 8px;">Vzdělávací oblasti nebyly přiřazeny.</div>'}
       </div>
-
-      <!-- Základní gramotnosti -->
-      ${b.literacies && b.literacies.length > 0 ? `
-        <div style="margin-bottom: 12px;">
-          <p style="margin-bottom: 4px; font-weight: 700; color: #1e3a8a;">📖 Rozvíjené základní gramotnosti:</p>
-          <div class="badge-list">
-            ${b.literacies.map(l => `<span class="badge">${getLitName(l)}</span>`).join('')}
-          </div>
-        </div>
-      ` : ''}
 
       ${(b.centersOfActivity && b.centersOfActivity.length > 0) || (b.activities && b.activities.length > 0) ? `
         <h4 style="color: #1e3a8a; margin: 16px 0 8px 0; font-size: 11pt; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">🎲 Vzdělávací nabídka:</h4>
