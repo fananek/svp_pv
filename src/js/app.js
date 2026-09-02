@@ -2312,10 +2312,65 @@ class SVPApp {
     html += `
       </div>
 
-      <h3 style="font-size: 1.15rem; margin-top: 32px; margin-bottom: 8px;">3. Kurikulární matice propojení: Vzdělávací oblasti × Klíčové kompetence (RVP PV od 2027)</h3>
+      <h3 style="font-size: 1.15rem; margin-top: 32px; margin-bottom: 8px;">3. Kurikulární matice propojení: Vzdělávací oblasti × Klíčové kompetence</h3>
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
-        Dvourozměrná mřížka kurikula jako <strong>heat mapa</strong>: okamžitě odhaluje, které průsečíky vzdělávacích oblastí a klíčových kompetencí jsou pod-nasycené (bílá místa / deficity), vyvážené nebo přesycené (dominantní vazby).
+        Dvourozměrná mřížka kurikula jako <strong>pedagogická heat mapa</strong>: hodnotí hraniční těžiště socializace a bádání, vyvážené vazby, specifická zacílení, deficity bez vazby i celkovou diagnostickou únosnost pro třídní portfolio.
       </p>
+
+      <!-- Didactic Guidance Card: Autorská autonomie školy vs. Pravidla RVP PV -->
+      <div class="didactic-guide-card is-collapsed" id="didactic-guide-card">
+        <div class="didactic-guide-header" id="didactic-guide-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.4rem;">🎓</span>
+            <div>
+              <div style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">Metodické mantinely a autorská autonomie tvorby vazeb v ŠVP PV</div>
+              <div style="font-size: 0.76rem; color: var(--text-muted);">Jak vznikají živé vazby mezi obsahem a kompetencemi a jaká pravidla stanovuje RVP PV</div>
+            </div>
+          </div>
+          <button type="button" class="collapse-toggle-btn btn btn-secondary btn-sm" id="toggle-didactic-btn" style="font-size: 0.75rem; padding: 4px 10px;">▼ Rozbalit metodiku</button>
+        </div>
+
+        <div class="didactic-guide-body" id="didactic-guide-body" style="display: none;">
+          <div class="didactic-columns-grid">
+            <div class="didactic-col-box" style="border-left: 4px solid var(--primary-500);">
+              <div style="font-weight: 800; color: var(--primary-600); font-size: 0.88rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                <span>✨ 1. Kde má autor ŠVP plnou svobodu</span>
+              </div>
+              <ul style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px;">
+                <li><strong>Volba témat a kontextu:</strong> Autor sám rozhoduje, jaká témata zvolí (např. zda zimní logiku postaví na stopách zvířat, vesmíru či pečení chleba).</li>
+                <li><strong>Kombinace entit v bloku:</strong> Tým MŠ sám určuje, které kompetence spáruje s oblastmi v daném období (bádání s mikroskopem pro digitální vs. malování přírodními pigmenty pro kulturní kompetenci).</li>
+                <li><strong>Metody a prostředí:</strong> Didaktické strategie, badatelské koutky, robotické pomůcky (Bee-Bot) a organizace v centrech aktivit jsou zcela v rukou školy.</li>
+              </ul>
+            </div>
+
+            <div class="didactic-col-box" style="border-left: 4px solid #10b981;">
+              <div style="font-weight: 800; color: #059669; font-size: 0.88rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                <span>⚖️ 2. Kde je autor vázán pravidly RVP PV</span>
+              </div>
+              <ul style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px;">
+                <li><strong>Závaznost všech entit za cyklus:</strong> Autor má volnost v blocích, ale nesmí žádnou z 8 kompetencí ani 4 oblastí z celého ŠVP vynechat.</li>
+                <li><strong>Akreditovaný kmen OVU:</strong> Vazby se ukotvují výběrem z oficiální soustavy očekávaných výsledků učení (kompetenčních KK... i oborových D...).</li>
+                <li><strong>Smysluplnost a přirozenost vazby:</strong> Žádné mechanické karikatury (např. IT u kotoulu). ČŠI hodnotí, zda činnost kompetenci reálně a prokazatelně rozvíjí.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="didactic-example-box">
+            <div style="font-weight: 800; font-size: 0.85rem; color: var(--primary-700); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+              <span>💡 Jak vazba prakticky vzniká (Pohled pedagoga z praxe)</span>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-main); margin-bottom: 8px; line-height: 1.45;">
+              Vazba není teoretický pojem v tabulce, ale pedagogický záměr situace:
+              Autor vezme oblast <strong>Dítě a svět (Obsah)</strong>: <em>Chceme, aby děti poznaly, jak mrzne voda a jak se chová led</em>.
+              Připojí k tomu <strong>Kompetenci k řešení problémů (Proces)</strong>: <em>Neřekneme jim výsledek, necháme je experimentovat s pokusem a omylem</em>.
+            </p>
+            <div class="didactic-example-highlight">
+              🧊 <strong>Výsledná situace v bloku:</strong> Děti dostanou kostku ledu se zamrzlou hračkou a samy zkoušejí postupy (teplá voda, sůl, drcení), jak hračku co nejrychleji vysvobodit.
+              Vznikla živá vazba <strong>Svět × Řešení problémů</strong>, opřená o příslušné OVU a sloužící jako podklad pro záznam do pedagogického portfolia dítěte.
+            </div>
+          </div>
+        </div>
+      </div>
     `;
 
     // Compute curricular matrix dataset (4 areas x 8 competencies)
@@ -2357,98 +2412,173 @@ class SVPApp {
       });
     });
 
-    // Helper to determine saturation info
-    const getSaturation = (count, maxVal) => {
+    // Helper to determine pedagogical saturation info according to RVP PV pedagogy
+    const getSaturation = (count, maxVal, aCode, cCode) => {
       if (count === 0) {
         return {
-          level: 'deficit',
-          pillText: '0× · deficit',
-          status: 'Bílé místo (deficit)',
-          desc: 'V programu není přiřazen žádný výstup pro toto propojení.',
-          recommendation: 'Doporučujeme zvážit zařazení výstupu pro tuto kombinaci.'
+          level: 'unassigned',
+          pillText: '0× · Bez vazby',
+          status: 'Bez vazby (deficit)',
+          desc: 'V tomto návrhu není přiřazen žádný výstup pro daný průsečík.',
+          recommendation: 'Jedná se o deficit, který by měl být v ŠVP pokryt, aby byla zajištěna komplexnost kurikula.'
         };
       }
-      if (count >= 8 || (maxVal >= 6 && count === maxVal && count >= 5)) {
+      if (count === 1) {
+        let specificNote = 'Cílená doplňková vazba pro specifické situace bez přetěžování dětí.';
+        if (aCode === 'DJT' && cCode === 'KDI') {
+          specificNote = 'Reprezentuje např. zásady digitální hygieny, odpočinek očí nebo využití digitální váhy/metru při měření růstu. Byla by pedagogická chyba tuto vazbu uměle tlačit na vyšší hodnoty na úkor reálného pohybu venku.';
+        } else if (aCode === 'DJT' && cCode === 'KOB') {
+          specificNote = 'Zacíleno specificky na pravidla bezpečného chování ve veřejném prostoru a na silnici.';
+        }
         return {
-          level: 'over',
-          pillText: `${count}× 🔥 přesyceno`,
-          status: 'Přesycené propojení',
-          desc: `Výrazně dominantní vazba (${count} výstupů).`,
-          recommendation: 'Pozor na jednostranné zaměření programu na úkor ostatních kompetencí.'
+          level: 'justified-low',
+          pillText: '1× · Specifické',
+          status: 'Specifické nasycení',
+          desc: specificNote,
+          recommendation: 'Záměrně nepřeceňovat – umělé navyšování by narušilo přirozenou rovnováhu bloku a zbytečně přetížilo děti.'
         };
       }
-      if (count >= 6 || (maxVal >= 5 && count >= 4 && count === maxVal)) {
-        return {
-          level: 'high',
-          pillText: `${count}× · vysoké`,
-          status: 'Vysoké nasycení',
-          desc: `Silné zastoupení vazby s ${count} výstupy.`,
-          recommendation: 'Oblast i kompetence jsou velmi bohatě propojeny.'
-        };
-      }
-      if (count >= 3 || (maxVal <= 4 && count >= 2)) {
+      if (count >= 2 && count <= 3) {
+        let optNote = 'Zajišťuje spolehlivé upevnění dovednosti bez přehlcení dětí.';
+        if (aCode === 'DJT' && cCode === 'KKT') {
+          optNote = 'Pokrývá rytmiku, hudebně-pohybové hry a pantomimu, což má své stabilní místo, aniž by to vytlačovalo volný pohyb a sport.';
+        }
         return {
           level: 'optimal',
-          pillText: `${count}× · optimální`,
+          pillText: `${count}× · Vyvážené`,
           status: 'Vyvážené nasycení',
-          desc: `Doporučené a zdravé nasycení (${count} výstupů).`,
-          recommendation: 'Ideální rozložení pro přirozený rozvoj dítěte.'
+          desc: optNote,
+          recommendation: 'Ideální frekvence pro harmonický a přirozený rozvoj dítěte.'
         };
       }
+      if (count >= 4 && count <= 5) {
+        let focusNote = 'Klíčový uzlový bod programu s vysokou pedagogickou a diagnostickou hodnotou.';
+        if (aCode === 'DJP' && cCode === 'KKK') {
+          focusNote = 'Hraniční uzel socializace v MŠ: děti zde nepřetržitě trénují sebevyjádření, komunikaci a zvládání emocí.';
+        } else if (aCode === 'DDS' && cCode === 'KOS') {
+          focusNote = 'Hraniční uzel socializace: trénink soužití ve skupině, empatie a kooperace v třídním kolektivu.';
+        } else if (aCode === 'DAS' && (cCode === 'KRP' || cCode === 'KKU' || cCode === 'KDI')) {
+          focusNote = 'Hlavní badatelská základna pro pokusy, objevování zákonitostí v přírodě a smysluplné nasazení digitálních pomůcek (mikroskopy, Bee-Bot, měření).';
+        } else if (aCode === 'DJT' && cCode === 'KPP') {
+          focusNote = 'Přirozené spojení sebeobsluhy, jemné motoriky, práce s nástroji, stříhání a tvoření.';
+        }
+        return {
+          level: 'core-focus',
+          pillText: `${count}× · Hraniční`,
+          status: 'Hraniční nasycení',
+          desc: focusNote,
+          recommendation: 'Vysoké zastoupení vazby – vhodné pro systematickou formativní diagnostiku a zápis do portfolia dítěte.'
+        };
+      }
+      // count >= 6
       return {
-        level: 'low',
-        pillText: `${count}× · nízké`,
-        status: 'Nízké nasycení',
-        desc: `Mírné propojení (${count} ${count === 1 ? 'výstup' : 'výstupy'}).`,
-        recommendation: 'Vhodné pro doplňkové nebo začínající aktivity.'
+        level: 'over',
+        pillText: `${count}× · ⚠️ Vysoké`,
+        status: 'Vysoké nasycení (přetížení)',
+        desc: `Velmi vysoký počet přiřazení (${count} výstupů).`,
+        recommendation: 'Pozor na riziko přehlcení dětí a administrativní zahlcení pedagogického týmu při diagnostice.'
       };
     };
 
     // Calculate saturation counts for KPI summary
-    let deficitCount = 0;
-    let lowCount = 0;
+    let unassignedCount = 0;
+    let specificCount = 0;
     let optimalCount = 0;
-    let highCount = 0;
+    let coreFocusCount = 0;
     let overCount = 0;
 
     allCells.forEach(cell => {
-      const sat = getSaturation(cell.count, maxCellCount);
+      const sat = getSaturation(cell.count, maxCellCount, cell.aCode, cell.cCode);
       cell.sat = sat;
-      if (sat.level === 'deficit') deficitCount++;
-      else if (sat.level === 'low') lowCount++;
+      if (sat.level === 'unassigned') unassignedCount++;
+      else if (sat.level === 'justified-low') specificCount++;
       else if (sat.level === 'optimal') optimalCount++;
-      else if (sat.level === 'high') highCount++;
+      else if (sat.level === 'core-focus') coreFocusCount++;
       else if (sat.level === 'over') overCount++;
     });
+
+    const blockCount = (doc.blocks || []).length;
+    const avgPerBlock = blockCount > 0 ? (grandTotal / blockCount).toFixed(1) : '0';
+
+    let capacityStatusBadge = '✅ Diagnosticky únosné & vyvážené';
+    let capacityBadgeStyle = 'background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.35);';
+    let capacityText = `Při ${blockCount} integrovaných blocích za rok připadá na jeden blok cca <strong>${avgPerBlock} aktivních vazeb</strong> (~3 sledované kompetence a ~3 oblasti na blok). Učitel v měsíčním bloku systematicky diagnostikuje pouze 2 až 3 kompetenční a 2 oborové projevy, což zabraňuje administrativnímu zahlcení a zachovává vysokou kvalitu formativní zpětné vazby.`;
+
+    if (grandTotal > 115) {
+      capacityStatusBadge = '⚠️ Riziko diagnostického přehlcení';
+      capacityBadgeStyle = 'background: rgba(245, 158, 11, 0.15); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.4);';
+      capacityText = `Celkový součet vazeb (${grandTotal}×) přesahuje doporučený roční rámec (80–110 vazeb). Učiteli hrozí administrativní zahlcení při hodnocení třídního portfolia. Doporučujeme redukovat doplňkové vazby a soustředit se na klíčová těžiště.`;
+    } else if (grandTotal < 70) {
+      capacityStatusBadge = 'ℹ️ ŠVP ve fázi rozpracování';
+      capacityBadgeStyle = 'background: rgba(14, 165, 233, 0.15); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.4);';
+      capacityText = `Aktuálně je v ŠVP přiřazeno ${grandTotal} vazeb (průměrně ${avgPerBlock} na blok). Pro celoroční cyklus doporučujeme směřovat k optimu 80–110 vazeb (~12 vazeb na blok), aby byla zajištěna rovnoměrná podpora rozvoje dětí.`;
+    }
 
     const topCell = allCells.slice().sort((a, b) => b.count - a.count)[0];
     const topArea = topCell && topCell.count > 0 ? RVP_AREAS[topCell.aCode] : null;
     const topComp = topCell && topCell.count > 0 ? RVP_COMPETENCIES[topCell.cCode] : null;
 
     html += `
-      <!-- KPI Summary Cards -->
-      <div class="heatmap-stats-grid">
-        <div class="heatmap-stat-card" style="border-left: 4px solid #ef4444;">
-          <div class="heatmap-stat-icon">⚠️</div>
-          <div>
-            <div class="heatmap-stat-val" style="color: #ef4444;">${deficitCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">/ 32</span></div>
-            <div class="heatmap-stat-lbl">Bílá místa (pod-nasyceno 0×)</div>
+      <!-- Diagnostic Capacity Box for Pedagogical Team -->
+      <div class="diagnostic-capacity-card">
+        <div class="diagnostic-capacity-metrics">
+          <div class="diagnostic-metric-item">
+            <div class="diagnostic-metric-val" style="color: var(--primary-600);">${grandTotal} <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">vazeb</span></div>
+            <div class="diagnostic-metric-lbl">Roční součet vazeb ŠVP (optimum 80–110)</div>
+          </div>
+          <div class="diagnostic-metric-item">
+            <div class="diagnostic-metric-val" style="color: #059669;">${avgPerBlock} <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">vazeb/blok</span></div>
+            <div class="diagnostic-metric-lbl">Průměr na integrovaný blok (~12–13)</div>
+          </div>
+          <div class="diagnostic-metric-item">
+            <div class="diagnostic-metric-val" style="color: #6366f1;">2–3 <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">projevy</span></div>
+            <div class="diagnostic-metric-lbl">Měsíční formativní diagnostika v portfoliu</div>
           </div>
         </div>
+        <div class="diagnostic-capacity-status">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.04em;">Diagnostická únosnost pro tým:</span>
+            <span style="display: inline-block; font-size: 0.75rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px; ${capacityBadgeStyle}">
+              ${capacityStatusBadge}
+            </span>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0; line-height: 1.45;">
+            ${capacityText}
+          </p>
+        </div>
+      </div>
 
-        <div class="heatmap-stat-card" style="border-left: 4px solid #0284c7;">
-          <div class="heatmap-stat-icon">🔹</div>
+      <!-- KPI Summary Cards -->
+      <div class="heatmap-stats-grid">
+        <div class="heatmap-stat-card" style="border-left: 4px solid #059669;">
+          <div class="heatmap-stat-icon">🎯</div>
           <div>
-            <div class="heatmap-stat-val" style="color: #0284c7;">${lowCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">vazeb</span></div>
-            <div class="heatmap-stat-lbl">Nízké nasycení (1–2×)</div>
+            <div class="heatmap-stat-val" style="color: #059669;">${coreFocusCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">uzlů</span></div>
+            <div class="heatmap-stat-lbl">Hraniční (4–5×)</div>
           </div>
         </div>
 
         <div class="heatmap-stat-card" style="border-left: 4px solid #10b981;">
           <div class="heatmap-stat-icon">✅</div>
           <div>
-            <div class="heatmap-stat-val" style="color: #059669;">${optimalCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">vazeb</span></div>
-            <div class="heatmap-stat-lbl">Vyvážené / optimální nasycení</div>
+            <div class="heatmap-stat-val" style="color: #10b981;">${optimalCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">vazeb</span></div>
+            <div class="heatmap-stat-lbl">Vyvážené (2–3×)</div>
+          </div>
+        </div>
+
+        <div class="heatmap-stat-card" style="border-left: 4px solid #0284c7;">
+          <div class="heatmap-stat-icon">🔹</div>
+          <div>
+            <div class="heatmap-stat-val" style="color: #0284c7;">${specificCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">vazeb</span></div>
+            <div class="heatmap-stat-lbl">Specifické (1×)</div>
+          </div>
+        </div>
+
+        <div class="heatmap-stat-card" style="border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.05);">
+          <div class="heatmap-stat-icon">⚠️</div>
+          <div>
+            <div class="heatmap-stat-val" style="color: #dc2626;">${unassignedCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">/ 32</span></div>
+            <div class="heatmap-stat-lbl">Bez vazby (0×)</div>
           </div>
         </div>
 
@@ -2456,25 +2586,29 @@ class SVPApp {
           <div class="heatmap-stat-icon">🔥</div>
           <div>
             <div class="heatmap-stat-val" style="color: #b45309;">
-              ${overCount > 0 ? `${overCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">přesyceno</span>` : `${highCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">vysoké</span>`}
+              ${overCount > 0 ? `${overCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">přetíženo</span>` : '0'}
             </div>
             <div class="heatmap-stat-lbl">
-              ${topCell && topCell.count > 0 ? `Nejvíce: ${topArea ? topArea.code : ''} × ${topComp ? topComp.name.replace('Klíčová kompetence ', '') : ''} (${topCell.count}×)` : 'Zatím bez přesycení'}
+              ${overCount > 0 ? 'Pozor na zahlcení dětí' : 'Vysoké (6+×)'}
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Spotlight Filters -->
-      <div class="heatmap-toolbar">
+      <!-- Spotlight Filters & Reference Benchmark button -->
+      <div class="heatmap-toolbar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div class="heatmap-filters" id="heatmap-filters">
-          <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-right: 4px;">Reflektor nasycení:</span>
+          <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-right: 4px;">Míra nasycení:</span>
           <button class="heatmap-filter-btn active" data-filter="all">Všechny vazby (32)</button>
-          <button class="heatmap-filter-btn" data-filter="deficit">⚠️ Jen deficity (0×) (${deficitCount})</button>
-          <button class="heatmap-filter-btn" data-filter="low">🔹 Jen nízké (${lowCount})</button>
-          <button class="heatmap-filter-btn" data-filter="optimal">✅ Jen optimální (${optimalCount})</button>
-          <button class="heatmap-filter-btn" data-filter="over">🔥 Jen silné / přesycené (${overCount + highCount})</button>
+          <button class="heatmap-filter-btn" data-filter="core-focus">🎯 Hraniční (4–5×) (${coreFocusCount})</button>
+          <button class="heatmap-filter-btn" data-filter="optimal">✅ Vyvážené (2–3×) (${optimalCount})</button>
+          <button class="heatmap-filter-btn" data-filter="justified-low">🔹 Specifické (1×) (${specificCount})</button>
+          <button class="heatmap-filter-btn" data-filter="unassigned">⚠️ Bez vazby (0×) (${unassignedCount})</button>
+          ${overCount > 0 ? `<button class="heatmap-filter-btn" data-filter="over">🔥 Vysoké (6+×) (${overCount})</button>` : ''}
         </div>
+        <button class="btn btn-secondary btn-sm" id="btn-show-benchmark" style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem;">
+          <span>📊</span> Zobrazit referenční etalon (99 vazeb z praxe)
+        </button>
       </div>
 
       <!-- Heatmap Table -->
@@ -2504,9 +2638,9 @@ class SVPApp {
                 const cellData = matrixData[aCode][cCode];
                 const count = cellData.count;
                 rowTotal += count;
-                const sat = getSaturation(count, maxCellCount);
+                const sat = getSaturation(count, maxCellCount, aCode, cCode);
                 const blockNames = Array.from(new Set(cellData.matches.map(m => m.blockTitle)));
-                const tooltipText = `${aObj.name} (${aCode}) × ${RVP_COMPETENCIES[cCode].name} (${cCode})&#10;Stav: ${sat.status} (${count}× výstupů)&#10;${sat.desc}&#10;Doporučení: ${sat.recommendation}&#10;Zapojené bloky: ${blockNames.length > 0 ? blockNames.join(', ') : 'Žádné'}`;
+                const tooltipText = `${aObj.name} (${aCode}) × ${RVP_COMPETENCIES[cCode].name} (${cCode})&#10;Stav: ${sat.status} (${count}× výstupů)&#10;Pedagogický význam: ${sat.desc}&#10;Doporučení: ${sat.recommendation}&#10;Zapojené bloky: ${blockNames.length > 0 ? blockNames.join(', ') : 'Žádné'}`;
                 
                 return `
                   <td class="heatmap-cell heat-level-${sat.level}" data-level="${sat.level}" title="${tooltipText}">
@@ -2567,33 +2701,60 @@ class SVPApp {
         </table>
       </div>
 
-      <!-- Heatmap Legend -->
+      <!-- Heatmap Legend with Pedagogical Meaning -->
       <div class="heatmap-legend">
-        <span class="heatmap-legend-title">🏷️ Vysvětlivka heatmapy nasycení:</span>
+        <span class="heatmap-legend-title">🏷️ Pedagogická vysvětlivka nasycení:</span>
         <div class="heatmap-legend-item">
-          <span class="heatmap-legend-box heat-level-deficit"></span>
-          <span><strong>0× Bílé místo</strong> (pod-nasycený deficit)</span>
-        </div>
-        <div class="heatmap-legend-item">
-          <span class="heatmap-legend-box heat-level-low"></span>
-          <span><strong>1–2× Nízké</strong> (doplňkové nasycení)</span>
+          <span class="heatmap-legend-box heat-level-core-focus"></span>
+          <span><strong>4–5× Hraniční</strong> (silná těžiště socializace, bádání a motoriky)</span>
         </div>
         <div class="heatmap-legend-item">
           <span class="heatmap-legend-box heat-level-optimal"></span>
-          <span><strong>3–5× Vyvážené</strong> (optimální standard)</span>
+          <span><strong>2–3× Vyvážené</strong> (ideální optimum bez přehlcení)</span>
         </div>
         <div class="heatmap-legend-item">
-          <span class="heatmap-legend-box heat-level-high"></span>
-          <span><strong>6–7× Vysoké</strong> (silná vazba)</span>
+          <span class="heatmap-legend-box heat-level-justified-low"></span>
+          <span><strong>1× Specifické</strong> (doplňková zacílení: např. digitální hygiena či bezpečnost)</span>
+        </div>
+        <div class="heatmap-legend-item">
+          <span class="heatmap-legend-box heat-level-unassigned"></span>
+          <span><strong>0× Bez vazby</strong> (deficitní stav, který by měl být v ŠVP pokryt)</span>
         </div>
         <div class="heatmap-legend-item">
           <span class="heatmap-legend-box heat-level-over"></span>
-          <span><strong>8+× Přesycené 🔥</strong> (dominantní složka)</span>
+          <span><strong>6+× Vysoké</strong> (varování před diagnostickým zahlcením portfolia)</span>
         </div>
       </div>
     `;
 
     container.innerHTML = html;
+
+    // Attach Didactic Guide Collapsible Handler
+    const didacticCard = container.querySelector('#didactic-guide-card');
+    const toggleDidacticBtn = container.querySelector('#toggle-didactic-btn');
+    const didacticHeader = container.querySelector('#didactic-guide-header');
+    if (didacticCard && (toggleDidacticBtn || didacticHeader)) {
+      const toggleFn = () => {
+        didacticCard.classList.toggle('is-collapsed');
+        const isCollapsed = didacticCard.classList.contains('is-collapsed');
+        const guideBody = didacticCard.querySelector('#didactic-guide-body');
+        if (guideBody) {
+          guideBody.style.display = isCollapsed ? 'none' : 'block';
+        }
+        if (toggleDidacticBtn) {
+          toggleDidacticBtn.textContent = isCollapsed ? '▼ Rozbalit metodiku' : '▲ Skrýt metodiku';
+        }
+      };
+      if (toggleDidacticBtn) {
+        toggleDidacticBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleFn();
+        });
+      }
+      if (didacticHeader) {
+        didacticHeader.addEventListener('click', toggleFn);
+      }
+    }
 
     // Attach interactive spotlight filter event listeners
     const filterContainer = container.querySelector('#heatmap-filters');
@@ -2610,7 +2771,7 @@ class SVPApp {
             if (filter === 'all') {
               cell.classList.remove('is-dimmed');
             } else if (filter === 'over') {
-              if (level === 'over' || level === 'high') {
+              if (level === 'over') {
                 cell.classList.remove('is-dimmed');
               } else {
                 cell.classList.add('is-dimmed');
@@ -2626,6 +2787,171 @@ class SVPApp {
         });
       });
     }
+
+    // Attach Benchmark Modal Handler
+    const benchmarkBtn = container.querySelector('#btn-show-benchmark');
+    if (benchmarkBtn) {
+      benchmarkBtn.addEventListener('click', () => {
+        this.showCurricularBenchmarkModal();
+      });
+    }
+  }
+
+  // --- REFERENCE CURRICULAR BENCHMARK MODAL (99 BINDINGS) ---
+  showCurricularBenchmarkModal() {
+    let modal = document.getElementById('benchmark-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'benchmark-modal';
+      modal.className = 'modal-overlay';
+      document.body.appendChild(modal);
+    }
+
+    // Benchmark matrix exact data (99 bindings)
+    const benchmarkMatrix = {
+      'DJT': { 'KKU': 2, 'KRP': 2, 'KKK': 2, 'KOS': 2, 'KOB': 1, 'KPP': 4, 'KDI': 1, 'KKT': 3, total: 17 },
+      'DJP': { 'KKU': 4, 'KRP': 4, 'KKK': 5, 'KOS': 4, 'KOB': 2, 'KPP': 2, 'KDI': 3, 'KKT': 4, total: 28 },
+      'DDS': { 'KKU': 3, 'KRP': 3, 'KKK': 4, 'KOS': 5, 'KOB': 4, 'KPP': 3, 'KDI': 2, 'KKT': 4, total: 28 },
+      'DAS': { 'KKU': 4, 'KRP': 4, 'KKK': 2, 'KOS': 2, 'KOB': 4, 'KPP': 4, 'KDI': 4, 'KKT': 2, total: 26 }
+    };
+    const compTotals = { 'KKU': 13, 'KRP': 13, 'KKK': 13, 'KOS': 13, 'KOB': 11, 'KPP': 13, 'KDI': 10, 'KKT': 13, grandTotal: 99 };
+    const compKeys = ['KKU', 'KRP', 'KKK', 'KOS', 'KOB', 'KPP', 'KDI', 'KKT'];
+    const areaKeys = ['DJT', 'DJP', 'DDS', 'DAS'];
+
+    modal.innerHTML = `
+      <div class="modal-card" style="max-width: 960px; max-height: 90vh; display: flex; flex-direction: column;">
+        <div class="modal-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.5rem;">📊</span>
+            <div>
+              <div class="modal-title" style="font-size: 1.15rem;">Referenční etalon vyváženého kurikula MŠ (99 vazeb)</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Příklad hraničních těžišť, vyvážených vazeb a diagnostické únosnosti z pedagogické praxe</div>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="close-benchmark-btn">✕ Zavřít</button>
+        </div>
+
+        <div class="modal-body" style="overflow-y: auto; padding: 16px 0; flex: 1;">
+          <!-- Benchmark Table -->
+          <div class="heatmap-table-container" style="margin-bottom: 20px;">
+            <table class="heatmap-table">
+              <thead>
+                <tr>
+                  <th class="row-header" style="background: var(--bg-subtle);">Klíčová kompetence / Oblast</th>
+                  ${compKeys.map(cCode => {
+                    const cObj = RVP_COMPETENCIES[cCode];
+                    return `
+                      <th class="col-header">
+                        <div style="font-size: 1.1rem;">${cObj.icon}</div>
+                        <div style="font-size: 0.74rem; font-weight: 800;">${cCode}</div>
+                        <div style="font-size: 0.63rem; color: var(--text-muted);">${cObj.name.replace('Klíčová kompetence ', '')}</div>
+                      </th>
+                    `;
+                  }).join('')}
+                  <th style="background: var(--bg-subtle); font-weight: 800;">Celkem za oblast</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${areaKeys.map(aCode => {
+                  const aObj = RVP_AREAS[aCode];
+                  const row = benchmarkMatrix[aCode];
+                  return `
+                    <tr>
+                      <th class="row-header" style="background: var(--bg-subtle); text-align: left; padding: 8px 12px;">
+                        <span style="font-size: 1.1rem; margin-right: 6px;">${aObj.icon}</span>
+                        <strong>${aObj.name}</strong>
+                      </th>
+                      ${compKeys.map(cCode => {
+                        const val = row[cCode];
+                        let heatClass = 'heat-level-optimal';
+                        let pill = `${val}× vyvážené`;
+                        if (val >= 4) { heatClass = 'heat-level-core-focus'; pill = `${val}× hraniční`; }
+                        else if (val === 1) { heatClass = 'heat-level-justified-low'; pill = '1× specifické'; }
+                        return `
+                          <td class="heatmap-cell ${heatClass}">
+                            <span class="heatmap-count">${val}</span>
+                            <span class="heatmap-pill">${pill}</span>
+                          </td>
+                        `;
+                      }).join('')}
+                      <td style="font-weight: 800; background: var(--bg-subtle);">
+                        <div style="font-size: 1rem;">${row.total}</div>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+              <tfoot>
+                <tr style="border-top: 2px solid var(--border-color);">
+                  <th class="row-header" style="background: var(--bg-subtle);">
+                    <strong>Celkem za kompetenci</strong>
+                  </th>
+                  ${compKeys.map(cCode => `
+                    <td style="font-weight: 800; background: var(--bg-subtle);">
+                      <div style="font-size: 1rem;">${compTotals[cCode]}</div>
+                    </td>
+                  `).join('')}
+                  <td style="font-weight: 800; background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%); border: 1.5px solid var(--primary-500);">
+                    <div style="font-size: 1.1rem; color: var(--primary-600);">${compTotals.grandTotal} vazeb</div>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Pedagogical Interpretation -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+            <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 14px; border-left: 4px solid #059669;">
+              <div style="font-weight: 800; color: #065f46; margin-bottom: 6px; font-size: 0.88rem;">🎯 1. Hraniční těžiště kurikula (hodnoty 4–5)</div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.45; margin: 0;">
+                <strong>Psychika × Komunikace (5)</strong> a <strong>Společnost × Sociální (5)</strong> tvoří páteř každodenní socializace v MŠ.
+                <strong>Svět × Řešení problémů / Učení / Digitální (vše 4)</strong> tvoří badatelskou základnu pro pokusy a technologie.
+                <strong>Tělo × Pracovní (4)</strong> je přirozeným spojením sebeobsluhy, jemné motoriky a tvoření.
+              </p>
+            </div>
+
+            <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 14px; border-left: 4px solid #10b981;">
+              <div style="font-weight: 800; color: #047857; margin-bottom: 6px; font-size: 0.88rem;">✅ 2. Vyvážené (hodnoty 2–3)</div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.45; margin: 0;">
+                Zajišťuje upevnění dovednosti bez přehlcení dětí. Například vazba <strong>Tělo × Kulturní kompetence (3)</strong> pokrývá rytmiku, hudebně-pohybové hry a pantomimu, což má své stabilní místo, aniž by to vytlačovalo volný pohyb a sport.
+              </p>
+            </div>
+
+            <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 14px; border-left: 4px solid #0284c7;">
+              <div style="font-weight: 800; color: #0369a1; margin-bottom: 6px; font-size: 0.88rem;">🔹 3. Specifické (hodnota 1)</div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.45; margin: 0;">
+                <strong>Tělo × Digitální (1):</strong> Digitální hygiena, odpočinek očí nebo měření váhy/metru. Byla by pedagogická chyba tuto vazbu uměle tlačit na hodnoty 4–5 na úkor reálného pohybu venku!
+                <strong>Tělo × Občanská (1):</strong> Pravidla bezpečného chování ve veřejném prostoru a na silnici.
+              </p>
+            </div>
+
+            <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 14px; border-left: 4px solid #6366f1;">
+              <div style="font-weight: 800; color: #4338ca; margin-bottom: 6px; font-size: 0.88rem;">📋 4. Diagnostická únosnost pro tým</div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.45; margin: 0;">
+                <strong>Celkem 99 vazeb za rok:</strong> Při cca 8 blocích za rok připadá na blok cca 12–13 aktivních vazeb (~3 kompetence a 3 oblasti na blok).
+                <strong>Třídní portfolio:</strong> Učitel v měsíčním bloku systematicky diagnostikuje pouze <strong>2 až 3 konkrétní kompetenční projevy a 2 oborové projevy</strong>, což zabraňuje administrativnímu zahlcení a zachovává vysokou kvalitu formativní zpětné vazby.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="border-top: 1px solid var(--border-color); padding-top: 12px; display: flex; justify-content: flex-end;">
+          <button class="btn btn-primary" id="btn-modal-close-bottom">Rozumím</button>
+        </div>
+      </div>
+    `;
+
+    modal.classList.add('active');
+
+    const closeHandler = () => {
+      modal.classList.remove('active');
+    };
+
+    modal.querySelector('#close-benchmark-btn').onclick = closeHandler;
+    modal.querySelector('#btn-modal-close-bottom').onclick = closeHandler;
+    modal.onclick = (e) => {
+      if (e.target === modal) closeHandler();
+    };
   }
 
   // --- RVP CATALOG BROWSER ---
