@@ -512,8 +512,10 @@
         <button class="btn btn-primary" id="btn-confirm-assign-block">Přiřadit do bloku</button>
       </div>
     </div>
+  </div>
+
   <!-- MODAL: ITEM / OUTCOMES PICKER -->
-  <div class="modal-overlay" id="item-picker-modal">
+  <div class="modal-overlay" id="item-picker-modal" onclick="if (event.target === this) window.svpApp.closeModal('item-picker-modal')">
     <div class="modal-content" style="max-width: 650px; max-height: 85vh; display: flex; flex-direction: column;">
       <div class="card-header">
         <div class="card-title" id="item-picker-modal-title">Výběr položek</div>

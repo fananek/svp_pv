@@ -1289,12 +1289,16 @@ body {
   transform: scale(1);
 }
 
+#outcome-modal {
+  z-index: 115;
+}
+
 /* Toast Notification */
 .toast-container {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  z-index: 120;
+  z-index: 130;
   display: flex;
   flex-direction: column;
   gap: 8px;
