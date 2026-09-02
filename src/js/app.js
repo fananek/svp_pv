@@ -711,21 +711,14 @@ class SVPApp {
 
     blocksContainer.innerHTML = blocks.map((b, idx) => {
       const isCollapsed = this.collapsedBlocks.has(b.id);
-      const compCount = (b.competencies || []).length;
+      const curriculum = store.ensureCurriculum(b);
+      const compCount = curriculum.length;
       const litCount = (b.literacies || []).length;
-      const areaCount = (b.areas || []).length;
-      const outCount = (b.outcomes || []).length;
+      const allAreasSet = new Set(curriculum.flatMap(c => (c.areas || []).map(a => a.area)));
+      const areaCount = allAreasSet.size;
+      const totalOutcomesCount = curriculum.reduce((acc, c) => acc + (c.areas || []).reduce((aacc, a) => aacc + (a.outcomes || []).length, 0), 0);
       const actCount = (b.activities || []).length;
       const centersCount = (b.centersOfActivity || []).length;
-
-      const compOutcomesCount = (b.outcomes || []).filter(code => {
-        const out = RVP_OUTCOMES.find(o => o.code === code);
-        return out && RVP_COMPETENCIES[out.category];
-      }).length;
-      const areaOutcomesCount = (b.outcomes || []).filter(code => {
-        const out = RVP_OUTCOMES.find(o => o.code === code);
-        return out && RVP_AREAS[out.category];
-      }).length;
 
       let currentOfferTab = this.blockOfferTabs.get(b.id);
       if (!currentOfferTab) {
@@ -744,8 +737,8 @@ class SVPApp {
               <textarea class="block-title-input" rows="1" placeholder="Název bloku..." onclick="event.stopPropagation()" onchange="window.svpApp.updateBlockTitle('${b.id}', this.value)" oninput="window.svpApp.autoResizeTextarea(this)">${b.title}</textarea>
             </div>
             <div class="block-summary-badges">
-              ${compCount > 0 ? `<span class="block-summary-tag" title="${compOutcomesCount} přiřazených výsledků učení v kompetencích">🧠 ${formatPlural(compCount, 'kompetence', 'kompetence', 'kompetencí')} (${formatPlural(compOutcomesCount, 'výsledek', 'výsledky', 'výsledků')})</span>` : ''}
-              ${areaCount > 0 ? `<span class="block-summary-tag" title="${areaOutcomesCount} přiřazených výsledků učení v oblastech">🎨 ${formatPlural(areaCount, 'oblast', 'oblasti', 'oblastí')} (${areaOutcomesCount} výstupů)</span>` : ''}
+              ${compCount > 0 ? `<span class="block-summary-tag">🧠 ${formatPlural(compCount, 'kompetence', 'kompetence', 'kompetencí')} (${formatPlural(totalOutcomesCount, 'výsledek', 'výsledky', 'výsledků')})</span>` : ''}
+              ${areaCount > 0 ? `<span class="block-summary-tag">🎨 ${formatPlural(areaCount, 'oblast', 'oblasti', 'oblastí')}</span>` : ''}
               ${litCount > 0 ? `<span class="block-summary-tag">📖 ${formatPlural(litCount, 'gramotnost', 'gramotnosti', 'gramotností')}</span>` : ''}
               ${actCount > 0 ? `<span class="block-summary-tag">⚡ ${formatPlural(actCount, 'činnost', 'činnosti', 'činností')}</span>` : ''}
               ${centersCount > 0 ? `<span class="block-summary-tag">🏢 ${formatPlural(centersCount, 'centrum', 'centra', 'center')}</span>` : ''}
@@ -799,135 +792,100 @@ class SVPApp {
             </div>
           </div>
 
-          <!-- 4. Rozvíjené klíčové kompetence a jejich očekávané výsledky učení -->
+          <!-- 4. Rozvíjené klíčové kompetence, vzdělávací oblasti a očekávané výsledky učení -->
           <div class="block-hierarchy-section" style="border-left: 3px solid var(--primary-500);">
             <div class="block-hierarchy-header">
               <div class="block-hierarchy-title">
-                <span>🧠 Rozvíjené klíčové kompetence a očekávané výsledky učení:</span>
-                <span class="catalog-category-count" style="font-size: 0.72rem;">${formatPlural(compCount, 'kompetence', 'kompetence', 'kompetencí')}</span>
+                <span>🧠 Rozvíjené klíčové kompetence a vzdělávací oblasti (RVP PV):</span>
+                <span class="catalog-category-count" style="font-size: 0.72rem;">${formatPlural(curriculum.length, 'kompetence', 'kompetence', 'kompetencí')}</span>
               </div>
               <button type="button" class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 3px 8px;" onclick="window.svpApp.openAddCompetencyModal('${b.id}')">
                 + Přidat kompetenci
               </button>
             </div>
 
-            <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="competency,outcome" data-block-id="${b.id}" data-dropzone-type="competencies" style="min-height: 44px; display: flex; flex-direction: column; gap: 8px;">
-              ${(b.competencies || []).map(compCode => {
+            <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="competency" data-block-id="${b.id}" data-dropzone-type="competencies" style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px; min-height: 48px; padding: 10px;">
+              ${curriculum.map(compNode => {
+                const compCode = compNode.competency;
                 const comp = RVP_COMPETENCIES[compCode] || { name: compCode, icon: '🧠', desc: '' };
-                const compOutcomes = (b.outcomes || []).filter(code => {
-                  const outObj = RVP_OUTCOMES.find(o => o.code === code);
-                  return outObj && outObj.category === compCode;
-                });
+                const compAreas = compNode.areas || [];
+                const totalOutcomes = compAreas.reduce((acc, a) => acc + (a.outcomes || []).length, 0);
+
                 return `
-                  <div class="block-competency-card">
+                  <div class="block-competency-card" data-dropzone="true" data-dropzone-accepts="area" data-block-id="${b.id}" data-competency-code="${compCode}" data-dropzone-type="competency-areas">
                     <div class="block-competency-header">
                       <div class="block-competency-name">
                         <span>${comp.icon}</span>
                         <span>${comp.name}</span>
                         <span class="code-badge" style="font-size: 0.68rem;">${compCode}</span>
-                        <span class="catalog-category-count" style="font-size: 0.68rem;">${formatPlural(compOutcomes.length, 'výsledek', 'výsledky', 'výsledků')}</span>
+                        <span class="catalog-category-count" style="font-size: 0.68rem;">${formatPlural(compAreas.length, 'oblast', 'oblasti', 'oblastí')} &bull; ${formatPlural(totalOutcomes, 'výsledek', 'výsledky', 'výsledků')}</span>
                       </div>
                       <div class="block-competency-actions">
-                        <button type="button" class="btn btn-sm btn-secondary" style="padding: 2px 7px; font-size: 0.72rem;" onclick="window.svpApp.openCompetencyOutcomesModal('${b.id}', '${compCode}')" title="Vybrat očekávané výsledky této kompetence">+ Výsledek</button>
-                        <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.72rem; color: var(--danger-500);" onclick="window.svpApp.removeCompetency('${b.id}', '${compCode}')" title="Odebrat kompetenci i s výstupy">🗑</button>
+                        <button type="button" class="btn btn-sm btn-primary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="window.svpApp.openAddAreaToCompModal('${b.id}', '${compCode}')" title="Přiřadit vzdělávací oblast k této kompetenci">+ Oblast</button>
+                        <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.72rem; color: var(--danger-500);" onclick="window.svpApp.removeCompetencyFromBlock('${b.id}', '${compCode}')" title="Odebrat kompetenci">🗑</button>
                       </div>
                     </div>
-                    <div class="competency-outcomes-list">
-                      ${compOutcomes.length > 0 ? compOutcomes.map(code => {
-                        const outObj = RVP_OUTCOMES.find(o => o.code === code);
+
+                    <div class="nested-areas-container">
+                      ${compAreas.map(areaNode => {
+                        const areaCode = areaNode.area;
+                        const area = RVP_AREAS[areaCode] || { name: areaCode, icon: '🎨' };
+                        const outcomes = areaNode.outcomes || [];
                         return `
-                          <div class="competency-outcome-row">
-                            <div style="flex: 1; min-width: 0;">
-                              <span class="code-badge" style="margin-right: 6px; font-size: 0.68rem;">${code}</span>
-                              <span style="font-weight: 500;">${outObj ? outObj.title : code}</span>
+                          <div class="nested-area-card" data-dropzone="true" data-dropzone-accepts="outcome" data-block-id="${b.id}" data-competency-code="${compCode}" data-area-code="${areaCode}" data-dropzone-type="area-outcomes">
+                            <div class="nested-area-header">
+                              <div class="nested-area-name">
+                                <span>${area.icon}</span>
+                                <span>${area.name}</span>
+                                <span class="code-badge" style="font-size: 0.65rem;">${areaCode}</span>
+                                <span class="catalog-category-count" style="font-size: 0.65rem;">${formatPlural(outcomes.length, 'výsledek', 'výsledky', 'výsledků')}</span>
+                              </div>
+                              <div class="nested-area-actions">
+                                <button type="button" class="btn btn-sm btn-secondary" style="padding: 2px 7px; font-size: 0.68rem;" onclick="window.svpApp.openAreaOutcomesForCompModal('${b.id}', '${compCode}', '${areaCode}')" title="Vybrat očekávané výsledky učení pro tuto oblast">+ Výsledek</button>
+                                <button type="button" class="btn-icon-only" style="padding: 1px 5px; font-size: 0.68rem; color: var(--danger-500);" onclick="window.svpApp.removeAreaFromCompetency('${b.id}', '${compCode}', '${areaCode}')" title="Odebrat oblast z této kompetence">✕</button>
+                              </div>
                             </div>
-                            <div style="display: flex; gap: 4px; align-items: center;">
-                              <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem;" onclick="window.svpApp.showOutcomeDetail('${code}')" title="Metodický detail a inspirace">ℹ️ Info</button>
-                              <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem; color: var(--danger-500);" onclick="window.svpApp.removeBlockOutcome('${b.id}', '${code}')" title="Odebrat výsledek">✕</button>
+
+                            <div class="nested-outcomes-list">
+                              ${outcomes.length > 0 ? outcomes.map(code => {
+                                const outObj = RVP_OUTCOMES.find(o => o.code === code);
+                                return `
+                                  <div class="nested-outcome-row">
+                                    <div style="flex: 1; min-width: 0;">
+                                      <span class="code-badge" style="font-size: 0.66rem; margin-right: 6px;">${code}</span>
+                                      <span style="font-weight: 500;">${outObj ? outObj.title : code}</span>
+                                    </div>
+                                    <div style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;">
+                                      <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.66rem;" onclick="window.svpApp.showOutcomeDetail('${code}')" title="Metodický detail a inspirace">ℹ️ Info</button>
+                                      <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.66rem; color: var(--danger-500);" onclick="window.svpApp.removeOutcomeFromArea('${b.id}', '${compCode}', '${areaCode}', '${code}')" title="Odebrat výsledek">✕</button>
+                                    </div>
+                                  </div>
+                                `;
+                              }).join('') : `
+                                <div class="nested-area-empty">
+                                  <span>⚠️ Zatím není vybrán žádný konkrétní výsledek pro tuto oblast.</span>
+                                  <button type="button" class="btn btn-sm btn-primary" style="font-size: 0.68rem; padding: 2px 7px;" onclick="window.svpApp.openAreaOutcomesForCompModal('${b.id}', '${compCode}', '${areaCode}')">+ Vybrat výsledek</button>
+                                </div>
+                              `}
                             </div>
                           </div>
                         `;
-                      }).join('') : `
-                        <div class="competency-empty-warning">
-                          <span>⚠️ K této kompetenci zatím není vybrán žádný konkrétní výsledek učení.</span>
-                          <button type="button" class="btn btn-sm btn-primary" style="font-size: 0.72rem; padding: 2px 8px;" onclick="window.svpApp.openCompetencyOutcomesModal('${b.id}', '${compCode}')">+ Vybrat výsledek</button>
+                      }).join('')}
+
+                      ${(!compAreas || compAreas.length === 0) ? `
+                        <div class="nested-area-empty" style="background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: var(--radius-sm);">
+                          <span>⚠️ K této kompetenci zatím není přiřazena žádná vzdělávací oblast.</span>
+                          <button type="button" class="btn btn-sm btn-primary" style="font-size: 0.68rem; padding: 2px 7px;" onclick="window.svpApp.openAddAreaToCompModal('${b.id}', '${compCode}')">+ Přiřadit oblast</button>
                         </div>
-                      `}
+                      ` : ''}
                     </div>
                   </div>
                 `;
               }).join('')}
 
-              ${(!b.competencies || b.competencies.length === 0) ? `
-                <div style="font-size: 0.78rem; color: var(--text-light); font-style: italic; padding: 12px; text-align: center; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); background: var(--bg-card);">
-                  Přetáhněte sem klíčovou kompetenci nebo konkrétní výsledek učení z levého katalogu, případně klikněte na „+ Přidat kompetenci“.
-                </div>
-              ` : ''}
-            </div>
-          </div>
-
-          <!-- 4. Vzdělávací oblasti a jejich očekávané výsledky učení -->
-          <div class="block-hierarchy-section" style="border-left: 3px solid #10b981;">
-            <div class="block-hierarchy-header">
-              <div class="block-hierarchy-title">
-                <span>🎨 Vzdělávací oblasti a očekávané výsledky učení (RVP PV):</span>
-                <span class="catalog-category-count" style="font-size: 0.72rem;">${formatPlural(areaCount, 'oblast', 'oblasti', 'oblastí')}</span>
-              </div>
-              <button type="button" class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 3px 8px;" onclick="window.svpApp.openAddAreaModal('${b.id}')">
-                + Přidat oblast
-              </button>
-            </div>
-
-            <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="area,outcome" data-block-id="${b.id}" data-dropzone-type="areas" style="min-height: 44px; display: flex; flex-direction: column; gap: 8px;">
-              ${(b.areas || []).map(areaCode => {
-                const area = RVP_AREAS[areaCode] || { name: areaCode, icon: '🎨', desc: '' };
-                const areaOutcomes = (b.outcomes || []).filter(code => {
-                  const outObj = RVP_OUTCOMES.find(o => o.code === code);
-                  return outObj && outObj.category === areaCode;
-                });
-                return `
-                  <div class="block-competency-card">
-                    <div class="block-competency-header" style="background: rgba(16, 185, 129, 0.08);">
-                      <div class="block-competency-name">
-                        <span>${area.icon}</span>
-                        <span>${area.name}</span>
-                        <span class="code-badge" style="font-size: 0.68rem;">${areaCode}</span>
-                        <span class="catalog-category-count" style="font-size: 0.68rem;">${formatPlural(areaOutcomes.length, 'výsledek', 'výsledky', 'výsledků')}</span>
-                      </div>
-                      <div class="block-competency-actions">
-                        <button type="button" class="btn btn-sm btn-secondary" style="padding: 2px 7px; font-size: 0.72rem;" onclick="window.svpApp.openAreaOutcomesModal('${b.id}', '${areaCode}')" title="Vybrat očekávané výsledky této oblasti">+ Výsledek</button>
-                        <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.72rem; color: var(--danger-500);" onclick="window.svpApp.removeArea('${b.id}', '${areaCode}')" title="Odebrat oblast i s výstupy">🗑</button>
-                      </div>
-                    </div>
-                    <div class="competency-outcomes-list">
-                      ${areaOutcomes.length > 0 ? areaOutcomes.map(code => {
-                        const outObj = RVP_OUTCOMES.find(o => o.code === code);
-                        return `
-                          <div class="competency-outcome-row">
-                            <div style="flex: 1; min-width: 0;">
-                              <span class="code-badge" style="margin-right: 6px; font-size: 0.68rem;">${code}</span>
-                              <span style="font-weight: 500;">${outObj ? outObj.title : code}</span>
-                            </div>
-                            <div style="display: flex; gap: 4px; align-items: center;">
-                              <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem;" onclick="window.svpApp.showOutcomeDetail('${code}')" title="Metodický detail a inspirace">ℹ️ Info</button>
-                              <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem; color: var(--danger-500);" onclick="window.svpApp.removeBlockOutcome('${b.id}', '${code}')" title="Odebrat výsledek">✕</button>
-                            </div>
-                          </div>
-                        `;
-                      }).join('') : `
-                        <div class="competency-empty-warning">
-                          <span>⚠️ K této vzdělávací oblasti zatím není vybrán žádný konkrétní výsledek učení.</span>
-                          <button type="button" class="btn btn-sm btn-primary" style="font-size: 0.72rem; padding: 2px 8px;" onclick="window.svpApp.openAreaOutcomesModal('${b.id}', '${areaCode}')">+ Vybrat výsledek</button>
-                        </div>
-                      `}
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-
-              ${(!b.areas || b.areas.length === 0) ? `
-                <div style="font-size: 0.78rem; color: var(--text-light); font-style: italic; padding: 12px; text-align: center; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); background: var(--bg-card);">
-                  Přetáhněte sem vzdělávací oblast nebo její výsledek učení z katalogu, případně klikněte na „+ Přidat oblast“.
+              ${(curriculum.length === 0) ? `
+                <div style="font-size: 0.78rem; color: var(--text-light); font-style: italic; padding: 14px; text-align: center; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); background: var(--bg-card);">
+                  Klikněte na „+ Přidat kompetenci“ pro zařazení klíčové kompetence, pod kterou následně přiřadíte vzdělávací oblasti a jejich konkrétní výsledky učení.
                 </div>
               ` : ''}
             </div>
@@ -1578,6 +1536,22 @@ class SVPApp {
     this.render();
   }
 
+  updateOutcomeCompetency(blockId, outcomeCode, competencyCode) {
+    store.setOutcomeMapping(blockId, outcomeCode, competencyCode);
+    const doc = store.getDoc();
+    this.renderBlocksBuilder(doc);
+    const comp = RVP_COMPETENCIES[competencyCode];
+    this.showToast(`Výsledek propojen s: ${comp ? comp.name : competencyCode}`);
+  }
+
+  updateOutcomeLiteracy(blockId, outcomeCode, literacyCode) {
+    store.setOutcomeMapping(blockId, outcomeCode, undefined, literacyCode || null);
+    const doc = store.getDoc();
+    this.renderBlocksBuilder(doc);
+    const lit = RVP_LITERACIES[literacyCode];
+    this.showToast(literacyCode ? `Gramotnost nastavena: ${lit ? lit.name : literacyCode}` : 'Gramotnost odebrána');
+  }
+
   openAddCompetencyModal(blockId) {
     const doc = store.getDoc();
     const block = doc.blocks?.find(b => b.id === blockId);
@@ -1764,23 +1738,155 @@ class SVPApp {
     const doc = store.getDoc();
     const block = doc.blocks?.find(b => b.id === blockId);
     if (!block) return;
-    const isSelected = (block.competencies || []).includes(compCode);
+    const curriculum = store.ensureCurriculum(block);
+    const isSelected = curriculum.some(c => c.competency === compCode);
 
     if (isSelected) {
-      const compOutcomes = (block.outcomes || []).filter(c => {
-        const o = RVP_OUTCOMES.find(x => x.code === c);
-        return o && o.category === compCode;
-      });
-      if (compOutcomes.length > 0) {
-        if (!confirm(`Odebráním kompetence ${compCode} budou z bloku odebrány i ${compOutcomes.length} navázané výsledky učení. Chcete pokračovat?`)) {
+      const compNode = curriculum.find(c => c.competency === compCode);
+      const outcomesCount = compNode ? (compNode.areas || []).reduce((acc, a) => acc + (a.outcomes || []).length, 0) : 0;
+      if (outcomesCount > 0) {
+        if (!confirm(`Odebráním kompetence ${compCode} budou z bloku odebrány i ${outcomesCount} navázané výsledky učení. Chcete pokračovat?`)) {
           return;
         }
       }
-      store.removeCompetencyWithOutcomes(blockId, compCode);
+      store.removeCompetencyFromBlock(blockId, compCode);
     } else {
-      store.toggleBlockCompetency(blockId, compCode);
+      store.addCompetencyToBlock(blockId, compCode);
     }
     this.openAddCompetencyModal(blockId);
+    this.render();
+  }
+
+  removeCompetencyFromBlock(blockId, compCode) {
+    if (confirm('Opravdu si přejete odebrat tuto klíčovou kompetenci včetně přiřazených oblastí a výsledků učení?')) {
+      store.removeCompetencyFromBlock(blockId, compCode);
+      this.render();
+      this.showToast('Klíčová kompetence byla odebrána');
+    }
+  }
+
+  openAddAreaToCompModal(blockId, compCode) {
+    const doc = store.getDoc();
+    const block = doc.blocks?.find(b => b.id === blockId);
+    if (!block) return;
+    const comp = RVP_COMPETENCIES[compCode] || { name: compCode, icon: '🧠' };
+
+    const modal = document.getElementById('item-picker-modal');
+    const titleEl = document.getElementById('item-picker-modal-title');
+    const descEl = document.getElementById('item-picker-modal-desc');
+    const listEl = document.getElementById('item-picker-modal-list');
+    const badgeEl = document.getElementById('item-picker-count-badge');
+    if (!modal || !listEl) return;
+
+    titleEl.innerHTML = `🎨 Přiřadit vzdělávací oblast: ${comp.icon} ${comp.name}`;
+    descEl.textContent = `Zvolte vzdělávací oblast, skrze niž je ${comp.name} v tomto integrovaném bloku rozvíjena:`;
+
+    const compNode = (block.curriculum || []).find(c => c.competency === compCode);
+    const assignedAreas = compNode ? (compNode.areas || []).map(a => a.area) : [];
+    badgeEl.textContent = `Přiřazeno: ${assignedAreas.length} ze 4`;
+
+    listEl.innerHTML = Object.entries(RVP_AREAS).map(([code, area]) => {
+      const isSelected = assignedAreas.includes(code);
+      return `
+        <div class="picker-item-row ${isSelected ? 'is-selected' : ''}" onclick="window.svpApp.selectAreaForComp('${blockId}', '${compCode}', '${code}')">
+          <input type="checkbox" ${isSelected ? 'checked' : ''} style="margin-top: 3px; pointer-events: none;">
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+              <span>${area.icon} ${area.name}</span>
+              <span class="code-badge">${code}</span>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 3px;">${area.desc}</div>
+            ${isSelected ? `<div style="font-size: 0.74rem; color: #10b981; font-weight: 600; margin-top: 4px;">✓ Již přiřazeno k této kompetenci</div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    modal.classList.add('active');
+  }
+
+  selectAreaForComp(blockId, compCode, areaCode) {
+    const doc = store.getDoc();
+    const block = doc.blocks?.find(b => b.id === blockId);
+    if (!block) return;
+    const compNode = (block.curriculum || []).find(c => c.competency === compCode);
+    const hasArea = compNode && (compNode.areas || []).some(a => a.area === areaCode);
+    if (hasArea) {
+      store.removeAreaFromCompetency(blockId, compCode, areaCode);
+      this.showToast('Vzdělávací oblast byla odebrána z kompetence');
+    } else {
+      store.addAreaToCompetency(blockId, compCode, areaCode);
+      this.showToast('Vzdělávací oblast byla přiřazena ke kompetenci');
+    }
+    this.openAddAreaToCompModal(blockId, compCode);
+    this.render();
+  }
+
+  removeAreaFromCompetency(blockId, compCode, areaCode) {
+    if (confirm('Opravdu si přejete odebrat tuto vzdělávací oblast z dané kompetence?')) {
+      store.removeAreaFromCompetency(blockId, compCode, areaCode);
+      this.render();
+      this.showToast('Vzdělávací oblast byla odebrána');
+    }
+  }
+
+  openAreaOutcomesForCompModal(blockId, compCode, areaCode) {
+    const doc = store.getDoc();
+    const block = doc.blocks?.find(b => b.id === blockId);
+    if (!block) return;
+    const comp = RVP_COMPETENCIES[compCode] || { name: compCode, icon: '🧠' };
+    const area = RVP_AREAS[areaCode] || { name: areaCode, icon: '🎨' };
+
+    const modal = document.getElementById('item-picker-modal');
+    const titleEl = document.getElementById('item-picker-modal-title');
+    const descEl = document.getElementById('item-picker-modal-desc');
+    const listEl = document.getElementById('item-picker-modal-list');
+    const badgeEl = document.getElementById('item-picker-count-badge');
+    if (!modal || !listEl) return;
+
+    const compNode = (block.curriculum || []).find(c => c.competency === compCode);
+    const areaNode = compNode ? (compNode.areas || []).find(a => a.area === areaCode) : null;
+    const currentOutcomes = areaNode ? (areaNode.outcomes || []) : [];
+
+    const allAreaOutcomes = RVP_OUTCOMES.filter(o => o.category === areaCode);
+
+    titleEl.innerHTML = `${area.icon} Výsledky učení: ${area.name} (${areaCode})`;
+    descEl.textContent = `Vyberte konkrétní výstupy z oblasti ${area.name} pro rozvoj ${comp.name}:`;
+    badgeEl.textContent = `Vybráno: ${currentOutcomes.length} z ${allAreaOutcomes.length}`;
+
+    const scrollPos = listEl.scrollTop;
+
+    listEl.innerHTML = allAreaOutcomes.map(out => {
+      const isSelected = currentOutcomes.includes(out.code);
+      return `
+        <div class="picker-item-row ${isSelected ? 'is-selected' : ''}" onclick="window.svpApp.toggleAreaOutcomeForComp('${blockId}', '${compCode}', '${areaCode}', '${out.code}')">
+          <input type="checkbox" ${isSelected ? 'checked' : ''} style="margin-top: 3px; pointer-events: none;">
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+              <span class="code-badge">${out.code}</span>
+              <span style="font-size: 0.72rem; color: var(--text-light);">Strana ${out.page}</span>
+            </div>
+            <div style="font-size: 0.84rem; font-weight: 600; color: var(--text-main);">${out.title}</div>
+            ${out.comment ? `<div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">${out.comment.slice(0, 160)}...</div>` : ''}
+          </div>
+          <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.7rem;" onclick="event.stopPropagation(); window.svpApp.showOutcomeDetail('${out.code}')" title="Metodický detail a inspirace">ℹ️ Info</button>
+        </div>
+      `;
+    }).join('');
+
+    listEl.scrollTop = scrollPos;
+    modal.classList.add('active');
+  }
+
+  toggleAreaOutcomeForComp(blockId, compCode, areaCode, outcomeCode) {
+    store.toggleOutcomeInArea(blockId, compCode, areaCode, outcomeCode);
+    this.openAreaOutcomesForCompModal(blockId, compCode, areaCode);
+    this.render();
+  }
+
+  removeOutcomeFromArea(blockId, compCode, areaCode, outcomeCode) {
+    store.removeOutcomeFromArea(blockId, compCode, areaCode, outcomeCode);
+    this.render();
   }
 
   toggleBlockAreaAndRefreshPicker(blockId, areaCode) {
@@ -2116,7 +2222,68 @@ class SVPApp {
       `;
     });
 
-    html += `</div>`;
+    html += `
+      </div>
+
+      <h3 style="font-size: 1.15rem; margin-top: 32px; margin-bottom: 8px;">3. Kurikulární matice propojení: Vzdělávací oblasti × Klíčové kompetence (RVP PV od 2027)</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+        Dvourozměrná mřížka kurikula: ukazuje konkrétní průsečíky, kde výstupy ze vzdělávacích oblastí sytí klíčové kompetence v celém vašem programu.
+      </p>
+      <div style="overflow-x: auto; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px; box-shadow: var(--shadow-sm);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: center;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border-color); background: var(--bg-subtle);">
+              <th style="padding: 10px; text-align: left; min-width: 170px;">Vzdělávací oblast</th>
+              ${Object.entries(RVP_COMPETENCIES).map(([cCode, cObj]) => `
+                <th style="padding: 8px 4px; min-width: 80px;" title="${cObj.name}">
+                  <div style="font-size: 1.1rem;">${cObj.icon}</div>
+                  <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-main);">${cCode}</div>
+                </th>
+              `).join('')}
+              <th style="padding: 8px; min-width: 65px; font-weight: 800;">Celkem</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${Object.entries(RVP_AREAS).map(([aCode, aObj]) => {
+              let rowTotal = 0;
+              const cells = Object.keys(RVP_COMPETENCIES).map(cCode => {
+                let matchCount = 0;
+                doc.blocks.forEach(b => {
+                  (b.outcomes || []).forEach(code => {
+                    const outObj = RVP_OUTCOMES.find(o => o.code === code);
+                    if (outObj && outObj.category === aCode) {
+                      const mapping = store.getOutcomeMapping(b, code);
+                      if (mapping && mapping.competency === cCode) {
+                        matchCount++;
+                      }
+                    }
+                  });
+                });
+                rowTotal += matchCount;
+                return `
+                  <td style="padding: 8px 4px; border: 1px solid var(--border-color); ${matchCount > 0 ? 'background: rgba(59, 130, 246, 0.12); font-weight: 700; color: var(--primary-600);' : 'color: var(--text-light);'}">
+                    ${matchCount > 0 ? `<strong>${matchCount}×</strong>` : '<span style="opacity: 0.4;">·</span>'}
+                  </td>
+                `;
+              }).join('');
+
+              return `
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 10px; text-align: left; font-weight: 600; background: var(--bg-subtle);">
+                    ${aObj.icon} ${aObj.name} <span class="code-badge" style="font-size: 0.65rem;">${aCode}</span>
+                  </td>
+                  ${cells}
+                  <td style="padding: 8px 4px; font-weight: 800; background: var(--bg-subtle);">
+                    ${rowTotal}
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+
     container.innerHTML = html;
   }
 

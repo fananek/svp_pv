@@ -81,6 +81,52 @@ export const SAMPLE_TEMPLATES = [
           "KOS-000-000-PV1-001",
           "KDI-000-000-PV1-001"
         ],
+        "outcomeMappings": {
+          "DJP-SAE-000-PV1-001": { "competency": "KOS", "literacy": "CGR" },
+          "DDS-ANS-000-PV1-001": { "competency": "KKK", "literacy": null },
+          "DJT-TSB-000-PV1-001": { "competency": "KKU", "literacy": null },
+          "KKK-000-000-PV1-001": { "competency": "KKK", "literacy": "CGR" },
+          "KOS-000-000-PV1-001": { "competency": "KOS", "literacy": null },
+          "KDI-000-000-PV1-001": { "competency": "KDI", "literacy": "MGR" }
+        },
+        "curriculum": [
+          {
+            "competency": "KOS",
+            "areas": [
+              {
+                "area": "DJP",
+                "outcomes": ["DJP-SAE-000-PV1-001"]
+              }
+            ]
+          },
+          {
+            "competency": "KKK",
+            "areas": [
+              {
+                "area": "DDS",
+                "outcomes": ["DDS-ANS-000-PV1-001"]
+              }
+            ]
+          },
+          {
+            "competency": "KKU",
+            "areas": [
+              {
+                "area": "DJT",
+                "outcomes": ["DJT-TSB-000-PV1-001"]
+              }
+            ]
+          },
+          {
+            "competency": "KDI",
+            "areas": [
+              {
+                "area": "DJP",
+                "outcomes": []
+              }
+            ]
+          }
+        ],
         "centersOfActivity": [
           {
             "center": "Centrum Věda, pokusy a digitální svět",

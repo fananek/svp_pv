@@ -1122,15 +1122,49 @@ body {
   transition: all var(--transition-fast);
 }
 
-.dropzone-container.dropzone-highlight {
-  border-color: var(--primary-500);
-  background-color: rgba(59, 130, 246, 0.03);
+.dropzone-container.dropzone-highlight,
+.dropzone-highlight,
+[data-dropzone].dropzone-highlight {
+  border-color: var(--primary-500) !important;
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
 }
 
-.dropzone-container.dropzone-over {
-  border-color: var(--primary-600);
-  background-color: rgba(59, 130, 246, 0.08);
-  transform: scale(1.005);
+.dropzone-container.dropzone-over,
+.dropzone-over,
+[data-dropzone].dropzone-over {
+  border-color: var(--primary-600) !important;
+  background-color: rgba(59, 130, 246, 0.16) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5) !important;
+  transform: scale(1.008);
+}
+
+/* Zelené zvýraznění karet kompetencí při přetahování vzdělávací oblasti */
+.block-competency-card[data-dropzone-accepts*="area"].dropzone-highlight {
+  border-color: #10b981 !important;
+  background-color: rgba(16, 185, 129, 0.06) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3) !important;
+}
+
+.block-competency-card[data-dropzone-accepts*="area"].dropzone-over {
+  border-color: #059669 !important;
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5) !important;
+  transform: scale(1.012);
+}
+
+/* Modré zvýraznění karet oblastí při přetahování výsledku učení */
+.nested-area-card[data-dropzone-accepts*="outcome"].dropzone-highlight {
+  border-color: var(--primary-500) !important;
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
+}
+
+.nested-area-card[data-dropzone-accepts*="outcome"].dropzone-over {
+  border-color: var(--primary-600) !important;
+  background-color: rgba(59, 130, 246, 0.18) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5) !important;
+  transform: scale(1.012);
 }
 
 .drop-success-pulse {
@@ -2007,5 +2041,196 @@ body {
 .literacy-item-icon {
   font-size: 0.95rem;
   line-height: 1;
+}
+
+/* Outcome Cross-Mapping Matrix Controls */
+.outcome-cross-mapping {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border-color);
+  font-size: 0.74rem;
+}
+
+.outcome-mapping-label {
+  font-weight: 700;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.outcome-competency-select {
+  padding: 3px 8px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--primary-400);
+  background: var(--bg-card);
+  color: var(--primary-700);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.outcome-competency-select:hover,
+.outcome-competency-select:focus {
+  border-color: var(--primary-600);
+  box-shadow: var(--shadow-sm);
+  outline: none;
+}
+
+[data-theme="dark"] .outcome-competency-select {
+  background: var(--bg-surface);
+  color: var(--primary-300);
+  border-color: var(--primary-500);
+}
+
+.outcome-literacy-select {
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.outcome-literacy-select:hover {
+  border-color: var(--text-light);
+  color: var(--text-main);
+}
+
+/* Competency card linked area outcomes section */
+.competency-linked-box {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(59, 130, 246, 0.04);
+  border: 1px dashed rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-sm);
+}
+
+[data-theme="dark"] .competency-linked-box {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.competency-linked-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary-600);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+[data-theme="dark"] .competency-linked-title {
+  color: var(--primary-300);
+}
+
+.competency-linked-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 5px 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.74rem;
+  margin-bottom: 4px;
+}
+
+/* Hierarchical Curriculum: Competency -> Area -> Outcomes */
+.nested-areas-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  padding-left: 12px;
+  border-left: 2px solid var(--primary-300);
+}
+
+[data-theme="dark"] .nested-areas-container {
+  border-left-color: var(--primary-700);
+}
+
+.nested-area-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.nested-area-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(16, 185, 129, 0.07);
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .nested-area-header {
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.nested-area-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.nested-area-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nested-outcomes-list {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nested-outcome-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.74rem;
+  transition: background var(--transition-fast);
+}
+
+.nested-outcome-row:hover {
+  background: var(--bg-surface-hover);
+}
+
+.nested-area-empty {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  font-style: italic;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 

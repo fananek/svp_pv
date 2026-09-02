@@ -102,14 +102,31 @@ export class DnDManager {
   processDrop(item, targetBlockId, targetType, dropzone) {
     if (!item) return;
 
-    if (item.type === 'outcome' && targetBlockId) {
-      store.addBlockOutcome(targetBlockId, item.id);
+    if (item.type === 'competency' && targetBlockId) {
+      store.addCompetencyToBlock(targetBlockId, item.id);
       this.playSuccessAnimation(dropzone);
-    } else if (item.type === 'competency' && targetBlockId) {
-      const doc = store.getDoc();
-      const block = doc.blocks?.find(b => b.id === targetBlockId);
-      if (block && (!block.competencies || !block.competencies.includes(item.id))) {
-        store.toggleBlockCompetency(targetBlockId, item.id);
+    } else if (item.type === 'area' && targetBlockId) {
+      const compCode = dropzone.dataset.competencyCode;
+      if (compCode) {
+        store.addAreaToCompetency(targetBlockId, compCode, item.id);
+      } else {
+        const block = store.getDoc().blocks?.find(b => b.id === targetBlockId);
+        const curriculum = store.ensureCurriculum(block);
+        if (curriculum.length > 0) {
+          store.addAreaToCompetency(targetBlockId, curriculum[0].competency, item.id);
+        } else {
+          store.addCompetencyToBlock(targetBlockId, 'KKU');
+          store.addAreaToCompetency(targetBlockId, 'KKU', item.id);
+        }
+      }
+      this.playSuccessAnimation(dropzone);
+    } else if (item.type === 'outcome' && targetBlockId) {
+      const compCode = dropzone.dataset.competencyCode;
+      const areaCode = dropzone.dataset.areaCode;
+      if (compCode && areaCode) {
+        store.addOutcomeToArea(targetBlockId, compCode, areaCode, item.id);
+      } else {
+        store.addBlockOutcome(targetBlockId, item.id);
       }
       this.playSuccessAnimation(dropzone);
     } else if (item.type === 'literacy' && targetBlockId) {
@@ -117,13 +134,6 @@ export class DnDManager {
       const block = doc.blocks?.find(b => b.id === targetBlockId);
       if (block && (!block.literacies || !block.literacies.includes(item.id))) {
         store.toggleBlockLiteracy(targetBlockId, item.id);
-      }
-      this.playSuccessAnimation(dropzone);
-    } else if (item.type === 'area' && targetBlockId) {
-      const doc = store.getDoc();
-      const block = doc.blocks?.find(b => b.id === targetBlockId);
-      if (block && (!block.areas || !block.areas.includes(item.id))) {
-        store.toggleBlockArea(targetBlockId, item.id);
       }
       this.playSuccessAnimation(dropzone);
     } else if (item.type === 'activity' && targetBlockId && item.sourceBlockId !== targetBlockId) {

@@ -286,46 +286,38 @@ export class SVPExporter {
         </div>
       ` : ''}
 
-      <!-- Hierarchické vazby RVP PV: Klíčové kompetence a jejich výsledky -->
+      <!-- Kurikulární vazby RVP PV: Klíčové kompetence -> Vzdělávací oblasti -> Výsledky učení -->
       <div style="margin-top: 14px; margin-bottom: 12px;">
-        <p style="margin-bottom: 6px; font-weight: 700; color: #1e3a8a;">🧠 Rozvíjené klíčové kompetence a očekávané výsledky učení:</p>
-        ${(b.competencies && b.competencies.length > 0) ? b.competencies.map(compCode => {
-          const compOutcomes = (b.outcomes || []).filter(code => {
-            const o = RVP_OUTCOMES.find(x => x.code === code);
-            return o && o.category === compCode;
-          });
-          return `
-            <div style="margin-bottom: 8px; padding: 6px 10px; background: #f8fafc; border-left: 3px solid #3b82f6; border-radius: 0 4px 4px 0;">
-              <strong style="color: #1d4ed8; font-size: 10pt;">${getCompName(compCode)}</strong>
-              ${compOutcomes.length > 0 ? `
-                <ul style="margin: 4px 0 2px 18px; padding: 0; font-size: 9.5pt; line-height: 1.45;">
-                  ${compOutcomes.map(code => `<li><strong>[${code}]</strong> ${getOutcomeTitle(code)}</li>`).join('')}
-                </ul>
-              ` : `<div style="font-size: 9pt; color: #9ca3af; font-style: italic; margin-left: 6px; margin-top: 2px;">Konkrétní dílčí výsledek učení nebyl specifikován.</div>`}
-            </div>
-          `;
-        }).join('') : '<div style="color: #9ca3af; font-size: 9pt; font-style: italic; margin-bottom: 8px;">Klíčové kompetence nebyly přiřazeny.</div>'}
-      </div>
-
-      <!-- Vzdělávací oblasti a jejich výsledky -->
-      <div style="margin-top: 10px; margin-bottom: 12px;">
-        <p style="margin-bottom: 6px; font-weight: 700; color: #1e3a8a;">🎨 Vzdělávací oblasti a očekávané výsledky učení:</p>
-        ${(b.areas && b.areas.length > 0) ? b.areas.map(areaCode => {
-          const areaOutcomes = (b.outcomes || []).filter(code => {
-            const o = RVP_OUTCOMES.find(x => x.code === code);
-            return o && o.category === areaCode;
-          });
-          return `
-            <div style="margin-bottom: 8px; padding: 6px 10px; background: #f8fafc; border-left: 3px solid #10b981; border-radius: 0 4px 4px 0;">
-              <strong style="color: #047857; font-size: 10pt;">${getAreaName(areaCode)}</strong>
-              ${areaOutcomes.length > 0 ? `
-                <ul style="margin: 4px 0 2px 18px; padding: 0; font-size: 9.5pt; line-height: 1.45;">
-                  ${areaOutcomes.map(code => `<li><strong>[${code}]</strong> ${getOutcomeTitle(code)}</li>`).join('')}
-                </ul>
-              ` : `<div style="font-size: 9pt; color: #9ca3af; font-style: italic; margin-left: 6px; margin-top: 2px;">Konkrétní dílčí výsledek učení nebyl specifikován.</div>`}
-            </div>
-          `;
-        }).join('') : '<div style="color: #9ca3af; font-size: 9pt; font-style: italic; margin-bottom: 8px;">Vzdělávací oblasti nebyly přiřazeny.</div>'}
+        <p style="margin-bottom: 6px; font-weight: 700; color: #1e3a8a;">🧠 Rozvíjené klíčové kompetence a vzdělávací oblasti:</p>
+        ${(() => {
+          const curriculum = store.ensureCurriculum(b);
+          if (!curriculum || curriculum.length === 0) {
+            return '<div style="color: #9ca3af; font-size: 9pt; font-style: italic; margin-bottom: 8px;">Klíčové kompetence nebyly přiřazeny.</div>';
+          }
+          return curriculum.map(compNode => {
+            const compCode = compNode.competency;
+            const areas = compNode.areas || [];
+            return `
+              <div style="margin-bottom: 10px; padding: 6px 12px; background: #f8fafc; border-left: 3.5px solid #3b82f6; border-radius: 0 6px 6px 0;">
+                <strong style="color: #1d4ed8; font-size: 10.5pt;">${getCompName(compCode)}</strong>
+                ${areas.length > 0 ? areas.map(areaNode => {
+                  const areaCode = areaNode.area;
+                  const outcomes = areaNode.outcomes || [];
+                  return `
+                    <div style="margin-top: 6px; margin-left: 10px; padding-left: 8px; border-left: 2px solid #10b981;">
+                      <div style="font-weight: 700; color: #047857; font-size: 9.5pt;">🎨 Oblast: ${getAreaName(areaCode)}</div>
+                      ${outcomes.length > 0 ? `
+                        <ul style="margin: 3px 0 2px 18px; padding: 0; font-size: 9pt; line-height: 1.45;">
+                          ${outcomes.map(code => `<li><strong>[${code}]</strong> ${getOutcomeTitle(code)}</li>`).join('')}
+                        </ul>
+                      ` : `<div style="font-size: 8.5pt; color: #9ca3af; font-style: italic; margin-left: 6px;">Zatím bez konkrétních dílčích výsledků učení.</div>`}
+                    </div>
+                  `;
+                }).join('') : `<div style="font-size: 8.5pt; color: #9ca3af; font-style: italic; margin-left: 10px; margin-top: 3px;">K této kompetenci zatím nebyla přiřazena vzdělávací oblast.</div>`}
+              </div>
+            `;
+          }).join('');
+        })()}
       </div>
 
       ${(b.centersOfActivity && b.centersOfActivity.length > 0) || (b.activities && b.activities.length > 0) ? `

@@ -178,8 +178,11 @@ export class SVPStore {
       literacies: blockData.literacies || [],
       areas: blockData.areas || [],
       outcomes: blockData.outcomes || [],
+      outcomeMappings: blockData.outcomeMappings || {},
+      curriculum: blockData.curriculum || [],
       activities: blockData.activities || []
     };
+    this.ensureCurriculum(newBlock);
     this.currentDoc.blocks.push(newBlock);
     this.notify('block_added');
     return newBlock;
@@ -204,15 +207,176 @@ export class SVPStore {
     this.notify('blocks_reordered');
   }
 
+  // --- HIERARCHICKÁ STRUKTURA CURRICULUM: KK -> VO -> OVU ---
+  ensureCurriculum(block) {
+    if (!block) return [];
+    if (!block.curriculum) {
+      block.curriculum = [];
+    }
+    // Automatická migrace ze starších polí pokud je curriculum prázdné
+    if (block.curriculum.length === 0 && (block.competencies?.length > 0 || block.outcomes?.length > 0)) {
+      const compList = block.competencies || [];
+      compList.forEach(cCode => {
+        const compNode = { competency: cCode, areas: [] };
+        const blockAreas = block.areas || [];
+        blockAreas.forEach(aCode => {
+          const areaOutcomes = (block.outcomes || []).filter(code => {
+            const outObj = RVP_OUTCOMES.find(o => o.code === code);
+            if (!outObj || outObj.category !== aCode) return false;
+            if (block.outcomeMappings && block.outcomeMappings[code]) {
+              return block.outcomeMappings[code].competency === cCode;
+            }
+            return true;
+          });
+          if (areaOutcomes.length > 0) {
+            compNode.areas.push({ area: aCode, outcomes: areaOutcomes });
+          }
+        });
+        block.curriculum.push(compNode);
+      });
+
+      // Případné nezařazené oblasti přidáme do první kompetence
+      if (block.curriculum.length > 0 && block.areas) {
+        block.areas.forEach(aCode => {
+          const alreadyIn = block.curriculum.some(c => (c.areas || []).some(a => a.area === aCode));
+          if (!alreadyIn) {
+            const areaOutcomes = (block.outcomes || []).filter(code => {
+              const outObj = RVP_OUTCOMES.find(o => o.code === code);
+              return outObj && outObj.category === aCode;
+            });
+            block.curriculum[0].areas.push({ area: aCode, outcomes: areaOutcomes });
+          }
+        });
+      }
+      this.syncBlockArrays(block);
+    }
+    return block.curriculum;
+  }
+
+  syncBlockArrays(block) {
+    if (!block || !block.curriculum) return;
+    block.competencies = block.curriculum.map(c => c.competency);
+    const areaSet = new Set();
+    const outcomeSet = new Set();
+    if (!block.outcomeMappings) block.outcomeMappings = {};
+
+    block.curriculum.forEach(c => {
+      (c.areas || []).forEach(a => {
+        areaSet.add(a.area);
+        (a.outcomes || []).forEach(code => {
+          outcomeSet.add(code);
+          if (!block.outcomeMappings[code]) {
+            block.outcomeMappings[code] = {};
+          }
+          block.outcomeMappings[code].competency = c.competency;
+        });
+      });
+    });
+    block.areas = Array.from(areaSet);
+    block.outcomes = Array.from(outcomeSet);
+  }
+
+  addCompetencyToBlock(blockId, compCode) {
+    const block = this.currentDoc.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    this.ensureCurriculum(block);
+    if (!block.curriculum.some(c => c.competency === compCode)) {
+      block.curriculum.push({ competency: compCode, areas: [] });
+      this.syncBlockArrays(block);
+      this.notify('block_competencies_updated');
+    }
+  }
+
+  removeCompetencyFromBlock(blockId, compCode) {
+    const block = this.currentDoc.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    this.ensureCurriculum(block);
+    block.curriculum = block.curriculum.filter(c => c.competency !== compCode);
+    this.syncBlockArrays(block);
+    this.notify('block_competencies_updated');
+  }
+
+  addAreaToCompetency(blockId, compCode, areaCode) {
+    const block = this.currentDoc.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    this.ensureCurriculum(block);
+    let compNode = block.curriculum.find(c => c.competency === compCode);
+    if (!compNode) {
+      compNode = { competency: compCode, areas: [] };
+      block.curriculum.push(compNode);
+    }
+    if (!compNode.areas) compNode.areas = [];
+    if (!compNode.areas.some(a => a.area === areaCode)) {
+      compNode.areas.push({ area: areaCode, outcomes: [] });
+      this.syncBlockArrays(block);
+      this.notify('block_outcomes_updated');
+    }
+  }
+
+  removeAreaFromCompetency(blockId, compCode, areaCode) {
+    const block = this.currentDoc.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    this.ensureCurriculum(block);
+    const compNode = block.curriculum.find(c => c.competency === compCode);
+    if (compNode && compNode.areas) {
+      compNode.areas = compNode.areas.filter(a => a.area !== areaCode);
+      this.syncBlockArrays(block);
+      this.notify('block_outcomes_updated');
+    }
+  }
+
+  toggleOutcomeInArea(blockId, compCode, areaCode, outcomeCode) {
+    const block = this.currentDoc.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    this.ensureCurriculum(block);
+    let compNode = block.curriculum.find(c => c.competency === compCode);
+    if (!compNode) {
+      compNode = { competency: compCode, areas: [] };
+      block.curriculum.push(compNode);
+    }
+    if (!compNode.areas) compNode.areas = [];
+    let areaNode = compNode.areas.find(a => a.area === areaCode);
+    if (!areaNode) {
+      areaNode = { area: areaCode, outcomes: [] };
+      compNode.areas.push(areaNode);
+    }
+    if (!areaNode.outcomes) areaNode.outcomes = [];
+    const idx = areaNode.outcomes.indexOf(outcomeCode);
+    if (idx !== -1) {
+      areaNode.outcomes.splice(idx, 1);
+    } else {
+      areaNode.outcomes.push(outcomeCode);
+    }
+    this.syncBlockArrays(block);
+    this.notify('block_outcomes_updated');
+  }
+
+  removeOutcomeFromArea(blockId, compCode, areaCode, outcomeCode) {
+    const block = this.currentDoc.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    this.ensureCurriculum(block);
+    const compNode = block.curriculum.find(c => c.competency === compCode);
+    if (compNode && compNode.areas) {
+      const areaNode = compNode.areas.find(a => a.area === areaCode);
+      if (areaNode && areaNode.outcomes) {
+        areaNode.outcomes = areaNode.outcomes.filter(code => code !== outcomeCode);
+        this.syncBlockArrays(block);
+        this.notify('block_outcomes_updated');
+      }
+    }
+  }
+
   // Outcomes & Competency connection to Blocks
-  toggleBlockOutcome(blockId, outcomeCode) {
+  toggleBlockOutcome(blockId, outcomeCode, initialMapping = {}) {
     const block = this.currentDoc.blocks.find(b => b.id === blockId);
     if (!block) return;
     if (!block.outcomes) block.outcomes = [];
+    if (!block.outcomeMappings) block.outcomeMappings = {};
     
     const idx = block.outcomes.indexOf(outcomeCode);
     if (idx !== -1) {
       block.outcomes.splice(idx, 1);
+      delete block.outcomeMappings[outcomeCode];
     } else {
       block.outcomes.push(outcomeCode);
       
@@ -224,11 +388,23 @@ export class SVPStore {
           if (!block.competencies.includes(outcomeObj.category)) {
             block.competencies.push(outcomeObj.category);
           }
+          block.outcomeMappings[outcomeCode] = {
+            competency: outcomeObj.category,
+            literacy: initialMapping.literacy || null
+          };
         }
         if (RVP_AREAS[outcomeObj.category]) {
           if (!block.areas) block.areas = [];
           if (!block.areas.includes(outcomeObj.category)) {
             block.areas.push(outcomeObj.category);
+          }
+          const defaultComp = initialMapping.competency || (block.competencies && block.competencies.length > 0 ? block.competencies[0] : 'KKU');
+          block.outcomeMappings[outcomeCode] = {
+            competency: defaultComp,
+            literacy: initialMapping.literacy || null
+          };
+          if (defaultComp && block.competencies && !block.competencies.includes(defaultComp)) {
+            block.competencies.push(defaultComp);
           }
         }
       }
@@ -236,10 +412,12 @@ export class SVPStore {
     this.notify('block_outcomes_updated');
   }
 
-  addBlockOutcome(blockId, outcomeCode) {
+  addBlockOutcome(blockId, outcomeCode, initialMapping = {}) {
     const block = this.currentDoc.blocks.find(b => b.id === blockId);
     if (!block) return;
     if (!block.outcomes) block.outcomes = [];
+    if (!block.outcomeMappings) block.outcomeMappings = {};
+    
     if (!block.outcomes.includes(outcomeCode)) {
       block.outcomes.push(outcomeCode);
       const outcomeObj = RVP_OUTCOMES.find(o => o.code === outcomeCode);
@@ -249,11 +427,23 @@ export class SVPStore {
           if (!block.competencies.includes(outcomeObj.category)) {
             block.competencies.push(outcomeObj.category);
           }
+          block.outcomeMappings[outcomeCode] = {
+            competency: outcomeObj.category,
+            literacy: initialMapping.literacy || null
+          };
         }
         if (RVP_AREAS[outcomeObj.category]) {
           if (!block.areas) block.areas = [];
           if (!block.areas.includes(outcomeObj.category)) {
             block.areas.push(outcomeObj.category);
+          }
+          const defaultComp = initialMapping.competency || (block.competencies && block.competencies.length > 0 ? block.competencies[0] : 'KKU');
+          block.outcomeMappings[outcomeCode] = {
+            competency: defaultComp,
+            literacy: initialMapping.literacy || null
+          };
+          if (defaultComp && block.competencies && !block.competencies.includes(defaultComp)) {
+            block.competencies.push(defaultComp);
           }
         }
       }
@@ -267,8 +457,49 @@ export class SVPStore {
     const idx = block.outcomes.indexOf(outcomeCode);
     if (idx !== -1) {
       block.outcomes.splice(idx, 1);
+      if (block.outcomeMappings) {
+        delete block.outcomeMappings[outcomeCode];
+      }
       this.notify('block_outcomes_updated');
     }
+  }
+
+  setOutcomeMapping(blockId, outcomeCode, competencyCode, literacyCode = undefined) {
+    const block = this.currentDoc.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    if (!block.outcomeMappings) block.outcomeMappings = {};
+    if (!block.outcomeMappings[outcomeCode]) {
+      block.outcomeMappings[outcomeCode] = {};
+    }
+    if (competencyCode !== undefined) {
+      block.outcomeMappings[outcomeCode].competency = competencyCode;
+      if (competencyCode && block.competencies && !block.competencies.includes(competencyCode)) {
+        block.competencies.push(competencyCode);
+      }
+    }
+    if (literacyCode !== undefined) {
+      block.outcomeMappings[outcomeCode].literacy = literacyCode;
+      if (literacyCode && block.literacies && !block.literacies.includes(literacyCode)) {
+        block.literacies.push(literacyCode);
+      }
+    }
+    this.notify('block_outcomes_updated');
+  }
+
+  getOutcomeMapping(block, outcomeCode) {
+    if (!block) return null;
+    const outcomeObj = RVP_OUTCOMES.find(o => o.code === outcomeCode);
+    if (!outcomeObj) return null;
+
+    if (block.outcomeMappings && block.outcomeMappings[outcomeCode]) {
+      return block.outcomeMappings[outcomeCode];
+    }
+
+    if (RVP_COMPETENCIES[outcomeObj.category]) {
+      return { competency: outcomeObj.category, literacy: null };
+    }
+    const defaultComp = (block.competencies && block.competencies.length > 0) ? block.competencies[0] : null;
+    return { competency: defaultComp, literacy: null };
   }
 
   toggleBlockCompetency(blockId, compCode) {
