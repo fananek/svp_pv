@@ -2314,64 +2314,318 @@ class SVPApp {
 
       <h3 style="font-size: 1.15rem; margin-top: 32px; margin-bottom: 8px;">3. Kurikulární matice propojení: Vzdělávací oblasti × Klíčové kompetence (RVP PV od 2027)</h3>
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
-        Dvourozměrná mřížka kurikula: ukazuje konkrétní průsečíky, kde výstupy ze vzdělávacích oblastí sytí klíčové kompetence v celém vašem programu.
+        Dvourozměrná mřížka kurikula jako <strong>heat mapa</strong>: okamžitě odhaluje, které průsečíky vzdělávacích oblastí a klíčových kompetencí jsou pod-nasycené (bílá místa / deficity), vyvážené nebo přesycené (dominantní vazby).
       </p>
-      <div style="overflow-x: auto; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px; box-shadow: var(--shadow-sm);">
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: center;">
+    `;
+
+    // Compute curricular matrix dataset (4 areas x 8 competencies)
+    const compKeys = Object.keys(RVP_COMPETENCIES);
+    const areaKeys = Object.keys(RVP_AREAS);
+
+    const matrixData = {};
+    const colTotals = {};
+    compKeys.forEach(c => colTotals[c] = 0);
+    let grandTotal = 0;
+    let maxCellCount = 0;
+    const allCells = [];
+
+    areaKeys.forEach(aCode => {
+      matrixData[aCode] = {};
+      compKeys.forEach(cCode => {
+        const matches = [];
+        (doc.blocks || []).forEach(b => {
+          (b.outcomes || []).forEach(code => {
+            const outObj = RVP_OUTCOMES.find(o => o.code === code);
+            if (outObj && outObj.category === aCode) {
+              const mapping = store.getOutcomeMapping(b, code);
+              if (mapping && mapping.competency === cCode) {
+                matches.push({
+                  blockTitle: b.title || 'Nepojmenovaný blok',
+                  outcomeCode: code,
+                  outcomeTitle: outObj.title
+                });
+              }
+            }
+          });
+        });
+        const count = matches.length;
+        matrixData[aCode][cCode] = { count, matches };
+        colTotals[cCode] += count;
+        grandTotal += count;
+        if (count > maxCellCount) maxCellCount = count;
+        allCells.push({ aCode, cCode, count, matches });
+      });
+    });
+
+    // Helper to determine saturation info
+    const getSaturation = (count, maxVal) => {
+      if (count === 0) {
+        return {
+          level: 'deficit',
+          pillText: '0× · deficit',
+          status: 'Bílé místo (deficit)',
+          desc: 'V programu není přiřazen žádný výstup pro toto propojení.',
+          recommendation: 'Doporučujeme zvážit zařazení výstupu pro tuto kombinaci.'
+        };
+      }
+      if (count >= 8 || (maxVal >= 6 && count === maxVal && count >= 5)) {
+        return {
+          level: 'over',
+          pillText: `${count}× 🔥 přesyceno`,
+          status: 'Přesycené propojení',
+          desc: `Výrazně dominantní vazba (${count} výstupů).`,
+          recommendation: 'Pozor na jednostranné zaměření programu na úkor ostatních kompetencí.'
+        };
+      }
+      if (count >= 6 || (maxVal >= 5 && count >= 4 && count === maxVal)) {
+        return {
+          level: 'high',
+          pillText: `${count}× · vysoké`,
+          status: 'Vysoké nasycení',
+          desc: `Silné zastoupení vazby s ${count} výstupy.`,
+          recommendation: 'Oblast i kompetence jsou velmi bohatě propojeny.'
+        };
+      }
+      if (count >= 3 || (maxVal <= 4 && count >= 2)) {
+        return {
+          level: 'optimal',
+          pillText: `${count}× · optimální`,
+          status: 'Vyvážené nasycení',
+          desc: `Doporučené a zdravé nasycení (${count} výstupů).`,
+          recommendation: 'Ideální rozložení pro přirozený rozvoj dítěte.'
+        };
+      }
+      return {
+        level: 'low',
+        pillText: `${count}× · nízké`,
+        status: 'Nízké nasycení',
+        desc: `Mírné propojení (${count} ${count === 1 ? 'výstup' : 'výstupy'}).`,
+        recommendation: 'Vhodné pro doplňkové nebo začínající aktivity.'
+      };
+    };
+
+    // Calculate saturation counts for KPI summary
+    let deficitCount = 0;
+    let lowCount = 0;
+    let optimalCount = 0;
+    let highCount = 0;
+    let overCount = 0;
+
+    allCells.forEach(cell => {
+      const sat = getSaturation(cell.count, maxCellCount);
+      cell.sat = sat;
+      if (sat.level === 'deficit') deficitCount++;
+      else if (sat.level === 'low') lowCount++;
+      else if (sat.level === 'optimal') optimalCount++;
+      else if (sat.level === 'high') highCount++;
+      else if (sat.level === 'over') overCount++;
+    });
+
+    const topCell = allCells.slice().sort((a, b) => b.count - a.count)[0];
+    const topArea = topCell && topCell.count > 0 ? RVP_AREAS[topCell.aCode] : null;
+    const topComp = topCell && topCell.count > 0 ? RVP_COMPETENCIES[topCell.cCode] : null;
+
+    html += `
+      <!-- KPI Summary Cards -->
+      <div class="heatmap-stats-grid">
+        <div class="heatmap-stat-card" style="border-left: 4px solid #ef4444;">
+          <div class="heatmap-stat-icon">⚠️</div>
+          <div>
+            <div class="heatmap-stat-val" style="color: #ef4444;">${deficitCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">/ 32</span></div>
+            <div class="heatmap-stat-lbl">Bílá místa (pod-nasyceno 0×)</div>
+          </div>
+        </div>
+
+        <div class="heatmap-stat-card" style="border-left: 4px solid #0284c7;">
+          <div class="heatmap-stat-icon">🔹</div>
+          <div>
+            <div class="heatmap-stat-val" style="color: #0284c7;">${lowCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">vazeb</span></div>
+            <div class="heatmap-stat-lbl">Nízké nasycení (1–2×)</div>
+          </div>
+        </div>
+
+        <div class="heatmap-stat-card" style="border-left: 4px solid #10b981;">
+          <div class="heatmap-stat-icon">✅</div>
+          <div>
+            <div class="heatmap-stat-val" style="color: #059669;">${optimalCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">vazeb</span></div>
+            <div class="heatmap-stat-lbl">Vyvážené / optimální nasycení</div>
+          </div>
+        </div>
+
+        <div class="heatmap-stat-card" style="border-left: 4px solid #f59e0b;">
+          <div class="heatmap-stat-icon">🔥</div>
+          <div>
+            <div class="heatmap-stat-val" style="color: #b45309;">
+              ${overCount > 0 ? `${overCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">přesyceno</span>` : `${highCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">vysoké</span>`}
+            </div>
+            <div class="heatmap-stat-lbl">
+              ${topCell && topCell.count > 0 ? `Nejvíce: ${topArea ? topArea.code : ''} × ${topComp ? topComp.name.replace('Klíčová kompetence ', '') : ''} (${topCell.count}×)` : 'Zatím bez přesycení'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spotlight Filters -->
+      <div class="heatmap-toolbar">
+        <div class="heatmap-filters" id="heatmap-filters">
+          <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-right: 4px;">Reflektor nasycení:</span>
+          <button class="heatmap-filter-btn active" data-filter="all">Všechny vazby (32)</button>
+          <button class="heatmap-filter-btn" data-filter="deficit">⚠️ Jen deficity (0×) (${deficitCount})</button>
+          <button class="heatmap-filter-btn" data-filter="low">🔹 Jen nízké (${lowCount})</button>
+          <button class="heatmap-filter-btn" data-filter="optimal">✅ Jen optimální (${optimalCount})</button>
+          <button class="heatmap-filter-btn" data-filter="over">🔥 Jen silné / přesycené (${overCount + highCount})</button>
+        </div>
+      </div>
+
+      <!-- Heatmap Table -->
+      <div class="heatmap-table-container">
+        <table class="heatmap-table">
           <thead>
-            <tr style="border-bottom: 2px solid var(--border-color); background: var(--bg-subtle);">
-              <th style="padding: 10px; text-align: left; min-width: 170px;">Vzdělávací oblast</th>
-              ${Object.entries(RVP_COMPETENCIES).map(([cCode, cObj]) => `
-                <th style="padding: 8px 4px; min-width: 80px;" title="${cObj.name}">
-                  <div style="font-size: 1.1rem;">${cObj.icon}</div>
-                  <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-main);">${cCode}</div>
-                </th>
-              `).join('')}
-              <th style="padding: 8px; min-width: 65px; font-weight: 800;">Celkem</th>
+            <tr>
+              <th class="row-header" style="background: var(--bg-subtle);">Vzdělávací oblast</th>
+              ${compKeys.map(cCode => {
+                const cObj = RVP_COMPETENCIES[cCode];
+                return `
+                  <th class="col-header" title="${cObj.name}">
+                    <div style="font-size: 1.2rem; line-height: 1.2;">${cObj.icon}</div>
+                    <div style="font-size: 0.76rem; font-weight: 800; color: var(--text-main);">${cCode}</div>
+                    <div style="font-size: 0.65rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px;" title="${cObj.name}">${cObj.name.replace('Klíčová kompetence ', '')}</div>
+                  </th>
+                `;
+              }).join('')}
+              <th style="min-width: 80px; font-weight: 800; background: var(--bg-subtle);">Celkem</th>
             </tr>
           </thead>
           <tbody>
-            ${Object.entries(RVP_AREAS).map(([aCode, aObj]) => {
+            ${areaKeys.map(aCode => {
+              const aObj = RVP_AREAS[aCode];
               let rowTotal = 0;
-              const cells = Object.keys(RVP_COMPETENCIES).map(cCode => {
-                let matchCount = 0;
-                doc.blocks.forEach(b => {
-                  (b.outcomes || []).forEach(code => {
-                    const outObj = RVP_OUTCOMES.find(o => o.code === code);
-                    if (outObj && outObj.category === aCode) {
-                      const mapping = store.getOutcomeMapping(b, code);
-                      if (mapping && mapping.competency === cCode) {
-                        matchCount++;
-                      }
-                    }
-                  });
-                });
-                rowTotal += matchCount;
+              const cellsHtml = compKeys.map(cCode => {
+                const cellData = matrixData[aCode][cCode];
+                const count = cellData.count;
+                rowTotal += count;
+                const sat = getSaturation(count, maxCellCount);
+                const blockNames = Array.from(new Set(cellData.matches.map(m => m.blockTitle)));
+                const tooltipText = `${aObj.name} (${aCode}) × ${RVP_COMPETENCIES[cCode].name} (${cCode})&#10;Stav: ${sat.status} (${count}× výstupů)&#10;${sat.desc}&#10;Doporučení: ${sat.recommendation}&#10;Zapojené bloky: ${blockNames.length > 0 ? blockNames.join(', ') : 'Žádné'}`;
+                
                 return `
-                  <td style="padding: 8px 4px; border: 1px solid var(--border-color); ${matchCount > 0 ? 'background: rgba(59, 130, 246, 0.12); font-weight: 700; color: var(--primary-600);' : 'color: var(--text-light);'}">
-                    ${matchCount > 0 ? `<strong>${matchCount}×</strong>` : '<span style="opacity: 0.4;">·</span>'}
+                  <td class="heatmap-cell heat-level-${sat.level}" data-level="${sat.level}" title="${tooltipText}">
+                    <span class="heatmap-count">${count > 0 ? `${count}×` : '0×'}</span>
+                    <span class="heatmap-pill">${sat.pillText}</span>
                   </td>
                 `;
               }).join('');
 
+              const areaCov = stats.areaCoverage[aCode] || { count: 0, blocks: new Set() };
+              const areaBlockCount = areaCov.blocks.size;
+
               return `
-                <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 10px; text-align: left; font-weight: 600; background: var(--bg-subtle);">
-                    ${aObj.icon} ${aObj.name} <span class="code-badge" style="font-size: 0.65rem;">${aCode}</span>
-                  </td>
-                  ${cells}
-                  <td style="padding: 8px 4px; font-weight: 800; background: var(--bg-subtle);">
-                    ${rowTotal}
+                <tr>
+                  <th class="row-header" style="background: var(--bg-subtle);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span style="font-size: 1.25rem;">${aObj.icon}</span>
+                      <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-main);">${aObj.name}</div>
+                        <div style="display: flex; gap: 6px; align-items: center; margin-top: 2px;">
+                          <span class="code-badge" style="font-size: 0.65rem;">${aCode}</span>
+                          <span style="font-size: 0.7rem; color: var(--text-muted);">${formatBlocks(areaBlockCount)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </th>
+                  ${cellsHtml}
+                  <td style="padding: 10px 6px; font-weight: 800; background: var(--bg-subtle); border-radius: var(--radius-md);">
+                    <div style="font-size: 1.05rem; color: var(--text-main);">${rowTotal}×</div>
+                    <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">výstupů</div>
                   </td>
                 </tr>
               `;
             }).join('')}
           </tbody>
+          <tfoot>
+            <tr style="border-top: 2px solid var(--border-color);">
+              <th class="row-header" style="background: var(--bg-subtle);">
+                <div style="font-size: 0.82rem; font-weight: 800; color: var(--text-main);">Celkem v kompetenci</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted);">Součet všech oblastí</div>
+              </th>
+              ${compKeys.map(cCode => {
+                const cTotal = colTotals[cCode];
+                const compCov = stats.competencyCoverage[cCode] || { count: 0, blocks: new Set() };
+                return `
+                  <td style="padding: 10px 6px; font-weight: 800; background: var(--bg-subtle); border-radius: var(--radius-md);" title="Celkový počet přiřazení pro kompetenci ${RVP_COMPETENCIES[cCode].name}">
+                    <div style="font-size: 1.05rem; color: var(--text-main);">${cTotal}×</div>
+                    <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">${formatBlocks(compCov.blocks.size)}</div>
+                  </td>
+                `;
+              }).join('')}
+              <td style="padding: 10px 6px; font-weight: 800; background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%); border-radius: var(--radius-md); border: 1.5px solid var(--primary-500);">
+                <div style="font-size: 1.15rem; color: var(--primary-600);">${grandTotal}×</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700;">CELKEM ŠVP</div>
+              </td>
+            </tr>
+          </tfoot>
         </table>
+      </div>
+
+      <!-- Heatmap Legend -->
+      <div class="heatmap-legend">
+        <span class="heatmap-legend-title">🏷️ Vysvětlivka heatmapy nasycení:</span>
+        <div class="heatmap-legend-item">
+          <span class="heatmap-legend-box heat-level-deficit"></span>
+          <span><strong>0× Bílé místo</strong> (pod-nasycený deficit)</span>
+        </div>
+        <div class="heatmap-legend-item">
+          <span class="heatmap-legend-box heat-level-low"></span>
+          <span><strong>1–2× Nízké</strong> (doplňkové nasycení)</span>
+        </div>
+        <div class="heatmap-legend-item">
+          <span class="heatmap-legend-box heat-level-optimal"></span>
+          <span><strong>3–5× Vyvážené</strong> (optimální standard)</span>
+        </div>
+        <div class="heatmap-legend-item">
+          <span class="heatmap-legend-box heat-level-high"></span>
+          <span><strong>6–7× Vysoké</strong> (silná vazba)</span>
+        </div>
+        <div class="heatmap-legend-item">
+          <span class="heatmap-legend-box heat-level-over"></span>
+          <span><strong>8+× Přesycené 🔥</strong> (dominantní složka)</span>
+        </div>
       </div>
     `;
 
     container.innerHTML = html;
+
+    // Attach interactive spotlight filter event listeners
+    const filterContainer = container.querySelector('#heatmap-filters');
+    if (filterContainer) {
+      filterContainer.querySelectorAll('.heatmap-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const filter = btn.getAttribute('data-filter');
+          filterContainer.querySelectorAll('.heatmap-filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          const cells = container.querySelectorAll('.heatmap-cell');
+          cells.forEach(cell => {
+            const level = cell.getAttribute('data-level');
+            if (filter === 'all') {
+              cell.classList.remove('is-dimmed');
+            } else if (filter === 'over') {
+              if (level === 'over' || level === 'high') {
+                cell.classList.remove('is-dimmed');
+              } else {
+                cell.classList.add('is-dimmed');
+              }
+            } else {
+              if (level === filter) {
+                cell.classList.remove('is-dimmed');
+              } else {
+                cell.classList.add('is-dimmed');
+              }
+            }
+          });
+        });
+      });
+    }
   }
 
   // --- RVP CATALOG BROWSER ---
