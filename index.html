@@ -532,6 +532,19 @@
     </div>
   </div>
 
+  <!-- MODAL: CONFIRMATION DIALOG -->
+  <div class="modal-overlay" id="confirm-dialog-modal" style="z-index: 10000;">
+    <div class="modal-content" style="max-width: 440px; text-align: center; padding: 26px 22px; border: 1px solid var(--border-color); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1);">
+      <div id="confirm-dialog-icon" style="font-size: 2.5rem; margin-bottom: 10px;">⚠️</div>
+      <h3 id="confirm-dialog-title" style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Potvrzení akce</h3>
+      <p id="confirm-dialog-message" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 22px;">Opravdu si přejete pokračovat?</p>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button type="button" class="btn btn-secondary" id="confirm-dialog-cancel" style="min-width: 90px;">Zrušit</button>
+        <button type="button" class="btn btn-primary" id="confirm-dialog-ok" style="min-width: 120px;">Potvrdit</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
 

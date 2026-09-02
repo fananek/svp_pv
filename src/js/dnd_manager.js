@@ -1,5 +1,6 @@
 // Drag and Drop & Visual Connection Manager for ŠVP PV
 import { store } from './store.js';
+import { RVP_COMPETENCIES, RVP_AREAS, RVP_OUTCOMES } from '../data/rvp_data.js';
 
 export class DnDManager {
   constructor() {
@@ -37,7 +38,18 @@ export class DnDManager {
     document.body.classList.add('dnd-active');
 
     // Highlight all valid dropzones
-    const dropzones = document.querySelectorAll(`[data-dropzone-accepts*="${itemType}"]`);
+    let selector = `[data-dropzone-accepts*="${itemType}"]`;
+    if (itemType === 'outcome') {
+      const outcomeObj = RVP_OUTCOMES.find(o => o.code === itemId);
+      if (outcomeObj) {
+        if (RVP_COMPETENCIES[outcomeObj.category]) {
+          selector = `[data-dropzone-type="competencies"]`;
+        } else if (RVP_AREAS[outcomeObj.category]) {
+          selector = `[data-dropzone-type="areas"]`;
+        }
+      }
+    }
+    const dropzones = document.querySelectorAll(selector);
     dropzones.forEach(dz => dz.classList.add('dropzone-highlight'));
   }
 
@@ -94,7 +106,7 @@ export class DnDManager {
     dropzone.classList.remove('dropzone-over');
 
     const targetBlockId = dropzone.dataset.blockId;
-    const targetType = dropzone.dataset.dropzoneType; // 'outcomes' | 'competencies' | 'activities' | 'blocks'
+    const targetType = dropzone.dataset.dropzoneType; // 'outcomes' | 'competencies' | 'areas' | 'activities' | 'blocks'
 
     this.processDrop(this.draggedItem, targetBlockId, targetType, dropzone);
   }
@@ -103,31 +115,21 @@ export class DnDManager {
     if (!item) return;
 
     if (item.type === 'competency' && targetBlockId) {
-      store.addCompetencyToBlock(targetBlockId, item.id);
+      const doc = store.getDoc();
+      const block = doc.blocks?.find(b => b.id === targetBlockId);
+      if (block && (!block.competencies || !block.competencies.includes(item.id))) {
+        store.toggleBlockCompetency(targetBlockId, item.id);
+      }
       this.playSuccessAnimation(dropzone);
     } else if (item.type === 'area' && targetBlockId) {
-      const compCode = dropzone.dataset.competencyCode;
-      if (compCode) {
-        store.addAreaToCompetency(targetBlockId, compCode, item.id);
-      } else {
-        const block = store.getDoc().blocks?.find(b => b.id === targetBlockId);
-        const curriculum = store.ensureCurriculum(block);
-        if (curriculum.length > 0) {
-          store.addAreaToCompetency(targetBlockId, curriculum[0].competency, item.id);
-        } else {
-          store.addCompetencyToBlock(targetBlockId, 'KKU');
-          store.addAreaToCompetency(targetBlockId, 'KKU', item.id);
-        }
+      const doc = store.getDoc();
+      const block = doc.blocks?.find(b => b.id === targetBlockId);
+      if (block && (!block.areas || !block.areas.includes(item.id))) {
+        store.toggleBlockArea(targetBlockId, item.id);
       }
       this.playSuccessAnimation(dropzone);
     } else if (item.type === 'outcome' && targetBlockId) {
-      const compCode = dropzone.dataset.competencyCode;
-      const areaCode = dropzone.dataset.areaCode;
-      if (compCode && areaCode) {
-        store.addOutcomeToArea(targetBlockId, compCode, areaCode, item.id);
-      } else {
-        store.addBlockOutcome(targetBlockId, item.id);
-      }
+      store.addBlockOutcome(targetBlockId, item.id);
       this.playSuccessAnimation(dropzone);
     } else if (item.type === 'literacy' && targetBlockId) {
       const doc = store.getDoc();

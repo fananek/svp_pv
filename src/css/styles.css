@@ -1139,32 +1139,32 @@ body {
   transform: scale(1.008);
 }
 
-/* Zelené zvýraznění karet kompetencí při přetahování vzdělávací oblasti */
-.block-competency-card[data-dropzone-accepts*="area"].dropzone-highlight {
+/* Zelené zvýraznění dropzone vzdělávacích oblastí (Sekce 5) */
+[data-dropzone-type="areas"].dropzone-highlight {
   border-color: #10b981 !important;
   background-color: rgba(16, 185, 129, 0.06) !important;
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3) !important;
 }
 
-.block-competency-card[data-dropzone-accepts*="area"].dropzone-over {
+[data-dropzone-type="areas"].dropzone-over {
   border-color: #059669 !important;
   background-color: rgba(16, 185, 129, 0.15) !important;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5) !important;
-  transform: scale(1.012);
+  transform: scale(1.008);
 }
 
-/* Modré zvýraznění karet oblastí při přetahování výsledku učení */
-.nested-area-card[data-dropzone-accepts*="outcome"].dropzone-highlight {
+/* Modré zvýraznění dropzone klíčových kompetencí (Sekce 4) */
+[data-dropzone-type="competencies"].dropzone-highlight {
   border-color: var(--primary-500) !important;
   background-color: rgba(59, 130, 246, 0.08) !important;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
 }
 
-.nested-area-card[data-dropzone-accepts*="outcome"].dropzone-over {
+[data-dropzone-type="competencies"].dropzone-over {
   border-color: var(--primary-600) !important;
   background-color: rgba(59, 130, 246, 0.18) !important;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5) !important;
-  transform: scale(1.012);
+  transform: scale(1.008);
 }
 
 .drop-success-pulse {

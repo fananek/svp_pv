@@ -179,13 +179,15 @@ export class SVPStore {
       areas: blockData.areas || [],
       outcomes: blockData.outcomes || [],
       outcomeMappings: blockData.outcomeMappings || {},
-      curriculum: blockData.curriculum || [],
       activities: blockData.activities || []
     };
-    this.ensureCurriculum(newBlock);
     this.currentDoc.blocks.push(newBlock);
     this.notify('block_added');
     return newBlock;
+  }
+
+  ensureCurriculum(block) {
+    return [];
   }
 
   updateBlock(blockId, updates) {
@@ -207,163 +209,21 @@ export class SVPStore {
     this.notify('blocks_reordered');
   }
 
-  // --- HIERARCHICKÁ STRUKTURA CURRICULUM: KK -> VO -> OVU ---
-  ensureCurriculum(block) {
-    if (!block) return [];
-    if (!block.curriculum) {
-      block.curriculum = [];
-    }
-    // Automatická migrace ze starších polí pokud je curriculum prázdné
-    if (block.curriculum.length === 0 && (block.competencies?.length > 0 || block.outcomes?.length > 0)) {
-      const compList = block.competencies || [];
-      compList.forEach(cCode => {
-        const compNode = { competency: cCode, areas: [] };
-        const blockAreas = block.areas || [];
-        blockAreas.forEach(aCode => {
-          const areaOutcomes = (block.outcomes || []).filter(code => {
-            const outObj = RVP_OUTCOMES.find(o => o.code === code);
-            if (!outObj || outObj.category !== aCode) return false;
-            if (block.outcomeMappings && block.outcomeMappings[code]) {
-              return block.outcomeMappings[code].competency === cCode;
-            }
-            return true;
-          });
-          if (areaOutcomes.length > 0) {
-            compNode.areas.push({ area: aCode, outcomes: areaOutcomes });
-          }
-        });
-        block.curriculum.push(compNode);
-      });
-
-      // Případné nezařazené oblasti přidáme do první kompetence
-      if (block.curriculum.length > 0 && block.areas) {
-        block.areas.forEach(aCode => {
-          const alreadyIn = block.curriculum.some(c => (c.areas || []).some(a => a.area === aCode));
-          if (!alreadyIn) {
-            const areaOutcomes = (block.outcomes || []).filter(code => {
-              const outObj = RVP_OUTCOMES.find(o => o.code === code);
-              return outObj && outObj.category === aCode;
-            });
-            block.curriculum[0].areas.push({ area: aCode, outcomes: areaOutcomes });
-          }
-        });
-      }
-      this.syncBlockArrays(block);
-    }
-    return block.curriculum;
-  }
-
-  syncBlockArrays(block) {
-    if (!block || !block.curriculum) return;
-    block.competencies = block.curriculum.map(c => c.competency);
-    const areaSet = new Set();
-    const outcomeSet = new Set();
-    if (!block.outcomeMappings) block.outcomeMappings = {};
-
-    block.curriculum.forEach(c => {
-      (c.areas || []).forEach(a => {
-        areaSet.add(a.area);
-        (a.outcomes || []).forEach(code => {
-          outcomeSet.add(code);
-          if (!block.outcomeMappings[code]) {
-            block.outcomeMappings[code] = {};
-          }
-          block.outcomeMappings[code].competency = c.competency;
-        });
-      });
+  // --- ORTOGONÁLNÍ ARCHITEKTURA: ROVNOCENNÉ DIMENZE KOMPETENCÍ A OBLASTÍ ---
+  getCompetencyOutcomes(block, compCode) {
+    if (!block || !block.outcomes) return [];
+    return block.outcomes.filter(code => {
+      const out = RVP_OUTCOMES.find(o => o.code === code);
+      return out && out.category === compCode;
     });
-    block.areas = Array.from(areaSet);
-    block.outcomes = Array.from(outcomeSet);
   }
 
-  addCompetencyToBlock(blockId, compCode) {
-    const block = this.currentDoc.blocks.find(b => b.id === blockId);
-    if (!block) return;
-    this.ensureCurriculum(block);
-    if (!block.curriculum.some(c => c.competency === compCode)) {
-      block.curriculum.push({ competency: compCode, areas: [] });
-      this.syncBlockArrays(block);
-      this.notify('block_competencies_updated');
-    }
-  }
-
-  removeCompetencyFromBlock(blockId, compCode) {
-    const block = this.currentDoc.blocks.find(b => b.id === blockId);
-    if (!block) return;
-    this.ensureCurriculum(block);
-    block.curriculum = block.curriculum.filter(c => c.competency !== compCode);
-    this.syncBlockArrays(block);
-    this.notify('block_competencies_updated');
-  }
-
-  addAreaToCompetency(blockId, compCode, areaCode) {
-    const block = this.currentDoc.blocks.find(b => b.id === blockId);
-    if (!block) return;
-    this.ensureCurriculum(block);
-    let compNode = block.curriculum.find(c => c.competency === compCode);
-    if (!compNode) {
-      compNode = { competency: compCode, areas: [] };
-      block.curriculum.push(compNode);
-    }
-    if (!compNode.areas) compNode.areas = [];
-    if (!compNode.areas.some(a => a.area === areaCode)) {
-      compNode.areas.push({ area: areaCode, outcomes: [] });
-      this.syncBlockArrays(block);
-      this.notify('block_outcomes_updated');
-    }
-  }
-
-  removeAreaFromCompetency(blockId, compCode, areaCode) {
-    const block = this.currentDoc.blocks.find(b => b.id === blockId);
-    if (!block) return;
-    this.ensureCurriculum(block);
-    const compNode = block.curriculum.find(c => c.competency === compCode);
-    if (compNode && compNode.areas) {
-      compNode.areas = compNode.areas.filter(a => a.area !== areaCode);
-      this.syncBlockArrays(block);
-      this.notify('block_outcomes_updated');
-    }
-  }
-
-  toggleOutcomeInArea(blockId, compCode, areaCode, outcomeCode) {
-    const block = this.currentDoc.blocks.find(b => b.id === blockId);
-    if (!block) return;
-    this.ensureCurriculum(block);
-    let compNode = block.curriculum.find(c => c.competency === compCode);
-    if (!compNode) {
-      compNode = { competency: compCode, areas: [] };
-      block.curriculum.push(compNode);
-    }
-    if (!compNode.areas) compNode.areas = [];
-    let areaNode = compNode.areas.find(a => a.area === areaCode);
-    if (!areaNode) {
-      areaNode = { area: areaCode, outcomes: [] };
-      compNode.areas.push(areaNode);
-    }
-    if (!areaNode.outcomes) areaNode.outcomes = [];
-    const idx = areaNode.outcomes.indexOf(outcomeCode);
-    if (idx !== -1) {
-      areaNode.outcomes.splice(idx, 1);
-    } else {
-      areaNode.outcomes.push(outcomeCode);
-    }
-    this.syncBlockArrays(block);
-    this.notify('block_outcomes_updated');
-  }
-
-  removeOutcomeFromArea(blockId, compCode, areaCode, outcomeCode) {
-    const block = this.currentDoc.blocks.find(b => b.id === blockId);
-    if (!block) return;
-    this.ensureCurriculum(block);
-    const compNode = block.curriculum.find(c => c.competency === compCode);
-    if (compNode && compNode.areas) {
-      const areaNode = compNode.areas.find(a => a.area === areaCode);
-      if (areaNode && areaNode.outcomes) {
-        areaNode.outcomes = areaNode.outcomes.filter(code => code !== outcomeCode);
-        this.syncBlockArrays(block);
-        this.notify('block_outcomes_updated');
-      }
-    }
+  getAreaOutcomes(block, areaCode) {
+    if (!block || !block.outcomes) return [];
+    return block.outcomes.filter(code => {
+      const out = RVP_OUTCOMES.find(o => o.code === code);
+      return out && out.category === areaCode;
+    });
   }
 
   // Outcomes & Competency connection to Blocks
