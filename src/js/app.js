@@ -2253,6 +2253,10 @@ class SVPApp {
       const isGood = blockCount >= 2;
       const percent = Math.min(100, Math.round((blockCount / Math.max(1, doc.blocks.length)) * 100));
 
+      const assignedBlocks = doc.blocks
+        .map((b, idx) => ({ order: idx + 1, title: b.title, isAssigned: (b.competencies || []).includes(code) || cov.blocks.has(b.title) }))
+        .filter(item => item.isAssigned);
+
       html += `
         <div class="coverage-card">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
@@ -2268,8 +2272,12 @@ class SVPApp {
           <div class="progress-bar-bg">
             <div class="progress-bar-fill" style="width: ${percent}%; background-color: ${comp.color};"></div>
           </div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">
-            Zapojeno v blocích: ${Array.from(cov.blocks).join(', ') || '<span style="color: var(--danger-500);">Zatím v žádném bloku</span>'}
+          <div class="coverage-blocks-container">
+            <span class="coverage-blocks-title">Zapojeno v blocích:</span>
+            ${assignedBlocks.length > 0
+              ? `<ul class="coverage-blocks-list">${assignedBlocks.map(item => `<li><span class="coverage-block-num">${item.order}.</span> <span class="coverage-block-name">${item.title}</span></li>`).join('')}</ul>`
+              : `<div class="coverage-blocks-empty">Zatím v žádném bloku</div>`
+            }
           </div>
         </div>
       `;
@@ -2287,6 +2295,10 @@ class SVPApp {
       const isGood = blockCount >= 2;
       const percent = Math.min(100, Math.round((blockCount / Math.max(1, doc.blocks.length)) * 100));
 
+      const assignedBlocks = doc.blocks
+        .map((b, idx) => ({ order: idx + 1, title: b.title, isAssigned: (b.areas || []).includes(code) || cov.blocks.has(b.title) }))
+        .filter(item => item.isAssigned);
+
       html += `
         <div class="coverage-card">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
@@ -2302,8 +2314,12 @@ class SVPApp {
           <div class="progress-bar-bg">
             <div class="progress-bar-fill" style="width: ${percent}%; background-color: ${area.color};"></div>
           </div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">
-            Přiřazené výstupy v blocích: ${Array.from(cov.blocks).join(', ') || '<span style="color: var(--danger-500);">Zatím v žádném bloku</span>'}
+          <div class="coverage-blocks-container">
+            <span class="coverage-blocks-title">Přiřazené výstupy v blocích:</span>
+            ${assignedBlocks.length > 0
+              ? `<ul class="coverage-blocks-list">${assignedBlocks.map(item => `<li><span class="coverage-block-num">${item.order}.</span> <span class="coverage-block-name">${item.title}</span></li>`).join('')}</ul>`
+              : `<div class="coverage-blocks-empty">Zatím v žádném bloku</div>`
+            }
           </div>
         </div>
       `;

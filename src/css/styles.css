@@ -1326,6 +1326,54 @@ body {
   transition: width 0.4s ease;
 }
 
+.coverage-blocks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.coverage-blocks-title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.coverage-blocks-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.78rem;
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  line-height: 1.4;
+}
+
+.coverage-blocks-list li {
+  color: var(--text-main);
+}
+
+.coverage-blocks-list li::marker {
+  color: var(--primary-500);
+}
+
+.coverage-block-num {
+  font-weight: 750;
+  color: var(--primary-500);
+  margin-right: 3px;
+}
+
+.coverage-block-name {
+  color: var(--text-main);
+}
+
+.coverage-blocks-empty {
+  font-size: 0.76rem;
+  color: var(--danger-500);
+  font-style: italic;
+}
+
 /* Heatmap Curricular Matrix */
 .heatmap-stats-grid {
   display: grid;
