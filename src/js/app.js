@@ -29,6 +29,8 @@ class SVPApp {
     this.expandedCatalogCompetencies = new Set();
     this.expandedCatalogAreas = new Set();
     this.blockOfferTabs = new Map();
+    this.itemPickerSearchQuery = '';
+    this.activePickerRefresh = null;
     this.init();
   }
 
@@ -790,11 +792,11 @@ class SVPApp {
             </div>
           </div>
 
-          <!-- 4. Rozvíjené klíčové kompetence a kompetenční výsledky učení -->
+          <!-- 4. Rozvíjené klíčové kompetence -->
           <div class="block-hierarchy-section" style="border-left: 3px solid var(--primary-500);">
             <div class="block-hierarchy-header">
               <div class="block-hierarchy-title">
-                <span>🧠 Rozvíjené klíčové kompetence a kompetenční výsledky učení (RVP PV):</span>
+                <span>🧠 Rozvíjené klíčové kompetence:</span>
                 <span class="catalog-category-count" style="font-size: 0.72rem;">${formatPlural((b.competencies || []).length, 'kompetence', 'kompetence', 'kompetencí')}</span>
               </div>
               <button type="button" class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 3px 8px;" onclick="window.svpApp.openAddCompetencyModal('${b.id}')">
@@ -856,11 +858,11 @@ class SVPApp {
             </div>
           </div>
 
-          <!-- 5. Vzdělávací oblasti a oborové výsledky učení -->
+          <!-- 5. Vzdělávací oblasti -->
           <div class="block-hierarchy-section" style="border-left: 3px solid #10b981; margin-top: 14px;">
             <div class="block-hierarchy-header">
               <div class="block-hierarchy-title">
-                <span>🎨 Vzdělávací oblasti a oborové výsledky učení (RVP PV):</span>
+                <span>🎨 Vzdělávací oblasti:</span>
                 <span class="catalog-category-count" style="font-size: 0.72rem;">${formatPlural((b.areas || []).length, 'oblast', 'oblasti', 'oblastí')}</span>
               </div>
               <button type="button" class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 3px 8px;" onclick="window.svpApp.openAddAreaModal('${b.id}')">
@@ -1593,7 +1595,11 @@ class SVPApp {
     const descEl = document.getElementById('item-picker-modal-desc');
     const listEl = document.getElementById('item-picker-modal-list');
     const badgeEl = document.getElementById('item-picker-count-badge');
+    const searchContainer = document.getElementById('item-picker-search-container');
     if (!modal || !listEl) return;
+
+    if (searchContainer) searchContainer.style.display = 'none';
+    this.itemPickerSearchQuery = '';
 
     titleEl.innerHTML = '🧠 Rozvíjené klíčové kompetence (RVP PV)';
     descEl.textContent = 'Zvolte klíčové kompetence, které budou v tomto integrovaném bloku rozvíjeny:';
@@ -1638,7 +1644,11 @@ class SVPApp {
     const descEl = document.getElementById('item-picker-modal-desc');
     const listEl = document.getElementById('item-picker-modal-list');
     const badgeEl = document.getElementById('item-picker-count-badge');
+    const searchContainer = document.getElementById('item-picker-search-container');
     if (!modal || !listEl) return;
+
+    if (searchContainer) searchContainer.style.display = 'none';
+    this.itemPickerSearchQuery = '';
 
     titleEl.innerHTML = '🎨 Vzdělávací oblasti (RVP PV)';
     descEl.textContent = 'Zvolte vzdělávací oblasti, jejichž obsah a výstupy blok integruje:';
@@ -1673,7 +1683,36 @@ class SVPApp {
     modal.classList.add('active');
   }
 
-  openCompetencyOutcomesModal(blockId, compCode) {
+  setupPickerSearch(onSearch) {
+    const searchContainer = document.getElementById('item-picker-search-container');
+    const searchInput = document.getElementById('item-picker-search-input');
+    const searchClear = document.getElementById('item-picker-search-clear');
+    if (!searchContainer || !searchInput) return;
+
+    searchContainer.style.display = 'block';
+    searchInput.value = this.itemPickerSearchQuery || '';
+    if (searchClear) searchClear.style.display = this.itemPickerSearchQuery ? 'block' : 'none';
+
+    searchInput.oninput = (e) => {
+      this.itemPickerSearchQuery = e.target.value;
+      if (searchClear) searchClear.style.display = this.itemPickerSearchQuery ? 'block' : 'none';
+      if (onSearch) onSearch();
+    };
+  }
+
+  clearItemPickerSearch() {
+    this.itemPickerSearchQuery = '';
+    const searchInput = document.getElementById('item-picker-search-input');
+    const searchClear = document.getElementById('item-picker-search-clear');
+    if (searchInput) {
+      searchInput.value = '';
+      searchInput.focus();
+    }
+    if (searchClear) searchClear.style.display = 'none';
+    if (this.activePickerRefresh) this.activePickerRefresh();
+  }
+
+  openCompetencyOutcomesModal(blockId, compCode, preserveSearch = false) {
     const doc = store.getDoc();
     const block = doc.blocks?.find(b => b.id === blockId);
     if (!block) return;
@@ -1687,39 +1726,70 @@ class SVPApp {
     const badgeEl = document.getElementById('item-picker-count-badge');
     if (!modal || !listEl) return;
 
+    if (!preserveSearch) {
+      this.itemPickerSearchQuery = '';
+    }
+
+    this.activePickerRefresh = () => this.openCompetencyOutcomesModal(blockId, compCode, true);
+    this.setupPickerSearch(() => this.openCompetencyOutcomesModal(blockId, compCode, true));
+
     const allCompOutcomes = RVP_OUTCOMES.filter(o => o.category === compCode);
     const blockOutcomes = block.outcomes || [];
     const selectedCount = allCompOutcomes.filter(o => blockOutcomes.includes(o.code)).length;
 
+    const normalize = (str) => (str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const q = normalize(this.itemPickerSearchQuery);
+
+    const filteredOutcomes = allCompOutcomes.filter(out => {
+      if (!q) return true;
+      return normalize(out.code).includes(q) ||
+             normalize(out.title).includes(q) ||
+             normalize(out.comment).includes(q) ||
+             normalize(out.subCategory).includes(q);
+    });
+
     titleEl.innerHTML = `${comp.icon} Očekávané výsledky: ${comp.name} (${compCode})`;
     descEl.textContent = `Zvolte konkrétní očekávané výsledky učení z RVP PV náležející k této klíčové kompetenci:`;
-    badgeEl.textContent = `Vybráno: ${selectedCount} z ${allCompOutcomes.length}`;
+    badgeEl.textContent = q
+      ? `Nalezeno: ${filteredOutcomes.length} z ${allCompOutcomes.length} • Vybráno v bloku: ${selectedCount}`
+      : `Vybráno: ${selectedCount} z ${allCompOutcomes.length}`;
 
     const scrollPos = listEl.scrollTop;
 
-    listEl.innerHTML = allCompOutcomes.map(out => {
-      const isSelected = blockOutcomes.includes(out.code);
-      return `
-        <div class="picker-item-row ${isSelected ? 'is-selected' : ''}" onclick="window.svpApp.toggleBlockOutcomeAndRefreshPicker('${blockId}', '${out.code}', '${compCode}', 'competency')">
-          <input type="checkbox" ${isSelected ? 'checked' : ''} style="margin-top: 3px; pointer-events: none;">
-          <div style="flex: 1;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
-              <span class="code-badge">${out.code}</span>
-              <span style="font-size: 0.72rem; color: var(--text-light);">Strana ${out.page}</span>
-            </div>
-            <div style="font-size: 0.84rem; font-weight: 600; color: var(--text-main);">${out.title}</div>
-            ${out.comment ? `<div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">${out.comment.slice(0, 160)}...</div>` : ''}
+    if (filteredOutcomes.length === 0) {
+      listEl.innerHTML = `
+        <div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.88rem; background: var(--bg-subtle); border-radius: var(--radius-sm); border: 1px dashed var(--border-color);">
+          🔍 Žádný očekávaný výsledek neodpovídá hledání „<strong>${this.itemPickerSearchQuery}</strong>“.
+          <div style="margin-top: 8px;">
+            <button type="button" class="btn btn-sm btn-secondary" onclick="window.svpApp.clearItemPickerSearch()">Zrušit filtr</button>
           </div>
-          <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.7rem;" onclick="event.stopPropagation(); window.svpApp.showOutcomeDetail('${out.code}')" title="Metodický detail a inspirace">ℹ️ Info</button>
         </div>
       `;
-    }).join('');
+    } else {
+      listEl.innerHTML = filteredOutcomes.map(out => {
+        const isSelected = blockOutcomes.includes(out.code);
+        return `
+          <div class="picker-item-row ${isSelected ? 'is-selected' : ''}" onclick="window.svpApp.toggleBlockOutcomeAndRefreshPicker('${blockId}', '${out.code}', '${compCode}', 'competency')">
+            <input type="checkbox" ${isSelected ? 'checked' : ''} style="margin-top: 3px; pointer-events: none;">
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                <span class="code-badge">${out.code}</span>
+                <span style="font-size: 0.72rem; color: var(--text-light);">Strana ${out.page}</span>
+              </div>
+              <div style="font-size: 0.84rem; font-weight: 600; color: var(--text-main);">${out.title}</div>
+              ${out.comment ? `<div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">${out.comment.slice(0, 160)}...</div>` : ''}
+            </div>
+            <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.7rem;" onclick="event.stopPropagation(); window.svpApp.showOutcomeDetail('${out.code}')" title="Metodický detail a inspirace">ℹ️ Info</button>
+          </div>
+        `;
+      }).join('');
+    }
 
     listEl.scrollTop = scrollPos;
     modal.classList.add('active');
   }
 
-  openAreaOutcomesModal(blockId, areaCode) {
+  openAreaOutcomesModal(blockId, areaCode, preserveSearch = false) {
     const doc = store.getDoc();
     const block = doc.blocks?.find(b => b.id === blockId);
     if (!block) return;
@@ -1733,33 +1803,64 @@ class SVPApp {
     const badgeEl = document.getElementById('item-picker-count-badge');
     if (!modal || !listEl) return;
 
+    if (!preserveSearch) {
+      this.itemPickerSearchQuery = '';
+    }
+
+    this.activePickerRefresh = () => this.openAreaOutcomesModal(blockId, areaCode, true);
+    this.setupPickerSearch(() => this.openAreaOutcomesModal(blockId, areaCode, true));
+
     const allAreaOutcomes = RVP_OUTCOMES.filter(o => o.category === areaCode);
     const blockOutcomes = block.outcomes || [];
     const selectedCount = allAreaOutcomes.filter(o => blockOutcomes.includes(o.code)).length;
 
+    const normalize = (str) => (str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const q = normalize(this.itemPickerSearchQuery);
+
+    const filteredOutcomes = allAreaOutcomes.filter(out => {
+      if (!q) return true;
+      return normalize(out.code).includes(q) ||
+             normalize(out.title).includes(q) ||
+             normalize(out.comment).includes(q) ||
+             normalize(out.subCategory).includes(q);
+    });
+
     titleEl.innerHTML = `${area.icon} Očekávané výsledky: ${area.name} (${areaCode})`;
     descEl.textContent = `Zvolte konkrétní očekávané výsledky učení z RVP PV náležející k této vzdělávací oblasti:`;
-    badgeEl.textContent = `Vybráno: ${selectedCount} z ${allAreaOutcomes.length}`;
+    badgeEl.textContent = q
+      ? `Nalezeno: ${filteredOutcomes.length} z ${allAreaOutcomes.length} • Vybráno v bloku: ${selectedCount}`
+      : `Vybráno: ${selectedCount} z ${allAreaOutcomes.length}`;
 
     const scrollPos = listEl.scrollTop;
 
-    listEl.innerHTML = allAreaOutcomes.map(out => {
-      const isSelected = blockOutcomes.includes(out.code);
-      return `
-        <div class="picker-item-row ${isSelected ? 'is-selected' : ''}" onclick="window.svpApp.toggleBlockOutcomeAndRefreshPicker('${blockId}', '${out.code}', '${areaCode}', 'area')">
-          <input type="checkbox" ${isSelected ? 'checked' : ''} style="margin-top: 3px; pointer-events: none;">
-          <div style="flex: 1;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
-              <span class="code-badge">${out.code}</span>
-              <span style="font-size: 0.72rem; color: var(--text-light);">Strana ${out.page}</span>
-            </div>
-            <div style="font-size: 0.84rem; font-weight: 600; color: var(--text-main);">${out.title}</div>
-            ${out.comment ? `<div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">${out.comment.slice(0, 160)}...</div>` : ''}
+    if (filteredOutcomes.length === 0) {
+      listEl.innerHTML = `
+        <div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.88rem; background: var(--bg-subtle); border-radius: var(--radius-sm); border: 1px dashed var(--border-color);">
+          🔍 Žádný očekávaný výsledek neodpovídá hledání „<strong>${this.itemPickerSearchQuery}</strong>“.
+          <div style="margin-top: 8px;">
+            <button type="button" class="btn btn-sm btn-secondary" onclick="window.svpApp.clearItemPickerSearch()">Zrušit filtr</button>
           </div>
-          <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.7rem;" onclick="event.stopPropagation(); window.svpApp.showOutcomeDetail('${out.code}')" title="Metodický detail a inspirace">ℹ️ Info</button>
         </div>
       `;
-    }).join('');
+    } else {
+      listEl.innerHTML = filteredOutcomes.map(out => {
+        const isSelected = blockOutcomes.includes(out.code);
+        return `
+          <div class="picker-item-row ${isSelected ? 'is-selected' : ''}" onclick="window.svpApp.toggleBlockOutcomeAndRefreshPicker('${blockId}', '${out.code}', '${areaCode}', 'area')">
+            <input type="checkbox" ${isSelected ? 'checked' : ''} style="margin-top: 3px; pointer-events: none;">
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                <span class="code-badge">${out.code}</span>
+                <span style="font-size: 0.72rem; color: var(--text-light);">Strana ${out.page}</span>
+              </div>
+              <div style="font-size: 0.84rem; font-weight: 600; color: var(--text-main);">${out.title}</div>
+              ${out.comment ? `<div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">${out.comment.slice(0, 160)}...</div>` : ''}
+            </div>
+            <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.7rem;" onclick="event.stopPropagation(); window.svpApp.showOutcomeDetail('${out.code}')" title="Metodický detail a inspirace">ℹ️ Info</button>
+          </div>
+        `;
+      }).join('');
+    }
 
     listEl.scrollTop = scrollPos;
     modal.classList.add('active');
@@ -1844,9 +1945,9 @@ class SVPApp {
     store.toggleBlockOutcome(blockId, outcomeCode);
     this.render();
     if (type === 'competency') {
-      this.openCompetencyOutcomesModal(blockId, parentCode);
+      this.openCompetencyOutcomesModal(blockId, parentCode, true);
     } else {
-      this.openAreaOutcomesModal(blockId, parentCode);
+      this.openAreaOutcomesModal(blockId, parentCode, true);
     }
   }
 
@@ -1927,6 +2028,12 @@ class SVPApp {
       modal.classList.remove('is-open');
     }
     if (modalId === 'item-picker-modal') {
+      this.itemPickerSearchQuery = '';
+      this.activePickerRefresh = null;
+      const searchInput = document.getElementById('item-picker-search-input');
+      const searchClear = document.getElementById('item-picker-search-clear');
+      if (searchInput) searchInput.value = '';
+      if (searchClear) searchClear.style.display = 'none';
       const doc = store.getDoc();
       this.renderBlocksBuilder(doc);
       if (typeof dnd !== 'undefined' && dnd.init) dnd.init();

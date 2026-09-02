@@ -522,6 +522,13 @@
         <button class="btn-icon-only" onclick="window.svpApp.closeModal('item-picker-modal')">✕</button>
       </div>
       <p id="item-picker-modal-desc" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;"></p>
+      <div id="item-picker-search-container" style="margin-bottom: 12px; display: none;">
+        <div style="position: relative; display: flex; align-items: center;">
+          <span style="position: absolute; left: 12px; pointer-events: none; opacity: 0.6; font-size: 0.95rem; color: var(--text-muted);">🔍</span>
+          <input type="text" id="item-picker-search-input" class="form-input item-picker-search-field" placeholder="Hledat ve výsledcích učení (kód, text, klíčová slova)..." style="padding-left: 36px; padding-right: 32px; font-size: 0.88rem; width: 100%; border-radius: var(--radius-md);">
+          <button type="button" id="item-picker-search-clear" class="btn-icon-only" style="position: absolute; right: 8px; display: none; padding: 2px 6px; font-size: 0.75rem; color: var(--text-muted);" onclick="window.svpApp.clearItemPickerSearch()" title="Vymazat hledání">✕</button>
+        </div>
+      </div>
       <div id="item-picker-modal-list" style="overflow-y: auto; flex: 1; margin-bottom: 16px; max-height: 55vh; display: flex; flex-direction: column; gap: 8px;"></div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border-color);">
         <span id="item-picker-count-badge" style="font-size: 0.8rem; color: var(--text-muted);"></span>

@@ -575,7 +575,7 @@ body {
   font-weight: 400;
 }
 
-.form-input, .form-textarea, .form-select {
+.form-input, .form-control, .form-textarea, .form-select {
   width: 100%;
   box-sizing: border-box;
   padding: 10px 14px;
@@ -589,10 +589,51 @@ body {
   transition: all var(--transition-fast);
 }
 
-.form-input:focus, .form-textarea:focus, .form-select:focus {
+.form-input:focus, .form-control:focus, .form-textarea:focus, .form-select:focus {
   outline: none;
   border-color: var(--border-focus);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Dedicated Item Picker Search Field styles with robust Dark/Light theme support */
+.item-picker-search-field,
+#item-picker-search-input {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border-color) !important;
+  padding-left: 36px !important;
+  padding-right: 32px !important;
+  font-size: 0.88rem;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.item-picker-search-field::placeholder,
+#item-picker-search-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.75;
+}
+
+.item-picker-search-field:focus,
+#item-picker-search-input:focus {
+  outline: none;
+  border-color: var(--primary-500) !important;
+  background-color: var(--bg-card) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+[data-theme="dark"] .item-picker-search-field,
+[data-theme="dark"] #item-picker-search-input {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .item-picker-search-field:focus,
+[data-theme="dark"] #item-picker-search-input:focus {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25) !important;
 }
 
 .form-textarea {

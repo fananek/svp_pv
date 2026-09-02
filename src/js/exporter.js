@@ -287,9 +287,9 @@ export class SVPExporter {
         </div>
       ` : ''}
 
-      <!-- 4. Klíčové kompetence a kompetenční výsledky učení -->
+      <!-- 4. Klíčové kompetence -->
       <div style="margin-top: 14px; margin-bottom: 12px;">
-        <p style="margin-bottom: 6px; font-weight: 700; color: #1e3a8a;">🧠 Rozvíjené klíčové kompetence a kompetenční výsledky učení:</p>
+        <p style="margin-bottom: 6px; font-weight: 700; color: #1e3a8a;">🧠 Rozvíjené klíčové kompetence:</p>
         ${(b.competencies && b.competencies.length > 0) ? b.competencies.map(compCode => {
           const compOutcomes = store.getCompetencyOutcomes(b, compCode);
           return `
@@ -305,9 +305,9 @@ export class SVPExporter {
         }).join('') : '<div style="color: #9ca3af; font-size: 9pt; font-style: italic; margin-bottom: 8px;">Klíčové kompetence nebyly přiřazeny.</div>'}
       </div>
 
-      <!-- 5. Vzdělávací oblasti a oborové výsledky učení -->
+      <!-- 5. Vzdělávací oblasti -->
       <div style="margin-top: 12px; margin-bottom: 12px;">
-        <p style="margin-bottom: 6px; font-weight: 700; color: #047857;">🎨 Vzdělávací oblasti a oborové výsledky učení:</p>
+        <p style="margin-bottom: 6px; font-weight: 700; color: #047857;">🎨 Vzdělávací oblasti:</p>
         ${(b.areas && b.areas.length > 0) ? b.areas.map(areaCode => {
           const areaOutcomes = store.getAreaOutcomes(b, areaCode);
           return `
