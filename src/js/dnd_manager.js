@@ -103,16 +103,28 @@ export class DnDManager {
     if (!item) return;
 
     if (item.type === 'outcome' && targetBlockId) {
-      store.toggleBlockOutcome(targetBlockId, item.id);
+      store.addBlockOutcome(targetBlockId, item.id);
       this.playSuccessAnimation(dropzone);
     } else if (item.type === 'competency' && targetBlockId) {
-      store.toggleBlockCompetency(targetBlockId, item.id);
+      const doc = store.getDoc();
+      const block = doc.blocks?.find(b => b.id === targetBlockId);
+      if (block && (!block.competencies || !block.competencies.includes(item.id))) {
+        store.toggleBlockCompetency(targetBlockId, item.id);
+      }
       this.playSuccessAnimation(dropzone);
     } else if (item.type === 'literacy' && targetBlockId) {
-      store.toggleBlockLiteracy(targetBlockId, item.id);
+      const doc = store.getDoc();
+      const block = doc.blocks?.find(b => b.id === targetBlockId);
+      if (block && (!block.literacies || !block.literacies.includes(item.id))) {
+        store.toggleBlockLiteracy(targetBlockId, item.id);
+      }
       this.playSuccessAnimation(dropzone);
     } else if (item.type === 'area' && targetBlockId) {
-      store.toggleBlockArea(targetBlockId, item.id);
+      const doc = store.getDoc();
+      const block = doc.blocks?.find(b => b.id === targetBlockId);
+      if (block && (!block.areas || !block.areas.includes(item.id))) {
+        store.toggleBlockArea(targetBlockId, item.id);
+      }
       this.playSuccessAnimation(dropzone);
     } else if (item.type === 'activity' && targetBlockId && item.sourceBlockId !== targetBlockId) {
       // Move activity between blocks

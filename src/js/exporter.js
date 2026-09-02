@@ -9,6 +9,7 @@ export class SVPExporter {
 
     const getCompName = (code) => RVP_COMPETENCIES[code] ? `${RVP_COMPETENCIES[code].icon} ${RVP_COMPETENCIES[code].name}` : code;
     const getAreaName = (code) => RVP_AREAS[code] ? `${RVP_AREAS[code].icon} ${RVP_AREAS[code].name}` : code;
+    const getLitName = (code) => RVP_LITERACIES[code] ? `${RVP_LITERACIES[code].icon} ${RVP_LITERACIES[code].name}` : code;
     const getOutcomeTitle = (code) => {
       const o = RVP_OUTCOMES.find(item => item.code === code);
       return o ? `${o.code}: ${o.title}` : code;
@@ -275,20 +276,57 @@ export class SVPExporter {
         <p><strong>Podtémata / Náměty:</strong> ${b.subTopics.join(', ')}</p>
       ` : ''}
 
-      <p style="margin-bottom: 4px;"><strong>Rozvíjené klíčové kompetence:</strong></p>
-      <div class="badge-list">
-        ${(b.competencies || []).map(c => `<span class="badge">${getCompName(c)}</span>`).join('') || '<span style="color:#9ca3af;">Neuvedeny</span>'}
+      <!-- Hierarchické vazby RVP PV: Klíčové kompetence a jejich výsledky -->
+      <div style="margin-top: 14px; margin-bottom: 12px;">
+        <p style="margin-bottom: 6px; font-weight: 700; color: #1e3a8a;">🧠 Rozvíjené klíčové kompetence a očekávané výsledky učení:</p>
+        ${(b.competencies && b.competencies.length > 0) ? b.competencies.map(compCode => {
+          const compOutcomes = (b.outcomes || []).filter(code => {
+            const o = RVP_OUTCOMES.find(x => x.code === code);
+            return o && o.category === compCode;
+          });
+          return `
+            <div style="margin-bottom: 8px; padding: 6px 10px; background: #f8fafc; border-left: 3px solid #3b82f6; border-radius: 0 4px 4px 0;">
+              <strong style="color: #1d4ed8; font-size: 10pt;">${getCompName(compCode)}</strong>
+              ${compOutcomes.length > 0 ? `
+                <ul style="margin: 4px 0 2px 18px; padding: 0; font-size: 9.5pt; line-height: 1.45;">
+                  ${compOutcomes.map(code => `<li><strong>[${code}]</strong> ${getOutcomeTitle(code)}</li>`).join('')}
+                </ul>
+              ` : `<div style="font-size: 9pt; color: #9ca3af; font-style: italic; margin-left: 6px; margin-top: 2px;">Konkrétní dílčí výsledek učení nebyl specifikován.</div>`}
+            </div>
+          `;
+        }).join('') : '<div style="color: #9ca3af; font-size: 9pt; font-style: italic; margin-bottom: 8px;">Klíčové kompetence nebyly přiřazeny.</div>'}
       </div>
 
-      <p style="margin-bottom: 4px;"><strong>Vzdělávací oblasti RVP PV:</strong></p>
-      <div class="badge-list">
-        ${(b.areas || []).map(a => `<span class="badge badge-area">${getAreaName(a)}</span>`).join('') || '<span style="color:#9ca3af;">Neuvedeny</span>'}
+      <!-- Vzdělávací oblasti a jejich výsledky -->
+      <div style="margin-top: 10px; margin-bottom: 12px;">
+        <p style="margin-bottom: 6px; font-weight: 700; color: #1e3a8a;">🎨 Vzdělávací oblasti a očekávané výsledky učení:</p>
+        ${(b.areas && b.areas.length > 0) ? b.areas.map(areaCode => {
+          const areaOutcomes = (b.outcomes || []).filter(code => {
+            const o = RVP_OUTCOMES.find(x => x.code === code);
+            return o && o.category === areaCode;
+          });
+          return `
+            <div style="margin-bottom: 8px; padding: 6px 10px; background: #f8fafc; border-left: 3px solid #10b981; border-radius: 0 4px 4px 0;">
+              <strong style="color: #047857; font-size: 10pt;">${getAreaName(areaCode)}</strong>
+              ${areaOutcomes.length > 0 ? `
+                <ul style="margin: 4px 0 2px 18px; padding: 0; font-size: 9.5pt; line-height: 1.45;">
+                  ${areaOutcomes.map(code => `<li><strong>[${code}]</strong> ${getOutcomeTitle(code)}</li>`).join('')}
+                </ul>
+              ` : `<div style="font-size: 9pt; color: #9ca3af; font-style: italic; margin-left: 6px; margin-top: 2px;">Konkrétní dílčí výsledek učení nebyl specifikován.</div>`}
+            </div>
+          `;
+        }).join('') : '<div style="color: #9ca3af; font-size: 9pt; font-style: italic; margin-bottom: 8px;">Vzdělávací oblasti nebyly přiřazeny.</div>'}
       </div>
 
-      <p style="margin-bottom: 4px;"><strong>Očekávané výsledky učení (RVP PV):</strong></p>
-      <ul style="margin-top: 4px; margin-bottom: 12px;">
-        ${(b.outcomes || []).map(code => `<li>${getOutcomeTitle(code)}</li>`).join('') || '<li>Žádné konkrétní výstupy nejsou přiřazeny.</li>'}
-      </ul>
+      <!-- Základní gramotnosti -->
+      ${b.literacies && b.literacies.length > 0 ? `
+        <div style="margin-bottom: 12px;">
+          <p style="margin-bottom: 4px; font-weight: 700; color: #1e3a8a;">📖 Rozvíjené základní gramotnosti:</p>
+          <div class="badge-list">
+            ${b.literacies.map(l => `<span class="badge">${getLitName(l)}</span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
 
       ${(b.centersOfActivity && b.centersOfActivity.length > 0) || (b.activities && b.activities.length > 0) ? `
         <h4 style="color: #1e3a8a; margin: 16px 0 8px 0; font-size: 11pt; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">🎲 Vzdělávací nabídka:</h4>

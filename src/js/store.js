@@ -13,6 +13,7 @@ export class SVPStore {
   }
 
   loadInitial() {
+    let doc = null;
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -21,14 +22,20 @@ export class SVPStore {
           if (parsed.schoolData.mottoName === 'Každý den s úsměvem a objevováním světa') {
             parsed.schoolData.mottoName = 'Každý den s úsměvem objevujeme svět';
           }
-          return parsed;
+          doc = parsed;
         }
       }
     } catch (e) {
       console.warn('Could not load from localStorage, loading default template:', e);
     }
-    // Default to the first rich template
-    return JSON.parse(JSON.stringify(SAMPLE_TEMPLATES[0]));
+    if (!doc) {
+      // Default to the first rich template
+      doc = JSON.parse(JSON.stringify(SAMPLE_TEMPLATES[0]));
+    }
+    if (doc.blocks && Array.isArray(doc.blocks)) {
+      doc.blocks.forEach(b => this.syncBlockRelationships(b));
+    }
+    return doc;
   }
 
   subscribe(callback) {
@@ -209,7 +216,7 @@ export class SVPStore {
     } else {
       block.outcomes.push(outcomeCode);
       
-      // Auto-tag area or competency
+      // Auto-tag area or competency to enforce logical hierarchy
       const outcomeObj = RVP_OUTCOMES.find(o => o.code === outcomeCode);
       if (outcomeObj) {
         if (RVP_COMPETENCIES[outcomeObj.category]) {
@@ -229,15 +236,66 @@ export class SVPStore {
     this.notify('block_outcomes_updated');
   }
 
+  addBlockOutcome(blockId, outcomeCode) {
+    const block = this.currentDoc.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    if (!block.outcomes) block.outcomes = [];
+    if (!block.outcomes.includes(outcomeCode)) {
+      block.outcomes.push(outcomeCode);
+      const outcomeObj = RVP_OUTCOMES.find(o => o.code === outcomeCode);
+      if (outcomeObj) {
+        if (RVP_COMPETENCIES[outcomeObj.category]) {
+          if (!block.competencies) block.competencies = [];
+          if (!block.competencies.includes(outcomeObj.category)) {
+            block.competencies.push(outcomeObj.category);
+          }
+        }
+        if (RVP_AREAS[outcomeObj.category]) {
+          if (!block.areas) block.areas = [];
+          if (!block.areas.includes(outcomeObj.category)) {
+            block.areas.push(outcomeObj.category);
+          }
+        }
+      }
+      this.notify('block_outcomes_updated');
+    }
+  }
+
+  removeBlockOutcome(blockId, outcomeCode) {
+    const block = this.currentDoc.blocks.find(b => b.id === blockId);
+    if (!block || !block.outcomes) return;
+    const idx = block.outcomes.indexOf(outcomeCode);
+    if (idx !== -1) {
+      block.outcomes.splice(idx, 1);
+      this.notify('block_outcomes_updated');
+    }
+  }
+
   toggleBlockCompetency(blockId, compCode) {
     const block = this.currentDoc.blocks.find(b => b.id === blockId);
     if (!block) return;
     if (!block.competencies) block.competencies = [];
     const idx = block.competencies.indexOf(compCode);
     if (idx !== -1) {
-      block.competencies.splice(idx, 1);
+      this.removeCompetencyWithOutcomes(blockId, compCode);
     } else {
       block.competencies.push(compCode);
+      this.notify('block_competencies_updated');
+    }
+  }
+
+  removeCompetencyWithOutcomes(blockId, compCode) {
+    const block = this.currentDoc.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    if (block.competencies) {
+      block.competencies = block.competencies.filter(c => c !== compCode);
+    }
+    // Also remove associated outcomes belonging to this competency
+    if (block.outcomes) {
+      block.outcomes = block.outcomes.filter(code => {
+        const out = RVP_OUTCOMES.find(o => o.code === code);
+        return !out || out.category !== compCode;
+      });
     }
     this.notify('block_competencies_updated');
   }
@@ -261,11 +319,47 @@ export class SVPStore {
     if (!block.areas) block.areas = [];
     const idx = block.areas.indexOf(areaCode);
     if (idx !== -1) {
-      block.areas.splice(idx, 1);
+      this.removeAreaWithOutcomes(blockId, areaCode);
     } else {
       block.areas.push(areaCode);
+      this.notify('block_areas_updated');
+    }
+  }
+
+  removeAreaWithOutcomes(blockId, areaCode) {
+    const block = this.currentDoc.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    if (block.areas) {
+      block.areas = block.areas.filter(a => a !== areaCode);
+    }
+    // Remove associated outcomes belonging to this area
+    if (block.outcomes) {
+      block.outcomes = block.outcomes.filter(code => {
+        const out = RVP_OUTCOMES.find(o => o.code === code);
+        return !out || out.category !== areaCode;
+      });
     }
     this.notify('block_areas_updated');
+  }
+
+  syncBlockRelationships(block) {
+    if (!block) return;
+    if (!block.competencies) block.competencies = [];
+    if (!block.areas) block.areas = [];
+    if (!block.literacies) block.literacies = [];
+    if (!block.outcomes) block.outcomes = [];
+
+    block.outcomes.forEach(code => {
+      const out = RVP_OUTCOMES.find(o => o.code === code);
+      if (out) {
+        if (RVP_COMPETENCIES[out.category] && !block.competencies.includes(out.category)) {
+          block.competencies.push(out.category);
+        }
+        if (RVP_AREAS[out.category] && !block.areas.includes(out.category)) {
+          block.areas.push(out.category);
+        }
+      }
+    });
   }
 
   // Activities

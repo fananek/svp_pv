@@ -26,6 +26,8 @@ class SVPApp {
     this.catalogSearchQuery = '';
     this.collapsedBlocks = new Set();
     this.collapsedCatalogCategories = new Set();
+    this.expandedCatalogCompetencies = new Set();
+    this.expandedCatalogAreas = new Set();
     this.blockOfferTabs = new Map();
     this.init();
   }
@@ -716,6 +718,15 @@ class SVPApp {
       const actCount = (b.activities || []).length;
       const centersCount = (b.centersOfActivity || []).length;
 
+      const compOutcomesCount = (b.outcomes || []).filter(code => {
+        const out = RVP_OUTCOMES.find(o => o.code === code);
+        return out && RVP_COMPETENCIES[out.category];
+      }).length;
+      const areaOutcomesCount = (b.outcomes || []).filter(code => {
+        const out = RVP_OUTCOMES.find(o => o.code === code);
+        return out && RVP_AREAS[out.category];
+      }).length;
+
       let currentOfferTab = this.blockOfferTabs.get(b.id);
       if (!currentOfferTab) {
         currentOfferTab = (centersCount > 0 && actCount === 0) ? 'centers' : 'activities';
@@ -733,10 +744,9 @@ class SVPApp {
               <textarea class="block-title-input" rows="1" placeholder="Název bloku..." onclick="event.stopPropagation()" onchange="window.svpApp.updateBlockTitle('${b.id}', this.value)" oninput="window.svpApp.autoResizeTextarea(this)">${b.title}</textarea>
             </div>
             <div class="block-summary-badges">
-              ${compCount > 0 ? `<span class="block-summary-tag">🧠 ${formatPlural(compCount, 'kompetence', 'kompetence', 'kompetencí')}</span>` : ''}
+              ${compCount > 0 ? `<span class="block-summary-tag" title="${compOutcomesCount} přiřazených výsledků učení v kompetencích">🧠 ${formatPlural(compCount, 'kompetence', 'kompetence', 'kompetencí')} (${compOutcomesCount} ${formatPlural(compOutcomesCount, 'výsledek', 'výsledky', 'výsledků')})</span>` : ''}
+              ${areaCount > 0 ? `<span class="block-summary-tag" title="${areaOutcomesCount} přiřazených výsledků učení v oblastech">🎨 ${formatPlural(areaCount, 'oblast', 'oblasti', 'oblastí')} (${areaOutcomesCount} výstupů)</span>` : ''}
               ${litCount > 0 ? `<span class="block-summary-tag">📖 ${formatPlural(litCount, 'gramotnost', 'gramotnosti', 'gramotností')}</span>` : ''}
-              ${areaCount > 0 ? `<span class="block-summary-tag">🎨 ${formatPlural(areaCount, 'oblast', 'oblasti', 'oblastí')}</span>` : ''}
-              ${outCount > 0 ? `<span class="block-summary-tag">🎯 ${formatPlural(outCount, 'výstup', 'výstupy', 'výstupů')}</span>` : ''}
               ${actCount > 0 ? `<span class="block-summary-tag">⚡ ${formatPlural(actCount, 'činnost', 'činnosti', 'činností')}</span>` : ''}
               ${centersCount > 0 ? `<span class="block-summary-tag">🏢 ${formatPlural(centersCount, 'centrum', 'centra', 'center')}</span>` : ''}
               ${b.timeFrame ? `<span class="block-summary-tag" style="background: var(--bg-subtle);">🗓 ${b.timeFrame}</span>` : ''}
@@ -768,58 +778,169 @@ class SVPApp {
             <textarea class="form-textarea" style="min-height: 50px; font-size: 0.85rem;" placeholder="Proč téma otevíráme, podnět z dětských otázek či reálných situací..." onchange="window.svpApp.updateBlockImpulse('${b.id}', this.value)">${b.situationalImpulse || ''}</textarea>
           </div>
 
-          <!-- 3. Vazby na RVP PV: Klíčové kompetence & Oblasti -->
-          <div style="margin-bottom: 12px;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">PŘIŘAZENÉ KLÍČOVÉ KOMPETENCE A VZDĚLÁVACÍ OBLASTI:</div>
-            <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="competency,literacy,area" data-block-id="${b.id}" data-dropzone-type="competencies" style="min-height: 44px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;">
-              ${(b.competencies || []).map(c => `
-                <span class="pill-tag" data-type="competency">
-                  ${RVP_COMPETENCIES[c] ? `${RVP_COMPETENCIES[c].icon} ${RVP_COMPETENCIES[c].name}` : c}
-                  <span class="remove-btn" onclick="window.svpApp.toggleBlockComp('${b.id}', '${c}')">✕</span>
-                </span>
-              `).join('')}
+          <!-- 3. Rozvíjené klíčové kompetence a jejich očekávané výsledky učení -->
+          <div class="block-hierarchy-section" style="border-left: 3px solid var(--primary-500);">
+            <div class="block-hierarchy-header">
+              <div class="block-hierarchy-title">
+                <span>🧠 Rozvíjené klíčové kompetence a očekávané výsledky učení:</span>
+                <span class="catalog-category-count" style="font-size: 0.72rem;">${compCount} ${formatPlural(compCount, 'kompetence', 'kompetence', 'kompetencí')}</span>
+              </div>
+              <button type="button" class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 3px 8px;" onclick="window.svpApp.openAddCompetencyModal('${b.id}')">
+                + Přidat kompetenci
+              </button>
+            </div>
 
+            <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="competency,outcome" data-block-id="${b.id}" data-dropzone-type="competencies" style="min-height: 44px; display: flex; flex-direction: column; gap: 8px;">
+              ${(b.competencies || []).map(compCode => {
+                const comp = RVP_COMPETENCIES[compCode] || { name: compCode, icon: '🧠', desc: '' };
+                const compOutcomes = (b.outcomes || []).filter(code => {
+                  const outObj = RVP_OUTCOMES.find(o => o.code === code);
+                  return outObj && outObj.category === compCode;
+                });
+                return `
+                  <div class="block-competency-card">
+                    <div class="block-competency-header">
+                      <div class="block-competency-name">
+                        <span>${comp.icon}</span>
+                        <span>${comp.name}</span>
+                        <span class="code-badge" style="font-size: 0.68rem;">${compCode}</span>
+                        <span class="catalog-category-count" style="font-size: 0.68rem;">${compOutcomes.length} ${formatPlural(compOutcomes.length, 'výsledek', 'výsledky', 'výsledků')}</span>
+                      </div>
+                      <div class="block-competency-actions">
+                        <button type="button" class="btn btn-sm btn-secondary" style="padding: 2px 7px; font-size: 0.72rem;" onclick="window.svpApp.openCompetencyOutcomesModal('${b.id}', '${compCode}')" title="Vybrat očekávané výsledky této kompetence">+ Výsledek</button>
+                        <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.72rem; color: var(--danger-500);" onclick="window.svpApp.removeCompetency('${b.id}', '${compCode}')" title="Odebrat kompetenci i s výstupy">🗑</button>
+                      </div>
+                    </div>
+                    <div class="competency-outcomes-list">
+                      ${compOutcomes.length > 0 ? compOutcomes.map(code => {
+                        const outObj = RVP_OUTCOMES.find(o => o.code === code);
+                        return `
+                          <div class="competency-outcome-row">
+                            <div style="flex: 1; min-width: 0;">
+                              <span class="code-badge" style="margin-right: 6px; font-size: 0.68rem;">${code}</span>
+                              <span style="font-weight: 500;">${outObj ? outObj.title : code}</span>
+                            </div>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                              <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem;" onclick="window.svpApp.showOutcomeDetail('${code}')" title="Metodický detail a inspirace">ℹ️ Info</button>
+                              <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem; color: var(--danger-500);" onclick="window.svpApp.removeBlockOutcome('${b.id}', '${code}')" title="Odebrat výsledek">✕</button>
+                            </div>
+                          </div>
+                        `;
+                      }).join('') : `
+                        <div class="competency-empty-warning">
+                          <span>⚠️ K této kompetenci zatím není vybrán žádný konkrétní výsledek učení.</span>
+                          <button type="button" class="btn btn-sm btn-primary" style="font-size: 0.72rem; padding: 2px 8px;" onclick="window.svpApp.openCompetencyOutcomesModal('${b.id}', '${compCode}')">+ Vybrat výsledek</button>
+                        </div>
+                      `}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+
+              ${(!b.competencies || b.competencies.length === 0) ? `
+                <div style="font-size: 0.78rem; color: var(--text-light); font-style: italic; padding: 12px; text-align: center; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); background: var(--bg-card);">
+                  Přetáhněte sem klíčovou kompetenci nebo konkrétní výsledek učení z levého katalogu, případně klikněte na „+ Přidat kompetenci“.
+                </div>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- 4. Vzdělávací oblasti a jejich očekávané výsledky učení -->
+          <div class="block-hierarchy-section" style="border-left: 3px solid #10b981;">
+            <div class="block-hierarchy-header">
+              <div class="block-hierarchy-title">
+                <span>🎨 Vzdělávací oblasti a očekávané výsledky učení (RVP PV):</span>
+                <span class="catalog-category-count" style="font-size: 0.72rem;">${areaCount} ${formatPlural(areaCount, 'oblast', 'oblasti', 'oblastí')}</span>
+              </div>
+              <button type="button" class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 3px 8px;" onclick="window.svpApp.openAddAreaModal('${b.id}')">
+                + Přidat oblast
+              </button>
+            </div>
+
+            <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="area,outcome" data-block-id="${b.id}" data-dropzone-type="areas" style="min-height: 44px; display: flex; flex-direction: column; gap: 8px;">
+              ${(b.areas || []).map(areaCode => {
+                const area = RVP_AREAS[areaCode] || { name: areaCode, icon: '🎨', desc: '' };
+                const areaOutcomes = (b.outcomes || []).filter(code => {
+                  const outObj = RVP_OUTCOMES.find(o => o.code === code);
+                  return outObj && outObj.category === areaCode;
+                });
+                return `
+                  <div class="block-competency-card">
+                    <div class="block-competency-header" style="background: rgba(16, 185, 129, 0.08);">
+                      <div class="block-competency-name">
+                        <span>${area.icon}</span>
+                        <span>${area.name}</span>
+                        <span class="code-badge" style="font-size: 0.68rem;">${areaCode}</span>
+                        <span class="catalog-category-count" style="font-size: 0.68rem;">${areaOutcomes.length} ${formatPlural(areaOutcomes.length, 'výsledek', 'výsledky', 'výsledků')}</span>
+                      </div>
+                      <div class="block-competency-actions">
+                        <button type="button" class="btn btn-sm btn-secondary" style="padding: 2px 7px; font-size: 0.72rem;" onclick="window.svpApp.openAreaOutcomesModal('${b.id}', '${areaCode}')" title="Vybrat očekávané výsledky této oblasti">+ Výsledek</button>
+                        <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.72rem; color: var(--danger-500);" onclick="window.svpApp.removeArea('${b.id}', '${areaCode}')" title="Odebrat oblast i s výstupy">🗑</button>
+                      </div>
+                    </div>
+                    <div class="competency-outcomes-list">
+                      ${areaOutcomes.length > 0 ? areaOutcomes.map(code => {
+                        const outObj = RVP_OUTCOMES.find(o => o.code === code);
+                        return `
+                          <div class="competency-outcome-row">
+                            <div style="flex: 1; min-width: 0;">
+                              <span class="code-badge" style="margin-right: 6px; font-size: 0.68rem;">${code}</span>
+                              <span style="font-weight: 500;">${outObj ? outObj.title : code}</span>
+                            </div>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                              <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem;" onclick="window.svpApp.showOutcomeDetail('${code}')" title="Metodický detail a inspirace">ℹ️ Info</button>
+                              <button type="button" class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem; color: var(--danger-500);" onclick="window.svpApp.removeBlockOutcome('${b.id}', '${code}')" title="Odebrat výsledek">✕</button>
+                            </div>
+                          </div>
+                        `;
+                      }).join('') : `
+                        <div class="competency-empty-warning">
+                          <span>⚠️ K této vzdělávací oblasti zatím není vybrán žádný konkrétní výsledek učení.</span>
+                          <button type="button" class="btn btn-sm btn-primary" style="font-size: 0.72rem; padding: 2px 8px;" onclick="window.svpApp.openAreaOutcomesModal('${b.id}', '${areaCode}')">+ Vybrat výsledek</button>
+                        </div>
+                      `}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+
+              ${(!b.areas || b.areas.length === 0) ? `
+                <div style="font-size: 0.78rem; color: var(--text-light); font-style: italic; padding: 12px; text-align: center; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); background: var(--bg-card);">
+                  Přetáhněte sem vzdělávací oblast nebo její výsledek učení z katalogu, případně klikněte na „+ Přidat oblast“.
+                </div>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- 5. Základní gramotnosti -->
+          <div style="margin-bottom: 14px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-main); text-transform: uppercase;">
+                📖 Základní gramotnosti:
+              </div>
+              <div style="display: flex; gap: 6px;">
+                ${Object.entries(RVP_LITERACIES).map(([lCode, lit]) => {
+                  const isAssigned = (b.literacies || []).includes(lCode);
+                  return `
+                    <button type="button" class="btn btn-sm ${isAssigned ? 'btn-primary' : 'btn-secondary'}" style="font-size: 0.72rem; padding: 3px 8px;" onclick="window.svpApp.toggleBlockLit('${b.id}', '${lCode}')">
+                      ${lit.icon} ${lit.name} ${isAssigned ? '✓' : '+'}
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+            <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="literacy" data-block-id="${b.id}" data-dropzone-type="literacies" style="min-height: 36px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;">
               ${(b.literacies || []).map(l => `
                 <span class="pill-tag" data-type="literacy">
                   ${RVP_LITERACIES[l] ? `${RVP_LITERACIES[l].icon} ${RVP_LITERACIES[l].name}` : l}
                   <span class="remove-btn" onclick="window.svpApp.toggleBlockLit('${b.id}', '${l}')">✕</span>
                 </span>
               `).join('')}
-
-              ${(b.areas || []).map(a => `
-                <span class="pill-tag" data-type="area">
-                  ${RVP_AREAS[a] ? `${RVP_AREAS[a].icon} ${RVP_AREAS[a].name}` : a}
-                  <span class="remove-btn" onclick="window.svpApp.toggleBlockArea('${b.id}', '${a}')">✕</span>
-                </span>
-              `).join('')}
-
-              ${(!b.competencies || b.competencies.length === 0) && (!b.areas || b.areas.length === 0) && (!b.literacies || b.literacies.length === 0) ? `
-                <span style="font-size: 0.78rem; color: var(--text-light); font-style: italic;">
-                  Přetáhněte sem kompetenci nebo oblast z levého katalogu...
+              ${(!b.literacies || b.literacies.length === 0) ? `
+                <span style="font-size: 0.76rem; color: var(--text-light); font-style: italic;">
+                  Aktivujte gramotnost tlačítkem výše nebo přetáhněte z levého katalogu...
                 </span>
               ` : ''}
-            </div>
-          </div>
-
-          <!-- 4. Očekávané výsledky učení (RVP PV) -->
-          <div style="margin-bottom: 14px;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">OČEKÁVANÉ VÝSLEDKY UČENÍ (RVP PV):</div>
-            <div class="dropzone-container" data-dropzone="true" data-dropzone-accepts="outcome" data-block-id="${b.id}" data-dropzone-type="outcomes">
-              ${(b.outcomes || []).map(code => {
-                const outObj = RVP_OUTCOMES.find(o => o.code === code);
-                return `
-                  <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px; margin-bottom: 6px; font-size: 0.82rem;">
-                    <div>
-                      <span class="code-badge" style="margin-right: 6px;">${code}</span>
-                      <span>${outObj ? outObj.title : code}</span>
-                    </div>
-                    <div style="display: flex; gap: 4px;">
-                      <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.7rem;" onclick="window.svpApp.showOutcomeDetail('${code}')">ℹ️ Info</button>
-                      <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.7rem; color: var(--danger-500);" onclick="window.svpApp.toggleBlockOutcome('${b.id}', '${code}')">✕</button>
-                    </div>
-                  </div>
-                `;
-              }).join('') || '<span style="font-size: 0.78rem; color: var(--text-light); font-style: italic;">Přetáhněte sem očekávané výstupy z katalogu...</span>'}
             </div>
           </div>
 
@@ -1041,91 +1162,253 @@ class SVPApp {
       `;
     };
 
-    // 1. Klíčové kompetence
+    // 1. Klíčové kompetence (s rozpadem na oficiální očekávané výsledky učení KK)
     if (['ALL', 'COMPETENCIES'].includes(this.catalogCategoryFilter)) {
-      const compList = Object.entries(RVP_COMPETENCIES).map(([code, comp]) => ({ code, ...comp }));
-      renderCategory('comp', '🧠', 'Klíčové kompetence', compList, 'competency', (comp, usage) => `
-        <div class="draggable-item" draggable="true" data-draggable="true" data-item-type="competency" data-item-id="${comp.code}" title="${comp.desc}">
-          <span class="draggable-handle">⋮⋮</span>
-          <span>${comp.icon}</span>
-          <div style="flex: 1; min-width: 0;">
-            <div style="font-weight: 600; font-size: 0.8rem; line-height: 1.35;">${comp.name}</div>
-            <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px;">
-              <span class="code-badge">${comp.code}</span>
-              ${renderUsageBadge(usage)}
+      const compEntries = Object.entries(RVP_COMPETENCIES);
+      const filteredComps = compEntries.filter(([code, comp]) => {
+        const compOutcomes = RVP_OUTCOMES.filter(o => o.category === code);
+        const compUsage = getUsage('competency', code);
+        const compMatchesFilter = matchesUsageFilter(compUsage, 'competency');
+        const anyOutcomeMatchesFilter = compOutcomes.some(o => matchesUsageFilter(getUsage('outcome', o.code), 'outcome'));
+        if (!compMatchesFilter && !anyOutcomeMatchesFilter) return false;
+
+        if (!q) return true;
+        const compMatchesQuery = (comp.name || '').toLowerCase().includes(q) || code.toLowerCase().includes(q) || (comp.desc || '').toLowerCase().includes(q);
+        const outcomeMatchesQuery = compOutcomes.some(o => (o.title || '').toLowerCase().includes(q) || o.code.toLowerCase().includes(q));
+        return compMatchesQuery || outcomeMatchesQuery;
+      });
+
+      if (filteredComps.length > 0 || (!q && this.catalogUsageFilter === 'ALL')) {
+        const isCatCollapsed = this.collapsedCatalogCategories.has('comp') && !q && this.catalogUsageFilter === 'ALL';
+        let compsHtml = '';
+
+        filteredComps.forEach(([code, comp]) => {
+          const compUsage = getUsage('competency', code);
+          const allOutcomes = RVP_OUTCOMES.filter(o => o.category === code);
+          const matchingOutcomes = allOutcomes.filter(out => {
+            const outUsage = getUsage('outcome', out.code);
+            if (!matchesUsageFilter(outUsage, 'outcome')) return false;
+            if (!q) return true;
+            return (out.title || '').toLowerCase().includes(q) || out.code.toLowerCase().includes(q) || (comp.name || '').toLowerCase().includes(q);
+          });
+
+          const isExpanded = this.expandedCatalogCompetencies.has(code) || (q && matchingOutcomes.length > 0);
+
+          compsHtml += `
+            <div style="margin-bottom: 6px;">
+              <div class="catalog-competency-header draggable-item" draggable="true" data-draggable="true" data-item-type="competency" data-item-id="${code}" title="${comp.desc}" style="display: flex; align-items: center; gap: 6px; padding: 6px 8px;">
+                <span class="draggable-handle">⋮⋮</span>
+                <span style="font-size: 1rem;">${comp.icon}</span>
+                <div style="flex: 1; min-width: 0;" onclick="event.stopPropagation(); window.svpApp.toggleCatalogCompetencyExpanded('${code}')">
+                  <div style="font-weight: 600; font-size: 0.78rem; line-height: 1.3;">${comp.name}</div>
+                  <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px;">
+                    <span class="code-badge" style="font-size: 0.65rem;">${code}</span>
+                    ${renderUsageBadge(compUsage)}
+                    <span style="font-size: 0.67rem; color: var(--primary-600); font-weight: 600;">
+                      ${isExpanded ? '▲ Sbalit' : '▼ ' + allOutcomes.length + ' výstupů'}
+                    </span>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 3px; align-items: center;" onclick="event.stopPropagation()">
+                  <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.66rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm);" title="Přiřadit kompetenci do bloku" onclick="window.svpApp.promptAssignItem('competency', '${code}')">+ Blok</button>
+                  <button class="btn-icon-only" style="padding: 2px 5px; font-size: 0.66rem;" onclick="window.svpApp.toggleCatalogCompetencyExpanded('${code}')" title="${isExpanded ? 'Sbalit výsledky' : 'Rozbalit výsledky'}">${isExpanded ? '▲' : '▼'}</button>
+                </div>
+              </div>
+
+              ${isExpanded ? `
+                <div class="catalog-nested-outcomes">
+                  ${matchingOutcomes.map(out => {
+                    const outUsage = getUsage('outcome', out.code);
+                    return `
+                      <div class="catalog-outcome-item draggable-item" draggable="true" data-draggable="true" data-item-type="outcome" data-item-id="${out.code}" title="${out.title}">
+                        <div style="display: flex; align-items: flex-start; gap: 6px;">
+                          <span class="draggable-handle" style="padding-top: 2px;">⋮⋮</span>
+                          <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 0.74rem; font-weight: 600; line-height: 1.35; color: var(--text-main);">${out.title}</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; align-items: center;">
+                              <span class="code-badge" style="font-size: 0.64rem;">${out.code}</span>
+                              ${renderUsageBadge(outUsage)}
+                              <button class="btn-icon-only" style="padding: 1px 4px; font-size: 0.62rem;" onclick="event.stopPropagation(); window.svpApp.showOutcomeDetail('${out.code}')" title="Metodický komentář RVP PV">ℹ️</button>
+                            </div>
+                          </div>
+                          <button class="btn-icon-only" style="padding: 2px 5px; font-size: 0.64rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm); align-self: center;" title="Přiřadit výsledek do bloku" onclick="event.stopPropagation(); window.svpApp.promptAssignItem('outcome', '${out.code}')">+ Blok</button>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                  ${matchingOutcomes.length === 0 ? `<div style="font-size: 0.72rem; color: var(--text-muted); font-style: italic; padding: 4px 6px;">Žádné odpovídající výstupy pro filtr.</div>` : ''}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        });
+
+        catalogHtml += `
+          <div class="catalog-category-section ${isCatCollapsed ? 'is-collapsed' : ''}" id="cat-section-comp">
+            <div class="catalog-category-header" onclick="window.svpApp.toggleCatalogCategory('comp')">
+              <div style="display: flex; align-items: center;">
+                <span>🧠 Klíčové kompetence (s OVU)</span>
+                <span class="catalog-category-count">${filteredComps.length}</span>
+              </div>
+              <span class="catalog-category-toggle">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </span>
+            </div>
+            <div class="catalog-category-body">
+              ${compsHtml}
             </div>
           </div>
-          <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm);" title="Přiřadit do bloku" onclick="event.stopPropagation(); window.svpApp.promptAssignItem('competency', '${comp.code}')">+ Blok</button>
-        </div>
-      `);
+        `;
+      }
     }
 
-    // 2. Základní gramotnosti
+    // 2. Vzdělávací oblasti (s rozpadem na konkrétní výsledky učení dle oblastí)
+    if (['ALL', 'DJT', 'DJP', 'DDS', 'DAS'].includes(this.catalogCategoryFilter)) {
+      const areaEntries = Object.entries(RVP_AREAS).filter(([code]) => this.catalogCategoryFilter === 'ALL' || this.catalogCategoryFilter === code);
+      const filteredAreas = areaEntries.filter(([code, area]) => {
+        const areaOutcomes = RVP_OUTCOMES.filter(o => o.category === code);
+        const areaUsage = getUsage('area', code);
+        const areaMatchesFilter = matchesUsageFilter(areaUsage, 'area');
+        const anyOutcomeMatchesFilter = areaOutcomes.some(o => matchesUsageFilter(getUsage('outcome', o.code), 'outcome'));
+        if (!areaMatchesFilter && !anyOutcomeMatchesFilter) return false;
+
+        if (!q) return true;
+        const areaMatchesQuery = (area.name || '').toLowerCase().includes(q) || code.toLowerCase().includes(q) || (area.desc || '').toLowerCase().includes(q);
+        const outcomeMatchesQuery = areaOutcomes.some(o => (o.title || '').toLowerCase().includes(q) || o.code.toLowerCase().includes(q));
+        return areaMatchesQuery || outcomeMatchesQuery;
+      });
+
+      if (filteredAreas.length > 0 || (!q && this.catalogUsageFilter === 'ALL')) {
+        const isCatCollapsed = this.collapsedCatalogCategories.has('areas') && !q && this.catalogUsageFilter === 'ALL';
+        let areasHtml = '';
+
+        filteredAreas.forEach(([code, area]) => {
+          const areaUsage = getUsage('area', code);
+          const allOutcomes = RVP_OUTCOMES.filter(o => o.category === code);
+          const matchingOutcomes = allOutcomes.filter(out => {
+            const outUsage = getUsage('outcome', out.code);
+            if (!matchesUsageFilter(outUsage, 'outcome')) return false;
+            if (!q) return true;
+            return (out.title || '').toLowerCase().includes(q) || out.code.toLowerCase().includes(q) || (area.name || '').toLowerCase().includes(q);
+          });
+
+          const isExpanded = this.expandedCatalogAreas.has(code) || (q && matchingOutcomes.length > 0);
+
+          areasHtml += `
+            <div style="margin-bottom: 6px;">
+              <div class="catalog-competency-header draggable-item" draggable="true" data-draggable="true" data-item-type="area" data-item-id="${code}" title="${area.desc}" style="display: flex; align-items: center; gap: 6px; padding: 6px 8px;">
+                <span class="draggable-handle">⋮⋮</span>
+                <span style="font-size: 1rem;">${area.icon}</span>
+                <div style="flex: 1; min-width: 0;" onclick="event.stopPropagation(); window.svpApp.toggleCatalogAreaExpanded('${code}')">
+                  <div style="font-weight: 600; font-size: 0.78rem; line-height: 1.3;">${area.name}</div>
+                  <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px;">
+                    <span class="code-badge" style="font-size: 0.65rem;">${code}</span>
+                    ${renderNeutralUsageCount(areaUsage)}
+                    <span style="font-size: 0.67rem; color: #10b981; font-weight: 600;">
+                      ${isExpanded ? '▲ Sbalit' : '▼ ' + allOutcomes.length + ' výstupů'}
+                    </span>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 3px; align-items: center;" onclick="event.stopPropagation()">
+                  <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.66rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm);" title="Přiřadit oblast do bloku" onclick="window.svpApp.promptAssignItem('area', '${code}')">+ Blok</button>
+                  <button class="btn-icon-only" style="padding: 2px 5px; font-size: 0.66rem;" onclick="window.svpApp.toggleCatalogAreaExpanded('${code}')" title="${isExpanded ? 'Sbalit výsledky' : 'Rozbalit výsledky'}">${isExpanded ? '▲' : '▼'}</button>
+                </div>
+              </div>
+
+              ${isExpanded ? `
+                <div class="catalog-nested-outcomes">
+                  ${matchingOutcomes.map(out => {
+                    const outUsage = getUsage('outcome', out.code);
+                    return `
+                      <div class="catalog-outcome-item draggable-item" draggable="true" data-draggable="true" data-item-type="outcome" data-item-id="${out.code}" title="${out.title}">
+                        <div style="display: flex; align-items: flex-start; gap: 6px;">
+                          <span class="draggable-handle" style="padding-top: 2px;">⋮⋮</span>
+                          <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 0.74rem; font-weight: 600; line-height: 1.35; color: var(--text-main);">${out.title}</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; align-items: center;">
+                              <span class="code-badge" style="font-size: 0.64rem;">${out.code}</span>
+                              ${renderUsageBadge(outUsage)}
+                              <button class="btn-icon-only" style="padding: 1px 4px; font-size: 0.62rem;" onclick="event.stopPropagation(); window.svpApp.showOutcomeDetail('${out.code}')" title="Metodický komentář RVP PV">ℹ️</button>
+                            </div>
+                          </div>
+                          <button class="btn-icon-only" style="padding: 2px 5px; font-size: 0.64rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm); align-self: center;" title="Přiřadit výsledek do bloku" onclick="event.stopPropagation(); window.svpApp.promptAssignItem('outcome', '${out.code}')">+ Blok</button>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                  ${matchingOutcomes.length === 0 ? `<div style="font-size: 0.72rem; color: var(--text-muted); font-style: italic; padding: 4px 6px;">Žádné odpovídající výstupy pro filtr.</div>` : ''}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        });
+
+        catalogHtml += `
+          <div class="catalog-category-section ${isCatCollapsed ? 'is-collapsed' : ''}" id="cat-section-areas">
+            <div class="catalog-category-header" onclick="window.svpApp.toggleCatalogCategory('areas')">
+              <div style="display: flex; align-items: center;">
+                <span>🎨 Vzdělávací oblasti (s OVU)</span>
+                <span class="catalog-category-count">${filteredAreas.length}</span>
+              </div>
+              <span class="catalog-category-toggle">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </span>
+            </div>
+            <div class="catalog-category-body">
+              ${areasHtml}
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // 3. Základní gramotnosti
     if (['ALL', 'LITERACIES'].includes(this.catalogCategoryFilter)) {
       const litList = Object.entries(RVP_LITERACIES).map(([code, lit]) => ({ code, ...lit }));
-      renderCategory('lit', '📖', 'Základní gramotnosti', litList, 'literacy', (lit, usage) => `
-        <div class="draggable-item" draggable="true" data-draggable="true" data-item-type="literacy" data-item-id="${lit.code}" title="${lit.desc}">
-          <span class="draggable-handle">⋮⋮</span>
-          <span>${lit.icon}</span>
-          <div style="flex: 1; min-width: 0;">
-            <div style="font-weight: 600; font-size: 0.8rem; line-height: 1.35;">${lit.name}</div>
-            <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px;">
-              <span class="code-badge">${lit.code}</span>
-              ${renderNeutralUsageCount(usage)}
+      const matchingLits = litList.filter(lit => {
+        if (!q) return true;
+        return (lit.name || '').toLowerCase().includes(q) || lit.code.toLowerCase().includes(q);
+      });
+
+      if (matchingLits.length > 0) {
+        const isCatCollapsed = this.collapsedCatalogCategories.has('lit') && !q;
+        let litsHtml = '';
+        matchingLits.forEach(lit => {
+          const usage = getUsage('literacy', lit.code);
+          litsHtml += `
+            <div class="draggable-item" draggable="true" data-draggable="true" data-item-type="literacy" data-item-id="${lit.code}" title="${lit.desc}">
+              <span class="draggable-handle">⋮⋮</span>
+              <span>${lit.icon}</span>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 600; font-size: 0.8rem; line-height: 1.35;">${lit.name}</div>
+                <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px;">
+                  <span class="code-badge">${lit.code}</span>
+                  ${renderNeutralUsageCount(usage)}
+                </div>
+              </div>
+              <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm);" title="Přiřadit do bloku" onclick="event.stopPropagation(); window.svpApp.promptAssignItem('literacy', '${lit.code}')">+ Blok</button>
+            </div>
+          `;
+        });
+
+        catalogHtml += `
+          <div class="catalog-category-section ${isCatCollapsed ? 'is-collapsed' : ''}" id="cat-section-lit">
+            <div class="catalog-category-header" onclick="window.svpApp.toggleCatalogCategory('lit')">
+              <div style="display: flex; align-items: center;">
+                <span>📖 Základní gramotnosti</span>
+                <span class="catalog-category-count">${matchingLits.length}</span>
+              </div>
+              <span class="catalog-category-toggle">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </span>
+            </div>
+            <div class="catalog-category-body">
+              ${litsHtml}
             </div>
           </div>
-          <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm);" title="Přiřadit do bloku" onclick="event.stopPropagation(); window.svpApp.promptAssignItem('literacy', '${lit.code}')">+ Blok</button>
-        </div>
-      `);
+        `;
+      }
     }
-
-    // 3. Vzdělávací oblasti
-    if (['ALL', 'DJT', 'DJP', 'DDS', 'DAS'].includes(this.catalogCategoryFilter)) {
-      const areaList = Object.entries(RVP_AREAS)
-        .filter(([code]) => this.catalogCategoryFilter === 'ALL' || this.catalogCategoryFilter === code)
-        .map(([code, area]) => ({ code, ...area }));
-      renderCategory('areas', '🎨', 'Vzdělávací oblasti', areaList, 'area', (area, usage) => `
-        <div class="draggable-item" draggable="true" data-draggable="true" data-item-type="area" data-item-id="${area.code}" title="${area.desc}">
-          <span class="draggable-handle">⋮⋮</span>
-          <span>${area.icon}</span>
-          <div style="flex: 1; min-width: 0;">
-            <div style="font-weight: 600; font-size: 0.8rem; line-height: 1.35;">${area.name}</div>
-            <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px;">
-              <span class="code-badge">${area.code}</span>
-              ${renderNeutralUsageCount(usage)}
-            </div>
-          </div>
-          <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm);" title="Přiřadit do bloku" onclick="event.stopPropagation(); window.svpApp.promptAssignItem('area', '${area.code}')">+ Blok</button>
-        </div>
-      `);
-    }
-
-    // 4. Očekávané výsledky učení rozdělené dle oblastí
-    const areaMeta = [
-      { key: 'DJT', icon: '🏃', title: 'OVU: Dítě a jeho tělo' },
-      { key: 'DJP', icon: '🧠', title: 'OVU: Dítě a jeho psychika' },
-      { key: 'DDS', icon: '👥', title: 'OVU: Dítě a společnost' },
-      { key: 'DAS', icon: '🌍', title: 'OVU: Dítě a svět' }
-    ];
-
-    areaMeta.forEach(meta => {
-      if (this.catalogCategoryFilter !== 'ALL' && this.catalogCategoryFilter !== meta.key) return;
-      const areaOutcomes = RVP_OUTCOMES.filter(o => o.category === meta.key);
-      renderCategory(`ovu-${meta.key}`, meta.icon, meta.title, areaOutcomes, 'outcome', (out, usage) => `
-        <div class="draggable-item" draggable="true" data-draggable="true" data-item-type="outcome" data-item-id="${out.code}" title="${out.title}">
-          <span class="draggable-handle">⋮⋮</span>
-          <div style="flex: 1; min-width: 0;">
-            <div style="font-size: 0.76rem; font-weight: 600; line-height: 1.3;">${out.title}</div>
-            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; align-items: center;">
-              <span class="code-badge" style="font-size: 0.66rem;">${out.code}</span>
-              ${renderUsageBadge(usage)}
-              <button class="btn-icon-only" style="padding: 1px 4px; font-size: 0.62rem;" onclick="event.stopPropagation(); window.svpApp.showOutcomeDetail('${out.code}')">ℹ️</button>
-            </div>
-          </div>
-          <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.68rem; background: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm);" title="Přiřadit do bloku" onclick="event.stopPropagation(); window.svpApp.promptAssignItem('outcome', '${out.code}')">+ Blok</button>
-        </div>
-      `);
-    });
 
     if (!catalogHtml) {
       catalogHtml = `<div style="font-size: 0.8rem; color: var(--text-muted); padding: 12px 6px; font-style: italic;">Nenalezeny žádné položky odpovídající hledání či filtru.</div>`;
@@ -1146,12 +1429,17 @@ class SVPApp {
   toggleAllCatalogCategories(expandAll) {
     if (expandAll) {
       this.collapsedCatalogCategories.clear();
+      Object.keys(RVP_COMPETENCIES).forEach(c => this.expandedCatalogCompetencies.add(c));
+      Object.keys(RVP_AREAS).forEach(a => this.expandedCatalogAreas.add(a));
     } else {
-      ['comp', 'lit', 'areas', 'ovu-DJT', 'ovu-DJP', 'ovu-DDS', 'ovu-DAS'].forEach(k => {
+      ['comp', 'lit', 'areas'].forEach(k => {
         this.collapsedCatalogCategories.add(k);
       });
+      this.expandedCatalogCompetencies.clear();
+      this.expandedCatalogAreas.clear();
     }
     this.renderCatalogItems();
+    dnd.init();
   }
 
   updateBlockTitle(blockId, title) {
@@ -1255,6 +1543,264 @@ class SVPApp {
     this.render();
   }
 
+  removeCompetency(blockId, compCode) {
+    const doc = store.getDoc();
+    const block = doc.blocks?.find(b => b.id === blockId);
+    if (!block) return;
+    const compOutcomes = (block.outcomes || []).filter(code => {
+      const outObj = RVP_OUTCOMES.find(o => o.code === code);
+      return outObj && outObj.category === compCode;
+    });
+
+    if (compOutcomes.length > 0) {
+      if (confirm(`Odebráním této kompetence bude z bloku odstraněno i ${compOutcomes.length} navázaných výsledků učení. Chcete pokračovat?`)) {
+        store.removeCompetencyWithOutcomes(blockId, compCode);
+        this.showToast('Kompetence i navázané výstupy byly odebrány');
+        this.render();
+      }
+    } else {
+      store.removeCompetencyWithOutcomes(blockId, compCode);
+      this.showToast('Kompetence byla odebrána');
+      this.render();
+    }
+  }
+
+  removeArea(blockId, areaCode) {
+    const doc = store.getDoc();
+    const block = doc.blocks?.find(b => b.id === blockId);
+    if (!block) return;
+    const areaOutcomes = (block.outcomes || []).filter(code => {
+      const outObj = RVP_OUTCOMES.find(o => o.code === code);
+      return outObj && outObj.category === areaCode;
+    });
+
+    if (areaOutcomes.length > 0) {
+      if (confirm(`Odebráním této oblasti bude z bloku odstraněno i ${areaOutcomes.length} navázaných výstupů. Chcete pokračovat?`)) {
+        store.removeAreaWithOutcomes(blockId, areaCode);
+        this.showToast('Oblast i navázané výstupy byly odebrány');
+        this.render();
+      }
+    } else {
+      store.removeAreaWithOutcomes(blockId, areaCode);
+      this.showToast('Oblast byla odebrána');
+      this.render();
+    }
+  }
+
+  removeBlockOutcome(blockId, code) {
+    store.removeBlockOutcome(blockId, code);
+    this.render();
+  }
+
+  openAddCompetencyModal(blockId) {
+    const doc = store.getDoc();
+    const block = doc.blocks?.find(b => b.id === blockId);
+    if (!block) return;
+
+    const modal = document.getElementById('item-picker-modal');
+    const titleEl = document.getElementById('item-picker-modal-title');
+    const descEl = document.getElementById('item-picker-modal-desc');
+    const listEl = document.getElementById('item-picker-modal-list');
+    const badgeEl = document.getElementById('item-picker-count-badge');
+    if (!modal || !listEl) return;
+
+    titleEl.innerHTML = '🧠 Rozvíjené klíčové kompetence (RVP PV)';
+    descEl.textContent = 'Zvolte klíčové kompetence, které budou v tomto integrovaném bloku rozvíjeny:';
+
+    const currentComps = block.competencies || [];
+    badgeEl.textContent = `Přiřazeno: ${currentComps.length} z 8`;
+
+    listEl.innerHTML = Object.entries(RVP_COMPETENCIES).map(([code, comp]) => {
+      const isSelected = currentComps.includes(code);
+      const compOutcomesCount = (block.outcomes || []).filter(c => {
+        const o = RVP_OUTCOMES.find(x => x.code === c);
+        return o && o.category === code;
+      }).length;
+      return `
+        <div class="picker-item-row ${isSelected ? 'is-selected' : ''}" onclick="window.svpApp.toggleBlockCompAndRefreshPicker('${blockId}', '${code}', 'competency')">
+          <input type="checkbox" ${isSelected ? 'checked' : ''} style="margin-top: 3px; pointer-events: none;">
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+              <span>${comp.icon} ${comp.name}</span>
+              <span class="code-badge">${code}</span>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 3px;">${comp.desc}</div>
+            ${isSelected ? `<div style="font-size: 0.74rem; color: var(--primary-600); font-weight: 600; margin-top: 4px;">✓ V bloku přiřazeno ${compOutcomesCount} ${formatPlural(compOutcomesCount, 'výsledek', 'výsledky', 'výsledků')} učení</div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    modal.classList.add('active');
+  }
+
+  openAddAreaModal(blockId) {
+    const doc = store.getDoc();
+    const block = doc.blocks?.find(b => b.id === blockId);
+    if (!block) return;
+
+    const modal = document.getElementById('item-picker-modal');
+    const titleEl = document.getElementById('item-picker-modal-title');
+    const descEl = document.getElementById('item-picker-modal-desc');
+    const listEl = document.getElementById('item-picker-modal-list');
+    const badgeEl = document.getElementById('item-picker-count-badge');
+    if (!modal || !listEl) return;
+
+    titleEl.innerHTML = '🎨 Vzdělávací oblasti (RVP PV)';
+    descEl.textContent = 'Zvolte vzdělávací oblasti, jejichž obsah a výstupy blok integruje:';
+
+    const currentAreas = block.areas || [];
+    badgeEl.textContent = `Přiřazeno: ${currentAreas.length} ze 4`;
+
+    listEl.innerHTML = Object.entries(RVP_AREAS).map(([code, area]) => {
+      const isSelected = currentAreas.includes(code);
+      const areaOutcomesCount = (block.outcomes || []).filter(c => {
+        const o = RVP_OUTCOMES.find(x => x.code === c);
+        return o && o.category === code;
+      }).length;
+      return `
+        <div class="picker-item-row ${isSelected ? 'is-selected' : ''}" onclick="window.svpApp.toggleBlockAreaAndRefreshPicker('${blockId}', '${code}', 'area')">
+          <input type="checkbox" ${isSelected ? 'checked' : ''} style="margin-top: 3px; pointer-events: none;">
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+              <span>${area.icon} ${area.name}</span>
+              <span class="code-badge">${code}</span>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 3px;">${area.desc}</div>
+            ${isSelected ? `<div style="font-size: 0.74rem; color: #10b981; font-weight: 600; margin-top: 4px;">✓ V bloku přiřazeno ${areaOutcomesCount} výstupů</div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    modal.classList.add('active');
+  }
+
+  openCompetencyOutcomesModal(blockId, compCode) {
+    const doc = store.getDoc();
+    const block = doc.blocks?.find(b => b.id === blockId);
+    if (!block) return;
+    const comp = RVP_COMPETENCIES[compCode];
+    if (!comp) return;
+
+    const modal = document.getElementById('item-picker-modal');
+    const titleEl = document.getElementById('item-picker-modal-title');
+    const descEl = document.getElementById('item-picker-modal-desc');
+    const listEl = document.getElementById('item-picker-modal-list');
+    const badgeEl = document.getElementById('item-picker-count-badge');
+    if (!modal || !listEl) return;
+
+    const allCompOutcomes = RVP_OUTCOMES.filter(o => o.category === compCode);
+    const blockOutcomes = block.outcomes || [];
+    const selectedCount = allCompOutcomes.filter(o => blockOutcomes.includes(o.code)).length;
+
+    titleEl.innerHTML = `${comp.icon} Očekávané výsledky: ${comp.name} (${compCode})`;
+    descEl.textContent = `Zvolte konkrétní očekávané výsledky učení z RVP PV náležející k této klíčové kompetenci:`;
+    badgeEl.textContent = `Vybráno: ${selectedCount} z ${allCompOutcomes.length}`;
+
+    listEl.innerHTML = allCompOutcomes.map(out => {
+      const isSelected = blockOutcomes.includes(out.code);
+      return `
+        <div class="picker-item-row ${isSelected ? 'is-selected' : ''}" onclick="window.svpApp.toggleBlockOutcomeAndRefreshPicker('${blockId}', '${out.code}', '${compCode}', 'competency')">
+          <input type="checkbox" ${isSelected ? 'checked' : ''} style="margin-top: 3px; pointer-events: none;">
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+              <span class="code-badge">${out.code}</span>
+              <span style="font-size: 0.72rem; color: var(--text-light);">Strana ${out.page}</span>
+            </div>
+            <div style="font-size: 0.84rem; font-weight: 600; color: var(--text-main);">${out.title}</div>
+            ${out.comment ? `<div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">${out.comment.slice(0, 160)}...</div>` : ''}
+          </div>
+          <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.7rem;" onclick="event.stopPropagation(); window.svpApp.showOutcomeDetail('${out.code}')" title="Metodický detail a inspirace">ℹ️ Info</button>
+        </div>
+      `;
+    }).join('');
+
+    modal.classList.add('active');
+  }
+
+  openAreaOutcomesModal(blockId, areaCode) {
+    const doc = store.getDoc();
+    const block = doc.blocks?.find(b => b.id === blockId);
+    if (!block) return;
+    const area = RVP_AREAS[areaCode];
+    if (!area) return;
+
+    const modal = document.getElementById('item-picker-modal');
+    const titleEl = document.getElementById('item-picker-modal-title');
+    const descEl = document.getElementById('item-picker-modal-desc');
+    const listEl = document.getElementById('item-picker-modal-list');
+    const badgeEl = document.getElementById('item-picker-count-badge');
+    if (!modal || !listEl) return;
+
+    const allAreaOutcomes = RVP_OUTCOMES.filter(o => o.category === areaCode);
+    const blockOutcomes = block.outcomes || [];
+    const selectedCount = allAreaOutcomes.filter(o => blockOutcomes.includes(o.code)).length;
+
+    titleEl.innerHTML = `${area.icon} Očekávané výsledky: ${area.name} (${areaCode})`;
+    descEl.textContent = `Zvolte konkrétní očekávané výsledky učení z RVP PV náležející k této vzdělávací oblasti:`;
+    badgeEl.textContent = `Vybráno: ${selectedCount} z ${allAreaOutcomes.length}`;
+
+    listEl.innerHTML = allAreaOutcomes.map(out => {
+      const isSelected = blockOutcomes.includes(out.code);
+      return `
+        <div class="picker-item-row ${isSelected ? 'is-selected' : ''}" onclick="window.svpApp.toggleBlockOutcomeAndRefreshPicker('${blockId}', '${out.code}', '${areaCode}', 'area')">
+          <input type="checkbox" ${isSelected ? 'checked' : ''} style="margin-top: 3px; pointer-events: none;">
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+              <span class="code-badge">${out.code}</span>
+              <span style="font-size: 0.72rem; color: var(--text-light);">Strana ${out.page}</span>
+            </div>
+            <div style="font-size: 0.84rem; font-weight: 600; color: var(--text-main);">${out.title}</div>
+            ${out.comment ? `<div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">${out.comment.slice(0, 160)}...</div>` : ''}
+          </div>
+          <button class="btn-icon-only" style="padding: 2px 6px; font-size: 0.7rem;" onclick="event.stopPropagation(); window.svpApp.showOutcomeDetail('${out.code}')" title="Metodický detail a inspirace">ℹ️ Info</button>
+        </div>
+      `;
+    }).join('');
+
+    modal.classList.add('active');
+  }
+
+  toggleBlockCompAndRefreshPicker(blockId, compCode, type) {
+    store.toggleBlockCompetency(blockId, compCode);
+    this.openAddCompetencyModal(blockId);
+  }
+
+  toggleBlockAreaAndRefreshPicker(blockId, areaCode, type) {
+    store.toggleBlockArea(blockId, areaCode);
+    this.openAddAreaModal(blockId);
+  }
+
+  toggleBlockOutcomeAndRefreshPicker(blockId, outcomeCode, parentCode, type) {
+    store.toggleBlockOutcome(blockId, outcomeCode);
+    if (type === 'competency') {
+      this.openCompetencyOutcomesModal(blockId, parentCode);
+    } else {
+      this.openAreaOutcomesModal(blockId, parentCode);
+    }
+  }
+
+  toggleCatalogCompetencyExpanded(compCode) {
+    if (this.expandedCatalogCompetencies.has(compCode)) {
+      this.expandedCatalogCompetencies.delete(compCode);
+    } else {
+      this.expandedCatalogCompetencies.add(compCode);
+    }
+    this.renderCatalogItems();
+    dnd.init();
+  }
+
+  toggleCatalogAreaExpanded(areaCode) {
+    if (this.expandedCatalogAreas.has(areaCode)) {
+      this.expandedCatalogAreas.delete(areaCode);
+    } else {
+      this.expandedCatalogAreas.add(areaCode);
+    }
+    this.renderCatalogItems();
+    dnd.init();
+  }
+
   deleteBlock(blockId) {
     if (confirm('Opravdu chcete smazat tento integrovaný blok?')) {
       store.deleteBlock(blockId);
@@ -1300,7 +1846,10 @@ class SVPApp {
 
   closeModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.classList.remove('is-open');
+    }
   }
 
   showOutcomeDetail(code) {
@@ -1386,17 +1935,26 @@ class SVPApp {
       if (!targetBlock) return;
 
       if (type === 'outcome') {
-        store.toggleBlockOutcome(targetBlock.id, id);
+        store.addBlockOutcome(targetBlock.id, id);
+        this.showToast(`Výsledek učení přiřazen k bloku: ${targetBlock.title}`);
       } else if (type === 'competency') {
-        store.toggleBlockCompetency(targetBlock.id, id);
+        if (!targetBlock.competencies || !targetBlock.competencies.includes(id)) {
+          store.toggleBlockCompetency(targetBlock.id, id);
+        }
+        this.showToast(`Klíčová kompetence přiřazena k bloku: ${targetBlock.title}`);
       } else if (type === 'literacy') {
-        store.toggleBlockLiteracy(targetBlock.id, id);
+        if (!targetBlock.literacies || !targetBlock.literacies.includes(id)) {
+          store.toggleBlockLiteracy(targetBlock.id, id);
+        }
+        this.showToast(`Gramotnost přiřazena k bloku: ${targetBlock.title}`);
       } else if (type === 'area') {
-        store.toggleBlockArea(targetBlock.id, id);
+        if (!targetBlock.areas || !targetBlock.areas.includes(id)) {
+          store.toggleBlockArea(targetBlock.id, id);
+        }
+        this.showToast(`Vzdělávací oblast přiřazena k bloku: ${targetBlock.title}`);
       }
 
       this.closeModal('assign-block-modal');
-      this.showToast(`Položka přiřazena k bloku: ${targetBlock.title}`);
       this.render();
     };
 

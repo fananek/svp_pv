@@ -1764,3 +1764,190 @@ body {
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   Hierarchical Competencies & Expected Outcomes (RVP PV)
+   ========================================================================== */
+.block-hierarchy-section {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.block-hierarchy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.block-hierarchy-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.block-competency-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.block-competency-card:hover {
+  border-color: var(--primary-300);
+}
+
+.block-competency-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-color);
+  gap: 8px;
+}
+
+.block-competency-name {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.block-competency-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.competency-outcomes-list {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.competency-outcome-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  gap: 8px;
+  transition: background var(--transition-fast);
+}
+
+.competency-outcome-row:hover {
+  background: var(--bg-surface-hover);
+}
+
+.competency-empty-warning {
+  padding: 10px 12px;
+  font-size: 0.78rem;
+  color: #b45309;
+  background: #fffbeb;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px dashed #fcd34d;
+}
+
+[data-theme="dark"] .competency-empty-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+/* Catalog Nested Outcomes List */
+.catalog-competency-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--transition-fast);
+}
+
+.catalog-competency-header:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--primary-400);
+}
+
+.catalog-nested-outcomes {
+  margin-left: 14px;
+  padding-left: 8px;
+  border-left: 2px solid var(--border-color);
+  margin-top: 4px;
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.catalog-outcome-item {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  font-size: 0.75rem;
+  cursor: grab;
+  transition: all var(--transition-fast);
+}
+
+.catalog-outcome-item:hover {
+  border-color: var(--primary-500);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-card);
+}
+
+/* Item Picker Modal items */
+.picker-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.picker-item-row:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--primary-400);
+}
+
+.picker-item-row.is-selected {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: var(--primary-500);
+}
+
+[data-theme="dark"] .picker-item-row.is-selected {
+  background: rgba(59, 130, 246, 0.2);
+}
+
