@@ -1296,6 +1296,102 @@ body {
   color: var(--primary-700);
 }
 
+/* Coverage Collapsible Sections */
+.coverage-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  overflow: hidden;
+}
+
+.coverage-section:hover {
+  border-color: var(--border-focus);
+}
+
+.coverage-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 18px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  user-select: none;
+  gap: 12px;
+  transition: background-color var(--transition-fast);
+}
+
+.coverage-section-header:hover {
+  background: var(--bg-surface-hover);
+}
+
+.coverage-section.is-collapsed .coverage-section-header {
+  border-bottom: none;
+}
+
+.coverage-section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.coverage-section-collapse-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.coverage-section-header:hover .coverage-section-collapse-btn {
+  border-color: var(--primary-500);
+  color: var(--primary-600);
+}
+
+.coverage-section-collapse-btn svg {
+  transition: transform var(--transition-fast);
+}
+
+.coverage-section.is-collapsed .coverage-section-collapse-btn svg {
+  transform: rotate(-90deg);
+}
+
+.coverage-section-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.coverage-section-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.coverage-section-body {
+  padding: 18px;
+}
+
+.coverage-section.is-collapsed .coverage-section-body {
+  display: none;
+}
+
 /* Coverage Matrix */
 .coverage-grid {
   display: grid;

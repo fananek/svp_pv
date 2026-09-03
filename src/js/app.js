@@ -26,6 +26,7 @@ class SVPApp {
     this.catalogSearchQuery = '';
     this.collapsedBlocks = new Set();
     this.collapsedCatalogCategories = new Set();
+    this.collapsedCoverageSections = new Set();
     this.expandedCatalogCompetencies = new Set();
     this.expandedCatalogAreas = new Set();
     this.blockOfferTabs = new Map();
@@ -2227,167 +2228,36 @@ class SVPApp {
   }
 
   // --- COVERAGE MATRIX & AUDIT ---
+  toggleCoverageSection(secKey) {
+    if (this.collapsedCoverageSections.has(secKey)) {
+      this.collapsedCoverageSections.delete(secKey);
+    } else {
+      this.collapsedCoverageSections.add(secKey);
+    }
+    this.renderCoverageMatrix(store.getDoc());
+  }
+
+  toggleAllCoverageSections(expandAll) {
+    if (expandAll) {
+      this.collapsedCoverageSections.clear();
+    } else {
+      ['competencies', 'areas', 'matrix'].forEach(s => this.collapsedCoverageSections.add(s));
+    }
+    this.renderCoverageMatrix(store.getDoc());
+  }
+
   renderCoverageMatrix(doc) {
     const container = document.getElementById('coverage-matrix-content');
     if (!container) return;
 
     const stats = store.calculateCoverage();
 
-    let html = `
-      <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%); margin-bottom: 24px;">
-        <div class="card-header">
-          <div class="card-title">🔍 Analýza souladu s Rámcovým vzdělávacím programem (RVP PV)</div>
-        </div>
-        <p style="font-size: 0.9rem; color: var(--text-muted);">
-          Tento audit automaticky ověřuje, zda vaše integrované bloky rovnoměrně rozvíjejí všech 8 klíčových kompetencí a pokrývají 4 hlavní vzdělávací oblasti RVP PV.
-        </p>
-      </div>
+    const isCompCollapsed = this.collapsedCoverageSections.has('competencies');
+    const isAreaCollapsed = this.collapsedCoverageSections.has('areas');
+    const isMatrixCollapsed = this.collapsedCoverageSections.has('matrix');
 
-      <h3 style="font-size: 1.15rem; margin-bottom: 14px;">1. Pokrytí klíčových kompetencí (8 kompetencí)</h3>
-      <div class="coverage-grid" style="margin-bottom: 30px;">
-    `;
-
-    Object.entries(RVP_COMPETENCIES).forEach(([code, comp]) => {
-      const cov = stats.competencyCoverage[code] || { count: 0, blocks: new Set(), totalInRVP: 1 };
-      const blockCount = cov.blocks.size;
-      const isGood = blockCount >= 2;
-      const percent = Math.min(100, Math.round((blockCount / Math.max(1, doc.blocks.length)) * 100));
-
-      const assignedBlocks = doc.blocks
-        .map((b, idx) => ({ order: idx + 1, title: b.title, isAssigned: (b.competencies || []).includes(code) || cov.blocks.has(b.title) }))
-        .filter(item => item.isAssigned);
-
-      html += `
-        <div class="coverage-card">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
-            <div style="flex: 1; min-width: 0;">
-              <span style="font-size: 1.5rem;">${comp.icon}</span>
-              <h4 style="font-size: 0.95rem; margin-top: 4px; line-height: 1.3;">${comp.name}</h4>
-              <span class="code-badge">${code}</span>
-            </div>
-            <span class="header-tag ${isGood ? 'header-tag-success' : 'header-tag-warning'}">
-              ${formatBlocks(blockCount)}
-            </span>
-          </div>
-          <div class="progress-bar-bg">
-            <div class="progress-bar-fill" style="width: ${percent}%; background-color: ${comp.color};"></div>
-          </div>
-          <div class="coverage-blocks-container">
-            <span class="coverage-blocks-title">Zapojeno v blocích:</span>
-            ${assignedBlocks.length > 0
-              ? `<ul class="coverage-blocks-list">${assignedBlocks.map(item => `<li><span class="coverage-block-num">${item.order}.</span> <span class="coverage-block-name">${item.title}</span></li>`).join('')}</ul>`
-              : `<div class="coverage-blocks-empty">Zatím v žádném bloku</div>`
-            }
-          </div>
-        </div>
-      `;
-    });
-
-    html += `
-      </div>
-      <h3 style="font-size: 1.15rem; margin-bottom: 14px;">2. Pokrytí vzdělávacích oblastí</h3>
-      <div class="coverage-grid">
-    `;
-
-    Object.entries(RVP_AREAS).forEach(([code, area]) => {
-      const cov = stats.areaCoverage[code] || { count: 0, blocks: new Set(), totalInRVP: 1 };
-      const blockCount = cov.blocks.size;
-      const isGood = blockCount >= 2;
-      const percent = Math.min(100, Math.round((blockCount / Math.max(1, doc.blocks.length)) * 100));
-
-      const assignedBlocks = doc.blocks
-        .map((b, idx) => ({ order: idx + 1, title: b.title, isAssigned: (b.areas || []).includes(code) || cov.blocks.has(b.title) }))
-        .filter(item => item.isAssigned);
-
-      html += `
-        <div class="coverage-card">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
-            <div style="flex: 1; min-width: 0;">
-              <span style="font-size: 1.5rem;">${area.icon}</span>
-              <h4 style="font-size: 0.95rem; margin-top: 4px; line-height: 1.3;">${area.name}</h4>
-              <span class="code-badge">${code}</span>
-            </div>
-            <span class="header-tag ${isGood ? 'header-tag-success' : 'header-tag-warning'}">
-              ${formatBlocks(blockCount)}
-            </span>
-          </div>
-          <div class="progress-bar-bg">
-            <div class="progress-bar-fill" style="width: ${percent}%; background-color: ${area.color};"></div>
-          </div>
-          <div class="coverage-blocks-container">
-            <span class="coverage-blocks-title">Přiřazené výstupy v blocích:</span>
-            ${assignedBlocks.length > 0
-              ? `<ul class="coverage-blocks-list">${assignedBlocks.map(item => `<li><span class="coverage-block-num">${item.order}.</span> <span class="coverage-block-name">${item.title}</span></li>`).join('')}</ul>`
-              : `<div class="coverage-blocks-empty">Zatím v žádném bloku</div>`
-            }
-          </div>
-        </div>
-      `;
-    });
-
-    html += `
-      </div>
-
-      <h3 style="font-size: 1.15rem; margin-top: 32px; margin-bottom: 8px;">3. Kurikulární matice propojení: Vzdělávací oblasti × Klíčové kompetence</h3>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
-        Dvourozměrná mřížka kurikula jako <strong>pedagogická heat mapa</strong>: hodnotí hraniční těžiště socializace a bádání, vyvážené vazby, specifická zacílení, deficity bez vazby i celkovou diagnostickou únosnost pro třídní portfolio.
-      </p>
-
-      <!-- Didactic Guidance Card: Autorská autonomie školy vs. Pravidla RVP PV -->
-      <div class="didactic-guide-card is-collapsed" id="didactic-guide-card">
-        <div class="didactic-guide-header" id="didactic-guide-header">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 1.4rem;">🎓</span>
-            <div>
-              <div style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">Metodické mantinely a autorská autonomie tvorby vazeb v ŠVP PV</div>
-              <div style="font-size: 0.76rem; color: var(--text-muted);">Jak vznikají živé vazby mezi obsahem a kompetencemi a jaká pravidla stanovuje RVP PV</div>
-            </div>
-          </div>
-          <button type="button" class="collapse-toggle-btn btn btn-secondary btn-sm" id="toggle-didactic-btn" style="font-size: 0.75rem; padding: 4px 10px;">▼ Rozbalit metodiku</button>
-        </div>
-
-        <div class="didactic-guide-body" id="didactic-guide-body" style="display: none;">
-          <div class="didactic-columns-grid">
-            <div class="didactic-col-box" style="border-left: 4px solid var(--primary-500);">
-              <div style="font-weight: 800; color: var(--primary-600); font-size: 0.88rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                <span>✨ 1. Kde má autor ŠVP plnou svobodu</span>
-              </div>
-              <ul style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px;">
-                <li><strong>Volba témat a kontextu:</strong> Autor sám rozhoduje, jaká témata zvolí (např. zda zimní logiku postaví na stopách zvířat, vesmíru či pečení chleba).</li>
-                <li><strong>Kombinace entit v bloku:</strong> Tým MŠ sám určuje, které kompetence spáruje s oblastmi v daném období (bádání s mikroskopem pro digitální vs. malování přírodními pigmenty pro kulturní kompetenci).</li>
-                <li><strong>Metody a prostředí:</strong> Didaktické strategie, badatelské koutky, robotické pomůcky (Bee-Bot) a organizace v centrech aktivit jsou zcela v rukou školy.</li>
-              </ul>
-            </div>
-
-            <div class="didactic-col-box" style="border-left: 4px solid #10b981;">
-              <div style="font-weight: 800; color: #059669; font-size: 0.88rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                <span>⚖️ 2. Kde je autor vázán pravidly RVP PV</span>
-              </div>
-              <ul style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px;">
-                <li><strong>Závaznost všech entit za cyklus:</strong> Autor má volnost v blocích, ale nesmí žádnou z 8 kompetencí ani 4 oblastí z celého ŠVP vynechat.</li>
-                <li><strong>Akreditovaný kmen OVU:</strong> Vazby se ukotvují výběrem z oficiální soustavy očekávaných výsledků učení (kompetenčních KK... i oborových D...).</li>
-                <li><strong>Smysluplnost a přirozenost vazby:</strong> Žádné mechanické karikatury (např. IT u kotoulu). ČŠI hodnotí, zda činnost kompetenci reálně a prokazatelně rozvíjí.</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="didactic-example-box">
-            <div style="font-weight: 800; font-size: 0.85rem; color: var(--primary-700); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-              <span>💡 Jak vazba prakticky vzniká (Pohled pedagoga z praxe)</span>
-            </div>
-            <p style="font-size: 0.82rem; color: var(--text-main); margin-bottom: 8px; line-height: 1.45;">
-              Vazba není teoretický pojem v tabulce, ale pedagogický záměr situace:
-              Autor vezme oblast <strong>Dítě a svět (Obsah)</strong>: <em>Chceme, aby děti poznaly, jak mrzne voda a jak se chová led</em>.
-              Připojí k tomu <strong>Kompetenci k řešení problémů (Proces)</strong>: <em>Neřekneme jim výsledek, necháme je experimentovat s pokusem a omylem</em>.
-            </p>
-            <div class="didactic-example-highlight">
-              🧊 <strong>Výsledná situace v bloku:</strong> Děti dostanou kostku ledu se zamrzlou hračkou a samy zkoušejí postupy (teplá voda, sůl, drcení), jak hračku co nejrychleji vysvobodit.
-              Vznikla živá vazba <strong>Svět × Řešení problémů</strong>, opřená o příslušné OVU a sloužící jako podklad pro záznam do pedagogického portfolia dítěte.
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+    const compCoveredCount = Object.keys(RVP_COMPETENCIES).filter(code => (stats.competencyCoverage[code]?.blocks.size || 0) > 0).length;
+    const areaCoveredCount = Object.keys(RVP_AREAS).filter(code => (stats.areaCoverage[code]?.blocks.size || 0) > 0).length;
 
     // Compute curricular matrix dataset (4 areas x 8 competencies)
     const compKeys = Object.keys(RVP_COMPETENCIES);
@@ -2530,215 +2400,427 @@ class SVPApp {
       capacityText = `Aktuálně je v ŠVP přiřazeno ${grandTotal} vazeb (průměrně ${avgPerBlock} na blok). Pro celoroční cyklus doporučujeme směřovat k optimu 80–110 vazeb (~12 vazeb na blok), aby byla zajištěna rovnoměrná podpora rozvoje dětí.`;
     }
 
-    const topCell = allCells.slice().sort((a, b) => b.count - a.count)[0];
-    const topArea = topCell && topCell.count > 0 ? RVP_AREAS[topCell.aCode] : null;
-    const topComp = topCell && topCell.count > 0 ? RVP_COMPETENCIES[topCell.cCode] : null;
-
-    html += `
-      <!-- Diagnostic Capacity Box for Pedagogical Team -->
-      <div class="diagnostic-capacity-card">
-        <div class="diagnostic-capacity-metrics">
-          <div class="diagnostic-metric-item">
-            <div class="diagnostic-metric-val" style="color: var(--primary-600);">${grandTotal} <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">vazeb</span></div>
-            <div class="diagnostic-metric-lbl">Roční součet vazeb ŠVP (optimum 80–110)</div>
+    let html = `
+      <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%); margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div class="card-title" style="margin-bottom: 4px;">🔍 Analýza souladu s Rámcovým vzdělávacím programem (RVP PV)</div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">
+              Tento audit automaticky ověřuje, zda vaše integrované bloky rovnoměrně rozvíjejí všech 8 klíčových kompetencí a pokrývají 4 hlavní vzdělávací oblasti RVP PV.
+            </p>
           </div>
-          <div class="diagnostic-metric-item">
-            <div class="diagnostic-metric-val" style="color: #059669;">${avgPerBlock} <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">vazeb/blok</span></div>
-            <div class="diagnostic-metric-lbl">Průměr na integrovaný blok (~12–13)</div>
-          </div>
-          <div class="diagnostic-metric-item">
-            <div class="diagnostic-metric-val" style="color: #6366f1;">2–3 <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">projevy</span></div>
-            <div class="diagnostic-metric-lbl">Měsíční formativní diagnostika v portfoliu</div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.svpApp.toggleAllCoverageSections(true)" title="Rozbalit všechny sekce">
+              Rozbalit vše
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.svpApp.toggleAllCoverageSections(false)" title="Sbalit všechny sekce">
+              Sbalit vše
+            </button>
           </div>
         </div>
-        <div class="diagnostic-capacity-status">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.04em;">Diagnostická únosnost pro tým:</span>
-            <span style="display: inline-block; font-size: 0.75rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px; ${capacityBadgeStyle}">
-              ${capacityStatusBadge}
+      </div>
+
+      <!-- 1. POKRYTÍ KLÍČOVÝCH KOMPETENCÍ -->
+      <div class="coverage-section ${isCompCollapsed ? 'is-collapsed' : ''}" id="coverage-section-competencies">
+        <div class="coverage-section-header" onclick="window.svpApp.toggleCoverageSection('competencies')">
+          <div class="coverage-section-header-left">
+            <button type="button" class="coverage-section-collapse-btn" onclick="event.stopPropagation(); window.svpApp.toggleCoverageSection('competencies')" title="${isCompCollapsed ? 'Rozbalit sekci' : 'Sbalit sekci'}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <h3 class="coverage-section-title">1. Pokrytí klíčových kompetencí (8 kompetencí)</h3>
+          </div>
+          <div class="coverage-section-badges">
+            <span class="header-tag ${compCoveredCount === 8 ? 'header-tag-success' : 'header-tag-warning'}">
+              ${compCoveredCount}/8 pokryto
             </span>
           </div>
-          <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0; line-height: 1.45;">
-            ${capacityText}
+        </div>
+        <div class="coverage-section-body">
+          <div class="coverage-grid">
+    `;
+
+    Object.entries(RVP_COMPETENCIES).forEach(([code, comp]) => {
+      const cov = stats.competencyCoverage[code] || { count: 0, blocks: new Set(), totalInRVP: 1 };
+      const blockCount = cov.blocks.size;
+      const isGood = blockCount >= 2;
+      const percent = Math.min(100, Math.round((blockCount / Math.max(1, doc.blocks.length)) * 100));
+
+      const assignedBlocks = doc.blocks
+        .map((b, idx) => ({ order: idx + 1, title: b.title, isAssigned: (b.competencies || []).includes(code) || cov.blocks.has(b.title) }))
+        .filter(item => item.isAssigned);
+
+      html += `
+        <div class="coverage-card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+            <div style="flex: 1; min-width: 0;">
+              <span style="font-size: 1.5rem;">${comp.icon}</span>
+              <h4 style="font-size: 0.95rem; margin-top: 4px; line-height: 1.3;">${comp.name}</h4>
+              <span class="code-badge">${code}</span>
+            </div>
+            <span class="header-tag ${isGood ? 'header-tag-success' : 'header-tag-warning'}">
+              ${formatBlocks(blockCount)}
+            </span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width: ${percent}%; background-color: ${comp.color};"></div>
+          </div>
+          <div class="coverage-blocks-container">
+            <span class="coverage-blocks-title">Zapojeno v blocích:</span>
+            ${assignedBlocks.length > 0
+              ? `<ul class="coverage-blocks-list">${assignedBlocks.map(item => `<li><span class="coverage-block-num">${item.order}.</span> <span class="coverage-block-name">${item.title}</span></li>`).join('')}</ul>`
+              : `<div class="coverage-blocks-empty">Zatím v žádném bloku</div>`
+            }
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. POKRYTÍ VZDĚLÁVACÍCH OBLASTÍ -->
+      <div class="coverage-section ${isAreaCollapsed ? 'is-collapsed' : ''}" id="coverage-section-areas">
+        <div class="coverage-section-header" onclick="window.svpApp.toggleCoverageSection('areas')">
+          <div class="coverage-section-header-left">
+            <button type="button" class="coverage-section-collapse-btn" onclick="event.stopPropagation(); window.svpApp.toggleCoverageSection('areas')" title="${isAreaCollapsed ? 'Rozbalit sekci' : 'Sbalit sekci'}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <h3 class="coverage-section-title">2. Pokrytí vzdělávacích oblastí (4 oblasti)</h3>
+          </div>
+          <div class="coverage-section-badges">
+            <span class="header-tag ${areaCoveredCount === 4 ? 'header-tag-success' : 'header-tag-warning'}">
+              ${areaCoveredCount}/4 pokryto
+            </span>
+          </div>
+        </div>
+        <div class="coverage-section-body">
+          <div class="coverage-grid">
+    `;
+
+    Object.entries(RVP_AREAS).forEach(([code, area]) => {
+      const cov = stats.areaCoverage[code] || { count: 0, blocks: new Set(), totalInRVP: 1 };
+      const blockCount = cov.blocks.size;
+      const isGood = blockCount >= 2;
+      const percent = Math.min(100, Math.round((blockCount / Math.max(1, doc.blocks.length)) * 100));
+
+      const assignedBlocks = doc.blocks
+        .map((b, idx) => ({ order: idx + 1, title: b.title, isAssigned: (b.areas || []).includes(code) || cov.blocks.has(b.title) }))
+        .filter(item => item.isAssigned);
+
+      html += `
+        <div class="coverage-card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+            <div style="flex: 1; min-width: 0;">
+              <span style="font-size: 1.5rem;">${area.icon}</span>
+              <h4 style="font-size: 0.95rem; margin-top: 4px; line-height: 1.3;">${area.name}</h4>
+              <span class="code-badge">${code}</span>
+            </div>
+            <span class="header-tag ${isGood ? 'header-tag-success' : 'header-tag-warning'}">
+              ${formatBlocks(blockCount)}
+            </span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width: ${percent}%; background-color: ${area.color};"></div>
+          </div>
+          <div class="coverage-blocks-container">
+            <span class="coverage-blocks-title">Přiřazené výstupy v blocích:</span>
+            ${assignedBlocks.length > 0
+              ? `<ul class="coverage-blocks-list">${assignedBlocks.map(item => `<li><span class="coverage-block-num">${item.order}.</span> <span class="coverage-block-name">${item.title}</span></li>`).join('')}</ul>`
+              : `<div class="coverage-blocks-empty">Zatím v žádném bloku</div>`
+            }
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. KURIKULÁRNÍ MATICE PROPOJENÍ -->
+      <div class="coverage-section ${isMatrixCollapsed ? 'is-collapsed' : ''}" id="coverage-section-matrix">
+        <div class="coverage-section-header" onclick="window.svpApp.toggleCoverageSection('matrix')">
+          <div class="coverage-section-header-left">
+            <button type="button" class="coverage-section-collapse-btn" onclick="event.stopPropagation(); window.svpApp.toggleCoverageSection('matrix')" title="${isMatrixCollapsed ? 'Rozbalit sekci' : 'Sbalit sekci'}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <h3 class="coverage-section-title">3. Kurikulární matice propojení: Vzdělávací oblasti × Klíčové kompetence</h3>
+          </div>
+          <div class="coverage-section-badges">
+            <span class="header-tag ${grandTotal >= 70 && grandTotal <= 115 ? 'header-tag-success' : 'header-tag-primary'}">
+              ${grandTotal} vazeb
+            </span>
+          </div>
+        </div>
+        <div class="coverage-section-body">
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+            Dvourozměrná mřížka kurikula jako <strong>pedagogická heat mapa</strong>: hodnotí hraniční těžiště socializace a bádání, vyvážené vazby, specifická zacílení, deficity bez vazby i celkovou diagnostickou únosnost pro třídní portfolio.
           </p>
-        </div>
-      </div>
 
-      <!-- KPI Summary Cards -->
-      <div class="heatmap-stats-grid">
-        <div class="heatmap-stat-card" style="border-left: 4px solid #059669;">
-          <div class="heatmap-stat-icon">🎯</div>
-          <div>
-            <div class="heatmap-stat-val" style="color: #059669;">${coreFocusCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">uzlů</span></div>
-            <div class="heatmap-stat-lbl">Hraniční (4–5×)</div>
-          </div>
-        </div>
-
-        <div class="heatmap-stat-card" style="border-left: 4px solid #10b981;">
-          <div class="heatmap-stat-icon">✅</div>
-          <div>
-            <div class="heatmap-stat-val" style="color: #10b981;">${optimalCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">vazeb</span></div>
-            <div class="heatmap-stat-lbl">Vyvážené (2–3×)</div>
-          </div>
-        </div>
-
-        <div class="heatmap-stat-card" style="border-left: 4px solid #0284c7;">
-          <div class="heatmap-stat-icon">🔹</div>
-          <div>
-            <div class="heatmap-stat-val" style="color: #0284c7;">${specificCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">vazeb</span></div>
-            <div class="heatmap-stat-lbl">Specifické (1×)</div>
-          </div>
-        </div>
-
-        <div class="heatmap-stat-card" style="border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.05);">
-          <div class="heatmap-stat-icon">⚠️</div>
-          <div>
-            <div class="heatmap-stat-val" style="color: #dc2626;">${unassignedCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">/ 32</span></div>
-            <div class="heatmap-stat-lbl">Bez vazby (0×)</div>
-          </div>
-        </div>
-
-        <div class="heatmap-stat-card" style="border-left: 4px solid #f59e0b;">
-          <div class="heatmap-stat-icon">🔥</div>
-          <div>
-            <div class="heatmap-stat-val" style="color: #b45309;">
-              ${overCount > 0 ? `${overCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">přetíženo</span>` : '0'}
+          <!-- Didactic Guidance Card: Autorská autonomie školy vs. Pravidla RVP PV -->
+          <div class="didactic-guide-card is-collapsed" id="didactic-guide-card">
+            <div class="didactic-guide-header" id="didactic-guide-header">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.4rem;">🎓</span>
+                <div>
+                  <div style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">Metodické mantinely a autorská autonomie tvorby vazeb v ŠVP PV</div>
+                  <div style="font-size: 0.76rem; color: var(--text-muted);">Jak vznikají živé vazby mezi obsahem a kompetencemi a jaká pravidla stanovuje RVP PV</div>
+                </div>
+              </div>
+              <button type="button" class="collapse-toggle-btn btn btn-secondary btn-sm" id="toggle-didactic-btn" style="font-size: 0.75rem; padding: 4px 10px;">▼ Rozbalit metodiku</button>
             </div>
-            <div class="heatmap-stat-lbl">
-              ${overCount > 0 ? 'Pozor na zahlcení dětí' : 'Vysoké (6+×)'}
+
+            <div class="didactic-guide-body" id="didactic-guide-body" style="display: none;">
+              <div class="didactic-columns-grid">
+                <div class="didactic-col-box" style="border-left: 4px solid var(--primary-500);">
+                  <div style="font-weight: 800; color: var(--primary-600); font-size: 0.88rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span>✨ 1. Kde má autor ŠVP plnou svobodu</span>
+                  </div>
+                  <ul style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px;">
+                    <li><strong>Volba témat a kontextu:</strong> Autor sám rozhoduje, jaká témata zvolí (např. zda zimní logiku postaví na stopách zvířat, vesmíru či pečení chleba).</li>
+                    <li><strong>Kombinace entit v bloku:</strong> Tým MŠ sám určuje, které kompetence spáruje s oblastmi v daném období (bádání s mikroskopem pro digitální vs. malování přírodními pigmenty pro kulturní kompetenci).</li>
+                    <li><strong>Metody a prostředí:</strong> Didaktické strategie, badatelské koutky, robotické pomůcky (Bee-Bot) a organizace v centrech aktivit jsou zcela v rukou školy.</li>
+                  </ul>
+                </div>
+
+                <div class="didactic-col-box" style="border-left: 4px solid #10b981;">
+                  <div style="font-weight: 800; color: #059669; font-size: 0.88rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span>⚖️ 2. Kde je autor vázán pravidly RVP PV</span>
+                  </div>
+                  <ul style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px;">
+                    <li><strong>Závaznost všech entit za cyklus:</strong> Autor má volnost v blocích, ale nesmí žádnou z 8 kompetencí ani 4 oblastí z celého ŠVP vynechat.</li>
+                    <li><strong>Akreditovaný kmen OVU:</strong> Vazby se ukotvují výběrem z oficiální soustavy očekávaných výsledků učení (kompetenčních KK... i oborových D...).</li>
+                    <li><strong>Smysluplnost a přirozenost vazby:</strong> Žádné mechanické karikatury (např. IT u kotoulu). ČŠI hodnotí, zda činnost kompetenci reálně a prokazatelně rozvíjí.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="didactic-example-box">
+                <div style="font-weight: 800; font-size: 0.85rem; color: var(--primary-700); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                  <span>💡 Jak vazba prakticky vzniká (Pohled pedagoga z praxe)</span>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--text-main); margin-bottom: 8px; line-height: 1.45;">
+                  Vazba není teoretický pojem v tabulce, ale pedagogický záměr situace:
+                  Autor vezme oblast <strong>Dítě a svět (Obsah)</strong>: <em>Chceme, aby děti poznaly, jak mrzne voda a jak se chová led</em>.
+                  Připojí k tomu <strong>Kompetenci k řešení problémů (Proces)</strong>: <em>Neřekneme jim výsledek, necháme je experimentovat s pokusem a omylem</em>.
+                </p>
+                <div class="didactic-example-highlight">
+                  🧊 <strong>Výsledná situace v bloku:</strong> Děti dostanou kostku ledu se zamrzlou hračkou a samy zkoušejí postupy (teplá voda, sůl, drcení), jak hračku co nejrychleji vysvobodit.
+                  Vznikla živá vazba <strong>Svět × Řešení problémů</strong>, opřená o příslušné OVU a sloužící jako podklad pro záznam do pedagogického portfolia dítěte.
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Spotlight Filters & Reference Benchmark button -->
-      <div class="heatmap-toolbar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <div class="heatmap-filters" id="heatmap-filters">
-          <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-right: 4px;">Míra nasycení:</span>
-          <button class="heatmap-filter-btn active" data-filter="all">Všechny vazby (32)</button>
-          <button class="heatmap-filter-btn" data-filter="core-focus">🎯 Hraniční (4–5×) (${coreFocusCount})</button>
-          <button class="heatmap-filter-btn" data-filter="optimal">✅ Vyvážené (2–3×) (${optimalCount})</button>
-          <button class="heatmap-filter-btn" data-filter="justified-low">🔹 Specifické (1×) (${specificCount})</button>
-          <button class="heatmap-filter-btn" data-filter="unassigned">⚠️ Bez vazby (0×) (${unassignedCount})</button>
-          ${overCount > 0 ? `<button class="heatmap-filter-btn" data-filter="over">🔥 Vysoké (6+×) (${overCount})</button>` : ''}
-        </div>
-        <button class="btn btn-secondary btn-sm" id="btn-show-benchmark" style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem;">
-          <span>📊</span> Zobrazit referenční etalon (99 vazeb z praxe)
-        </button>
-      </div>
+          <!-- Diagnostic Capacity Box for Pedagogical Team -->
+          <div class="diagnostic-capacity-card">
+            <div class="diagnostic-capacity-metrics">
+              <div class="diagnostic-metric-item">
+                <div class="diagnostic-metric-val" style="color: var(--primary-600);">${grandTotal} <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">vazeb</span></div>
+                <div class="diagnostic-metric-lbl">Roční součet vazeb ŠVP (optimum 80–110)</div>
+              </div>
+              <div class="diagnostic-metric-item">
+                <div class="diagnostic-metric-val" style="color: #059669;">${avgPerBlock} <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">vazeb/blok</span></div>
+                <div class="diagnostic-metric-lbl">Průměr na integrovaný blok (~12–13)</div>
+              </div>
+              <div class="diagnostic-metric-item">
+                <div class="diagnostic-metric-val" style="color: #6366f1;">2–3 <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">projevy</span></div>
+                <div class="diagnostic-metric-lbl">Měsíční formativní diagnostika v portfoliu</div>
+              </div>
+            </div>
+            <div class="diagnostic-capacity-status">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.04em;">Diagnostická únosnost pro tým:</span>
+                <span style="display: inline-block; font-size: 0.75rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px; ${capacityBadgeStyle}">
+                  ${capacityStatusBadge}
+                </span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0; line-height: 1.45;">
+                ${capacityText}
+              </p>
+            </div>
+          </div>
 
-      <!-- Heatmap Table -->
-      <div class="heatmap-table-container">
-        <table class="heatmap-table">
-          <thead>
-            <tr>
-              <th class="row-header" style="background: var(--bg-subtle);">Vzdělávací oblast</th>
-              ${compKeys.map(cCode => {
-                const cObj = RVP_COMPETENCIES[cCode];
-                return `
-                  <th class="col-header" title="${cObj.name}">
-                    <div style="font-size: 1.2rem; line-height: 1.2;">${cObj.icon}</div>
-                    <div style="font-size: 0.76rem; font-weight: 800; color: var(--text-main);">${cCode}</div>
-                    <div style="font-size: 0.65rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px;" title="${cObj.name}">${cObj.name.replace('Klíčová kompetence ', '')}</div>
-                  </th>
-                `;
-              }).join('')}
-              <th style="min-width: 80px; font-weight: 800; background: var(--bg-subtle);">Celkem</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${areaKeys.map(aCode => {
-              const aObj = RVP_AREAS[aCode];
-              let rowTotal = 0;
-              const cellsHtml = compKeys.map(cCode => {
-                const cellData = matrixData[aCode][cCode];
-                const count = cellData.count;
-                rowTotal += count;
-                const sat = getSaturation(count, maxCellCount, aCode, cCode);
-                const blockNames = Array.from(new Set(cellData.matches.map(m => m.blockTitle)));
-                const tooltipText = `${aObj.name} (${aCode}) × ${RVP_COMPETENCIES[cCode].name} (${cCode})&#10;Stav: ${sat.status} (${count}× výstupů)&#10;Pedagogický význam: ${sat.desc}&#10;Doporučení: ${sat.recommendation}&#10;Zapojené bloky: ${blockNames.length > 0 ? blockNames.join(', ') : 'Žádné'}`;
-                
-                return `
-                  <td class="heatmap-cell heat-level-${sat.level}" data-level="${sat.level}" title="${tooltipText}">
-                    <span class="heatmap-count">${count > 0 ? `${count}×` : '0×'}</span>
-                    <span class="heatmap-pill">${sat.pillText}</span>
-                  </td>
-                `;
-              }).join('');
+          <!-- KPI Summary Cards -->
+          <div class="heatmap-stats-grid">
+            <div class="heatmap-stat-card" style="border-left: 4px solid #059669;">
+              <div class="heatmap-stat-icon">🎯</div>
+              <div>
+                <div class="heatmap-stat-val" style="color: #059669;">${coreFocusCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">uzlů</span></div>
+                <div class="heatmap-stat-lbl">Hraniční (4–5×)</div>
+              </div>
+            </div>
 
-              const areaCov = stats.areaCoverage[aCode] || { count: 0, blocks: new Set() };
-              const areaBlockCount = areaCov.blocks.size;
+            <div class="heatmap-stat-card" style="border-left: 4px solid #10b981;">
+              <div class="heatmap-stat-icon">✅</div>
+              <div>
+                <div class="heatmap-stat-val" style="color: #10b981;">${optimalCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">vazeb</span></div>
+                <div class="heatmap-stat-lbl">Vyvážené (2–3×)</div>
+              </div>
+            </div>
 
-              return `
+            <div class="heatmap-stat-card" style="border-left: 4px solid #0284c7;">
+              <div class="heatmap-stat-icon">🔹</div>
+              <div>
+                <div class="heatmap-stat-val" style="color: #0284c7;">${specificCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">vazeb</span></div>
+                <div class="heatmap-stat-lbl">Specifické (1×)</div>
+              </div>
+            </div>
+
+            <div class="heatmap-stat-card" style="border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.05);">
+              <div class="heatmap-stat-icon">⚠️</div>
+              <div>
+                <div class="heatmap-stat-val" style="color: #dc2626;">${unassignedCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">/ 32</span></div>
+                <div class="heatmap-stat-lbl">Bez vazby (0×)</div>
+              </div>
+            </div>
+
+            <div class="heatmap-stat-card" style="border-left: 4px solid #f59e0b;">
+              <div class="heatmap-stat-icon">🔥</div>
+              <div>
+                <div class="heatmap-stat-val" style="color: #b45309;">
+                  ${overCount > 0 ? `${overCount} <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">přetíženo</span>` : '0'}
+                </div>
+                <div class="heatmap-stat-lbl">
+                  ${overCount > 0 ? 'Pozor na zahlcení dětí' : 'Vysoké (6+×)'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Spotlight Filters & Reference Benchmark button -->
+          <div class="heatmap-toolbar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div class="heatmap-filters" id="heatmap-filters">
+              <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-right: 4px;">Míra nasycení:</span>
+              <button class="heatmap-filter-btn active" data-filter="all">Všechny vazby (32)</button>
+              <button class="heatmap-filter-btn" data-filter="core-focus">🎯 Hraniční (4–5×) (${coreFocusCount})</button>
+              <button class="heatmap-filter-btn" data-filter="optimal">✅ Vyvážené (2–3×) (${optimalCount})</button>
+              <button class="heatmap-filter-btn" data-filter="justified-low">🔹 Specifické (1×) (${specificCount})</button>
+              <button class="heatmap-filter-btn" data-filter="unassigned">⚠️ Bez vazby (0×) (${unassignedCount})</button>
+              ${overCount > 0 ? `<button class="heatmap-filter-btn" data-filter="over">🔥 Vysoké (6+×) (${overCount})</button>` : ''}
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btn-show-benchmark" style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem;">
+              <span>📊</span> Zobrazit referenční etalon (99 vazeb z praxe)
+            </button>
+          </div>
+
+          <!-- Heatmap Table -->
+          <div class="heatmap-table-container">
+            <table class="heatmap-table">
+              <thead>
                 <tr>
-                  <th class="row-header" style="background: var(--bg-subtle);">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                      <span style="font-size: 1.25rem;">${aObj.icon}</span>
-                      <div style="flex: 1; min-width: 0;">
-                        <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-main);">${aObj.name}</div>
-                        <div style="display: flex; gap: 6px; align-items: center; margin-top: 2px;">
-                          <span class="code-badge" style="font-size: 0.65rem;">${aCode}</span>
-                          <span style="font-size: 0.7rem; color: var(--text-muted);">${formatBlocks(areaBlockCount)}</span>
+                  <th class="row-header" style="background: var(--bg-subtle);">Vzdělávací oblast</th>
+                  ${compKeys.map(cCode => {
+                    const cObj = RVP_COMPETENCIES[cCode];
+                    return `
+                      <th class="col-header" title="${cObj.name}">
+                        <div style="font-size: 1.2rem; line-height: 1.2;">${cObj.icon}</div>
+                        <div style="font-size: 0.76rem; font-weight: 800; color: var(--text-main);">${cCode}</div>
+                        <div style="font-size: 0.65rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px;" title="${cObj.name}">${cObj.name.replace('Klíčová kompetence ', '')}</div>
+                      </th>
+                    `;
+                  }).join('')}
+                  <th style="min-width: 80px; font-weight: 800; background: var(--bg-subtle);">Celkem</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${areaKeys.map(aCode => {
+                  const aObj = RVP_AREAS[aCode];
+                  let rowTotal = 0;
+                  const cellsHtml = compKeys.map(cCode => {
+                    const cellData = matrixData[aCode][cCode];
+                    const count = cellData.count;
+                    rowTotal += count;
+                    const sat = getSaturation(count, maxCellCount, aCode, cCode);
+                    const blockNames = Array.from(new Set(cellData.matches.map(m => m.blockTitle)));
+                    const tooltipText = `${aObj.name} (${aCode}) × ${RVP_COMPETENCIES[cCode].name} (${cCode})&#10;Stav: ${sat.status} (${count}× výstupů)&#10;Pedagogický význam: ${sat.desc}&#10;Doporučení: ${sat.recommendation}&#10;Zapojené bloky: ${blockNames.length > 0 ? blockNames.join(', ') : 'Žádné'}`;
+                    
+                    return `
+                      <td class="heatmap-cell heat-level-${sat.level}" data-level="${sat.level}" title="${tooltipText}">
+                        <span class="heatmap-count">${count > 0 ? `${count}×` : '0×'}</span>
+                        <span class="heatmap-pill">${sat.pillText}</span>
+                      </td>
+                    `;
+                  }).join('');
+
+                  const areaCov = stats.areaCoverage[aCode] || { count: 0, blocks: new Set() };
+                  const areaBlockCount = areaCov.blocks.size;
+
+                  return `
+                    <tr>
+                      <th class="row-header" style="background: var(--bg-subtle);">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <span style="font-size: 1.25rem;">${aObj.icon}</span>
+                          <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-main);">${aObj.name}</div>
+                            <div style="display: flex; gap: 6px; align-items: center; margin-top: 2px;">
+                              <span class="code-badge" style="font-size: 0.65rem;">${aCode}</span>
+                              <span style="font-size: 0.7rem; color: var(--text-muted);">${formatBlocks(areaBlockCount)}</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      </th>
+                      ${cellsHtml}
+                      <td style="padding: 10px 6px; font-weight: 800; background: var(--bg-subtle); border-radius: var(--radius-md);">
+                        <div style="font-size: 1.05rem; color: var(--text-main);">${rowTotal}×</div>
+                        <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">výstupů</div>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+              <tfoot>
+                <tr style="border-top: 2px solid var(--border-color);">
+                  <th class="row-header" style="background: var(--bg-subtle);">
+                    <div style="font-size: 0.82rem; font-weight: 800; color: var(--text-main);">Celkem v kompetenci</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Součet všech oblastí</div>
                   </th>
-                  ${cellsHtml}
-                  <td style="padding: 10px 6px; font-weight: 800; background: var(--bg-subtle); border-radius: var(--radius-md);">
-                    <div style="font-size: 1.05rem; color: var(--text-main);">${rowTotal}×</div>
-                    <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">výstupů</div>
+                  ${compKeys.map(cCode => {
+                    const cTotal = colTotals[cCode];
+                    const compCov = stats.competencyCoverage[cCode] || { count: 0, blocks: new Set() };
+                    return `
+                      <td style="padding: 10px 6px; font-weight: 800; background: var(--bg-subtle); border-radius: var(--radius-md);" title="Celkový počet přiřazení pro kompetenci ${RVP_COMPETENCIES[cCode].name}">
+                        <div style="font-size: 1.05rem; color: var(--text-main);">${cTotal}×</div>
+                        <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">${formatBlocks(compCov.blocks.size)}</div>
+                      </td>
+                    `;
+                  }).join('')}
+                  <td style="padding: 10px 6px; font-weight: 800; background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%); border-radius: var(--radius-md); border: 1.5px solid var(--primary-500);">
+                    <div style="font-size: 1.15rem; color: var(--primary-600);">${grandTotal}×</div>
+                    <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700;">CELKEM ŠVP</div>
                   </td>
                 </tr>
-              `;
-            }).join('')}
-          </tbody>
-          <tfoot>
-            <tr style="border-top: 2px solid var(--border-color);">
-              <th class="row-header" style="background: var(--bg-subtle);">
-                <div style="font-size: 0.82rem; font-weight: 800; color: var(--text-main);">Celkem v kompetenci</div>
-                <div style="font-size: 0.7rem; color: var(--text-muted);">Součet všech oblastí</div>
-              </th>
-              ${compKeys.map(cCode => {
-                const cTotal = colTotals[cCode];
-                const compCov = stats.competencyCoverage[cCode] || { count: 0, blocks: new Set() };
-                return `
-                  <td style="padding: 10px 6px; font-weight: 800; background: var(--bg-subtle); border-radius: var(--radius-md);" title="Celkový počet přiřazení pro kompetenci ${RVP_COMPETENCIES[cCode].name}">
-                    <div style="font-size: 1.05rem; color: var(--text-main);">${cTotal}×</div>
-                    <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">${formatBlocks(compCov.blocks.size)}</div>
-                  </td>
-                `;
-              }).join('')}
-              <td style="padding: 10px 6px; font-weight: 800; background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%); border-radius: var(--radius-md); border: 1.5px solid var(--primary-500);">
-                <div style="font-size: 1.15rem; color: var(--primary-600);">${grandTotal}×</div>
-                <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700;">CELKEM ŠVP</div>
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+              </tfoot>
+            </table>
+          </div>
 
-      <!-- Heatmap Legend with Pedagogical Meaning -->
-      <div class="heatmap-legend">
-        <span class="heatmap-legend-title">🏷️ Pedagogická vysvětlivka nasycení:</span>
-        <div class="heatmap-legend-item">
-          <span class="heatmap-legend-box heat-level-core-focus"></span>
-          <span><strong>4–5× Hraniční</strong> (silná těžiště socializace, bádání a motoriky)</span>
-        </div>
-        <div class="heatmap-legend-item">
-          <span class="heatmap-legend-box heat-level-optimal"></span>
-          <span><strong>2–3× Vyvážené</strong> (ideální optimum bez přehlcení)</span>
-        </div>
-        <div class="heatmap-legend-item">
-          <span class="heatmap-legend-box heat-level-justified-low"></span>
-          <span><strong>1× Specifické</strong> (doplňková zacílení: např. digitální hygiena či bezpečnost)</span>
-        </div>
-        <div class="heatmap-legend-item">
-          <span class="heatmap-legend-box heat-level-unassigned"></span>
-          <span><strong>0× Bez vazby</strong> (deficitní stav, který by měl být v ŠVP pokryt)</span>
-        </div>
-        <div class="heatmap-legend-item">
-          <span class="heatmap-legend-box heat-level-over"></span>
-          <span><strong>6+× Vysoké</strong> (varování před diagnostickým zahlcením portfolia)</span>
+          <!-- Heatmap Legend with Pedagogical Meaning -->
+          <div class="heatmap-legend">
+            <span class="heatmap-legend-title">🏷️ Pedagogická vysvětlivka nasycení:</span>
+            <div class="heatmap-legend-item">
+              <span class="heatmap-legend-box heat-level-core-focus"></span>
+              <span><strong>4–5× Hraniční</strong> (silná těžiště socializace, bádání a motoriky)</span>
+            </div>
+            <div class="heatmap-legend-item">
+              <span class="heatmap-legend-box heat-level-optimal"></span>
+              <span><strong>2–3× Vyvážené</strong> (ideální optimum bez přehlcení)</span>
+            </div>
+            <div class="heatmap-legend-item">
+              <span class="heatmap-legend-box heat-level-justified-low"></span>
+              <span><strong>1× Specifické</strong> (doplňková zacílení: např. digitální hygiena či bezpečnost)</span>
+            </div>
+            <div class="heatmap-legend-item">
+              <span class="heatmap-legend-box heat-level-unassigned"></span>
+              <span><strong>0× Bez vazby</strong> (deficitní stav, který by měl být v ŠVP pokryt)</span>
+            </div>
+            <div class="heatmap-legend-item">
+              <span class="heatmap-legend-box heat-level-over"></span>
+              <span><strong>6+× Vysoké</strong> (varování před diagnostickým zahlcením portfolia)</span>
+            </div>
+          </div>
         </div>
       </div>
     `;
